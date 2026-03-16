@@ -167,6 +167,38 @@
         /* ── Contact hover ── */
         .contact-value a { color:rgba(232,220,200,.7); text-decoration:none; }
         .contact-value a:hover { color:var(--gold); }
+
+        /* ── MOBILE: hide cursor on touch devices ── */
+        @media (hover: none) {
+            .cursor, .cursor-ring { display:none; }
+            body { cursor:auto; }
+        }
+
+        /* ── MOBILE: privilege cards wrap scales down ── */
+        @media (max-width: 1024px) {
+            .privilege-cards-wrap { width:100% !important; height:auto !important; min-height:320px; }
+            .priv-card { position:relative !important; width:100% !important; top:auto !important; left:auto !important; }
+            .priv-back  { margin-top:16px; }
+        }
+
+        /* ── MOBILE: gallery grid collapses ── */
+        @media (max-width: 1024px) {
+            .gallery-grid { grid-template-columns:1fr 1fr !important; height:auto !important; }
+            .gallery-grid .gallery-item:first-child { grid-row:auto !important; }
+        }
+        @media (max-width: 640px) {
+            .gallery-grid { grid-template-columns:1fr !important; }
+        }
+
+        /* ── MOBILE: buttons stack and shrink ── */
+        @media (max-width: 480px) {
+            .btn-gold, .btn-outline { padding:14px 28px; font-size:11px; letter-spacing:.2em; width:100%; text-align:center; box-sizing:border-box; }
+        }
+
+        /* ── MOBILE: invest price shrinks ── */
+        @media (max-width: 480px) {
+            .invest-price-wrap span:nth-child(2) { font-size:44px !important; }
+        }
     </style>
 </head>
 
@@ -178,26 +210,46 @@
 
 <!-- NAVIGATION -->
 <nav id="mainNav" class="fixed top-0 left-0 right-0 z-[9990] flex items-center justify-between px-4 py-2 transition-all duration-500">
-    <a href="#" class="nav-logo" style="font-family:'Cinzel',serif;font-size:20px;letter-spacing:.2em;color:var(--gold);font-weight:600;text-decoration:none;">
+    <a href="#" style="font-family:'Cinzel',serif;font-size:20px;letter-spacing:.2em;color:var(--gold);font-weight:600;text-decoration:none;">
         <img src="jana.png" alt="jana logo" class="w-12 h-auto p-1">
     </a>
+
+    <!-- Desktop nav -->
     <div class="nav-links hidden lg:flex items-center gap-9">
-        <a href="#story"    class="font-['Cinzel'] text-xs tracking-widest text-white uppercase">Our Vision</a>
-        <a href="#gallery"  class="font-['Cinzel'] text-xs tracking-widest text-white uppercase">Gallery</a>
-        <a href="#benefits" class="font-['Cinzel'] text-xs tracking-widest text-white uppercase">Ownership</a>
-        <a href="#amenities"class="font-['Cinzel'] text-xs tracking-widest text-white uppercase">Amenities</a>
-        <a href="#privilege"class="font-['Cinzel'] text-xs tracking-widest text-white uppercase">Privileges</a>
-        <a href="form.html" class="font-['Cinzel'] text-xs tracking-widest uppercase px-5 py-2.5 rounded-md border"
+        <a href="#story"     class="font-['Cinzel'] text-xs tracking-widest text-white uppercase">Our Vision</a>
+        <a href="#gallery"   class="font-['Cinzel'] text-xs tracking-widest text-white uppercase">Gallery</a>
+        <a href="#benefits"  class="font-['Cinzel'] text-xs tracking-widest text-white uppercase">Ownership</a>
+        <a href="#amenities" class="font-['Cinzel'] text-xs tracking-widest text-white uppercase">Amenities</a>
+        <a href="#privilege" class="font-['Cinzel'] text-xs tracking-widest text-white uppercase">Privileges</a>
+        <a href="form.html"  class="font-['Cinzel'] text-xs tracking-widest uppercase px-5 py-2.5 rounded-md border"
            style="color:var(--gold);border-color:rgb(40,172,226);background-color:#F7F1E8;">Reserve a Share</a>
     </div>
-    <div class="lang-switch flex items-center z-[9999]">
+
+    <!-- Right: lang orb + hamburger -->
+    <div class="flex items-center gap-3">
         <div class="lang-orb" id="langToggle" onclick="toggleLang()">
             <span class="lang-label">EN</span>
             <div class="lang-ball"></div>
             <span class="lang-label">বাং</span>
         </div>
+        <button id="menuBtn" class="lg:hidden flex flex-col justify-center gap-[5px] w-9 h-9 p-1" onclick="toggleMenu()" aria-label="Open menu">
+            <span id="bar1" class="block w-full h-[1px] transition-all duration-300 origin-center" style="background:var(--gold)"></span>
+            <span id="bar2" class="block w-full h-[1px] transition-all duration-300" style="background:var(--gold)"></span>
+            <span id="bar3" class="block w-3/4 h-[1px] transition-all duration-300 origin-center" style="background:var(--gold)"></span>
+        </button>
     </div>
 </nav>
+
+<!-- Mobile fullscreen drawer -->
+<div id="mobileMenu" class="fixed inset-0 z-[9970] flex flex-col items-center justify-center gap-8 transition-all duration-500 pointer-events-none opacity-0"
+     style="background:rgba(6,13,26,.97);backdrop-filter:blur(20px)">
+    <a href="#story"     onclick="toggleMenu()" class="font-['Cinzel'] text-2xl tracking-[.3em] uppercase transition-colors" style="color:var(--cream)">Our Vision</a>
+    <a href="#gallery"   onclick="toggleMenu()" class="font-['Cinzel'] text-2xl tracking-[.3em] uppercase transition-colors" style="color:var(--cream)">Gallery</a>
+    <a href="#benefits"  onclick="toggleMenu()" class="font-['Cinzel'] text-2xl tracking-[.3em] uppercase transition-colors" style="color:var(--cream)">Ownership</a>
+    <a href="#amenities" onclick="toggleMenu()" class="font-['Cinzel'] text-2xl tracking-[.3em] uppercase transition-colors" style="color:var(--cream)">Amenities</a>
+    <a href="#privilege" onclick="toggleMenu()" class="font-['Cinzel'] text-2xl tracking-[.3em] uppercase transition-colors" style="color:var(--cream)">Privileges</a>
+    <div class="mt-4"><a href="form.html" class="btn-gold"><span data-en>Reserve a Share</span><span data-bn style="display:none">শেয়ার বুক করুন</span></a></div>
+</div>
 
 <!-- ===== HERO ===== -->
 <section id="hero" class="min-h-screen relative overflow-hidden flex flex-col items-center justify-center text-center">
@@ -205,21 +257,21 @@
     <div class="hero-overlay"></div>
     <div id="particles" class="absolute inset-0 pointer-events-none"></div>
 
-    <div class="relative z-10 px-6">
-        <p class="hero-eyebrow font-['Cinzel'] text-lg font-semibold tracking-[.5em] text-black uppercase mb-6" data-en>Kuakata · Bay of Bengal · Bangladesh</p>
-        <p class="hero-eyebrow font-['Cinzel'] text-lg font-semibold tracking-[.5em] text-black uppercase mb-6" data-bn style="display:none">কুয়াকাটা · বঙ্গোপসাগর · বাংলাদেশ</p>
+    <div class="relative z-10 px-6 sm:px-10 w-full max-w-4xl mx-auto">
+        <p class="hero-eyebrow font-['Cinzel'] text-sm sm:text-lg font-semibold tracking-[.3em] sm:tracking-[.5em] text-black uppercase mb-6" data-en>Kuakata · Bay of Bengal · Bangladesh</p>
+        <p class="hero-eyebrow font-['Cinzel'] text-sm sm:text-lg font-semibold tracking-[.3em] sm:tracking-[.5em] text-black uppercase mb-6" data-bn style="display:none">কুয়াকাটা · বঙ্গোপসাগর · বাংলাদেশ</p>
 
-        <h1 class="hero-title font-['Cinzel'] font-normal leading-none text-white tracking-[.05em] mb-2" style="font-size:clamp(52px,10vw,120px)">
+        <h1 class="hero-title font-['Cinzel'] font-normal leading-none text-white tracking-[.05em] mb-2" style="font-size:clamp(48px,10vw,120px)">
             HOTEL<br><span class="italic font-['Cormorant_Garamond']" style="color:var(--gold)">Jana</span>
         </h1>
 
-        <p class="hero-subtitle font-['Cormorant_Garamond'] italic font-light mb-12 tracking-[.05em]" style="font-size:clamp(16px,2.5vw,26px);color:rgba(232,220,200,.75)" data-en>Where the horizon bows and the sea whispers eternity.</p>
-        <p class="hero-subtitle font-['Tiro_Bangla'] font-light mb-12" style="font-size:clamp(16px,2.5vw,26px);color:rgba(232,220,200,.75)" data-bn style="display:none">যেখানে দিগন্ত নতজানু হয়, সমুদ্র বলে অনন্তকালের কথা।</p>
+        <p class="hero-subtitle font-['Cormorant_Garamond'] italic font-light mb-8 sm:mb-12 tracking-[.05em]" style="font-size:clamp(15px,2.5vw,26px);color:rgba(232,220,200,.75)" data-en>Where the horizon bows and the sea whispers eternity.</p>
+        <p class="hero-subtitle font-['Tiro_Bangla'] font-light mb-8 sm:mb-12" style="font-size:clamp(15px,2.5vw,26px);color:rgba(232,220,200,.75); display:none" data-bn>যেখানে দিগন্ত নতজানু হয়, সমুদ্র বলে অনন্তকালের কথা।</p>
 
-        <div class="hero-cta flex gap-5 justify-center flex-wrap">
-            <a href="form.html" class="btn-gold"><span data-en>Claim Your Share</span><span data-bn style="display:none">আপনার শেয়ার নিন</span></a>
-            <a href="#story" class="btn-outline" data-en>Discover the Vision</a>
-            <a href="#story" class="btn-outline" data-bn style="display:none">আমাদের স্বপ্ন জানুন</a>
+        <div class="hero-cta flex flex-col sm:flex-row gap-4 sm:gap-5 justify-center items-center flex-wrap">
+            <a href="form.html" class="btn-gold w-full sm:w-auto text-center"><span data-en>Claim Your Share</span><span data-bn style="display:none">আপনার শেয়ার নিন</span></a>
+            <a href="#story" class="btn-outline w-full sm:w-auto text-center" data-en>Discover the Vision</a>
+            <a href="#story" class="btn-outline w-full sm:w-auto text-center" data-bn style="display:none">আমাদের স্বপ্ন জানুন</a>
         </div>
     </div>
 
@@ -230,15 +282,15 @@
 </section>
 
 <!-- ===== STORY ===== -->
-<section id="story" class="min-h-screen relative overflow-hidden flex items-center py-28">
+<section id="story" class="min-h-screen relative overflow-hidden flex items-center py-20 lg:py-28">
     <div class="story-bg"></div>
     <div class="story-overlay"></div>
     <div class="sunrise-glow"></div>
 
-    <div class="story-inner relative z-10 max-w-[1300px] mx-auto px-12 grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
+    <div class="story-inner relative z-10 max-w-[1300px] mx-auto px-6 sm:px-10 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center py-16 lg:py-0">
         <div>
             <div class="flex items-center gap-4 mb-5 font-['Cinzel'] text-[10px] tracking-[.5em] uppercase before:block before:w-10 before:h-px reveal" style="color:var(--gold);--tw-content:''" data-en>The Genesis</div>
-            <div class="flex items-center gap-4 mb-5 font-['Cinzel'] text-[10px] tracking-[.5em] uppercase reveal" style="color:var(--gold)" data-bn style="display:none">আমাদের যাত্রা</div>
+            <div class="flex items-center gap-4 mb-5 font-['Cinzel'] text-[10px] tracking-[.5em] uppercase reveal" style="color:var(--gold); display:none" data-bn>আমাদের যাত্রা</div>
 
             <h2 class="font-['Cinzel'] font-normal leading-[1.15] mb-6 reveal" style="font-size:clamp(32px,5vw,60px);color:var(--cream)">
                 <span data-en>A Dream Rising<br>from the <em class="font-['Cormorant_Garamond'] italic" style="color:var(--gold)">Golden Shore</em></span>
@@ -252,15 +304,15 @@
             </div>
 
             <p class="font-['Cormorant_Garamond'] text-xl font-light leading-[1.9] mb-5 reveal" style="color:rgba(232,220,200,.7)" data-en>Kuakata — one of earth's rarest gifts. A beach where the sun is born from the sea at dawn and surrenders to it at dusk. This is not a place; it is an experience of a lifetime. And at its heart, Hotel Jana rises — a 4-star monument to refinement, crafted by Alliance Builders Ltd. for those who seek the extraordinary.</p>
-            <p class="font-['Tiro_Bangla'] text-[17px] font-light leading-[1.9] mb-5 reveal" style="color:rgba(232,220,200,.7)" data-bn style="display:none">কুয়াকাটা — পৃথিবীর বিরলতম উপহারগুলির একটি। একটি সৈকত যেখানে ভোরে সমুদ্র থেকে সূর্যের জন্ম হয় এবং সন্ধ্যায় সমুদ্রেই অস্ত যায়। এটি শুধু একটি জায়গা নয়, এটি জীবনের একটি অনুভূতি। আর সেখানেই উঠে দাঁড়াচ্ছে হোটেল জানা — একটি ৪ স্টার আবাসন।</p>
+            <p class="font-['Tiro_Bangla'] text-[17px] font-light leading-[1.9] mb-5 reveal" style="color:rgba(232,220,200,.7); display:none" data-bn>কুয়াকাটা — পৃথিবীর বিরলতম উপহারগুলির একটি। একটি সৈকত যেখানে ভোরে সমুদ্র থেকে সূর্যের জন্ম হয় এবং সন্ধ্যায় সমুদ্রেই অস্ত যায়। এটি শুধু একটি জায়গা নয়, এটি জীবনের একটি অনুভূতি। আর সেখানেই উঠে দাঁড়াচ্ছে হোটেল জানা — একটি ৪ স্টার আবাসন।</p>
 
             <p class="font-['Cormorant_Garamond'] text-xl font-light leading-[1.9] mb-5 reveal" style="color:rgba(232,220,200,.7)" data-en>This is not merely a hotel. It is a legacy. A stake in Hotel Jana is a stake in the future of luxury hospitality in Bangladesh — and an invitation to own a piece of paradise.</p>
-            <p class="font-['Tiro_Bangla'] text-[17px] font-light leading-[1.9] mb-5 reveal" style="color:rgba(232,220,200,.7)" data-bn style="display:none">এটি শুধু একটি হোটেল নয়। এটি একটি উত্তরাধিকার। হোটেল জানায় একটি শেয়ার মানে বাংলাদেশের বিলাসবহুল আতিথেয়তার ভবিষ্যতে একটি অংশ।</p>
+            <p class="font-['Tiro_Bangla'] text-[17px] font-light leading-[1.9] mb-5 reveal" style="color:rgba(232,220,200,.7); display:none" data-bn>এটি শুধু একটি হোটেল নয়। এটি একটি উত্তরাধিকার। হোটেল জানায় একটি শেয়ার মানে বাংলাদেশের বিলাসবহুল আতিথেয়তার ভবিষ্যতে একটি অংশ।</p>
 
-            <div class="flex gap-12 mt-12 reveal">
-                <div><div class="font-['Cinzel'] text-5xl font-normal leading-none" style="color:var(--gold)">4★</div><div class="font-['Cormorant_Garamond'] text-sm tracking-[.1em] uppercase mt-1" style="color:rgba(232,220,200,.5)" data-en>International Standard</div><div class="font-['Tiro_Bangla'] text-sm mt-1" style="color:rgba(232,220,200,.5)" data-bn style="display:none">আন্তর্জাতিক মান</div></div>
-                <div><div class="font-['Cinzel'] text-5xl font-normal leading-none" style="color:var(--gold)">264</div><div class="font-['Cormorant_Garamond'] text-sm tracking-[.1em] uppercase mt-1" style="color:rgba(232,220,200,.5)" data-en>Luxury Rooms</div><div class="font-['Tiro_Bangla'] text-sm mt-1" style="color:rgba(232,220,200,.5)" data-bn style="display:none">বিলাসবহুল কক্ষ</div></div>
-                <div><div class="font-['Cinzel'] text-5xl font-normal leading-none" style="color:var(--gold)">12</div><div class="font-['Cormorant_Garamond'] text-sm tracking-[.1em] uppercase mt-1" style="color:rgba(232,220,200,.5)" data-en>Floor Tower</div><div class="font-['Tiro_Bangla'] text-sm mt-1" style="color:rgba(232,220,200,.5)" data-bn style="display:none">তলা ভবন</div></div>
+            <div class="flex gap-6 sm:gap-12 mt-12 reveal">
+                <div><div class="font-['Cinzel'] text-5xl font-normal leading-none" style="color:var(--gold)">4★</div><div class="font-['Cormorant_Garamond'] text-sm tracking-[.1em] uppercase mt-1" style="color:rgba(232,220,200,.5)" data-en>International Standard</div><div class="font-['Tiro_Bangla'] text-sm mt-1" style="color:rgba(232,220,200,.5); display:none" data-bn>আন্তর্জাতিক মান</div></div>
+                <div><div class="font-['Cinzel'] text-5xl font-normal leading-none" style="color:var(--gold)">264</div><div class="font-['Cormorant_Garamond'] text-sm tracking-[.1em] uppercase mt-1" style="color:rgba(232,220,200,.5)" data-en>Luxury Rooms</div><div class="font-['Tiro_Bangla'] text-sm mt-1" style="color:rgba(232,220,200,.5); display:none" data-bn>বিলাসবহুল কক্ষ</div></div>
+                <div><div class="font-['Cinzel'] text-5xl font-normal leading-none" style="color:var(--gold)">12</div><div class="font-['Cormorant_Garamond'] text-sm tracking-[.1em] uppercase mt-1" style="color:rgba(232,220,200,.5)" data-en>Floor Tower</div><div class="font-['Tiro_Bangla'] text-sm mt-1" style="color:rgba(232,220,200,.5); display:none" data-bn>তলা ভবন</div></div>
             </div>
         </div>
 
@@ -273,11 +325,11 @@
 </section>
 
 <!-- ===== GALLERY ===== -->
-<section id="gallery" class="min-h-screen relative overflow-hidden py-20" style="background:#050A14">
-    <div class="relative z-10 max-w-[1400px] mx-auto px-12">
+<section id="gallery" class="min-h-screen relative overflow-hidden py-16 sm:py-20" style="background:#050A14">
+    <div class="relative z-10 max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12">
         <div class="text-center mb-16">
             <div class="flex items-center justify-center gap-4 mb-5 font-['Cinzel'] text-[10px] tracking-[.5em] uppercase reveal" style="color:var(--gold)" data-en>Visual Journey</div>
-            <div class="flex items-center justify-center gap-4 mb-5 font-['Cinzel'] text-[10px] tracking-[.5em] uppercase reveal" style="color:var(--gold)" data-bn style="display:none">দৃশ্যের যাত্রা</div>
+            <div class="flex items-center justify-center gap-4 mb-5 font-['Cinzel'] text-[10px] tracking-[.5em] uppercase reveal" style="color:var(--gold); display:none" data-bn>দৃশ্যের যাত্রা</div>
             <h2 class="font-['Cinzel'] font-normal leading-[1.15] text-center reveal" style="font-size:clamp(32px,5vw,60px);color:var(--cream)">
                 <span data-en>A World Unlike Any Other</span>
                 <span data-bn style="display:none">অন্য কোনো জগতের মতো নয়</span>
@@ -320,18 +372,18 @@
 </section>
 
 <!-- ===== BENEFITS ===== -->
-<section id="benefits" class="min-h-screen relative overflow-hidden py-28" style="background:var(--ocean-dark)">
+<section id="benefits" class="min-h-screen relative overflow-hidden py-16 sm:py-20 lg:py-28" style="background:var(--ocean-dark)">
     <div class="benefits-bg"></div>
-    <div class="relative z-10 max-w-[1300px] mx-auto px-12">
+    <div class="relative z-10 max-w-[1300px] mx-auto px-4 sm:px-8 lg:px-12">
         <div class="text-center mb-20">
             <div class="inline-block px-6 py-2 mb-6 font-['Cinzel'] text-[10px] tracking-[.4em] uppercase border" style="background:linear-gradient(135deg,rgba(40,172,226,.15),rgba(40,172,226,.05));border-color:rgba(40,172,226,.3);color:var(--gold)" data-en>Ownership Benefits</div>
-            <div class="inline-block px-6 py-2 mb-6 font-['Tiro_Bangla'] text-[10px] tracking-[.4em] uppercase border" style="background:linear-gradient(135deg,rgba(40,172,226,.15),rgba(40,172,226,.05));border-color:rgba(40,172,226,.3);color:var(--gold)" data-bn style="display:none">মালিকানার সুবিধা</div>
+            <div class="inline-block px-6 py-2 mb-6 font-['Tiro_Bangla'] text-[10px] tracking-[.4em] uppercase border" style="background:linear-gradient(135deg,rgba(40,172,226,.15),rgba(40,172,226,.05));border-color:rgba(40,172,226,.3);color:var(--gold); display:none" data-bn>মালিকানার সুবিধা</div>
             <h2 class="font-['Cinzel'] font-normal leading-[1.15] reveal" style="font-size:clamp(32px,5vw,60px);color:var(--cream)">
                 <span data-en>Twelve Reasons to Own<br>a Piece of <em class="font-['Cormorant_Garamond'] italic" style="color:var(--gold)">Paradise</em></span>
                 <span data-bn style="display:none">স্বর্গের একটুকরো কেনার<br><em class="font-['Cormorant_Garamond'] italic" style="color:var(--gold)">বারোটি কারণ</em></span>
             </h2>
             <p class="font-['Cormorant_Garamond'] text-xl font-light leading-[1.9] mt-4 mx-auto max-w-[600px] reveal" style="color:rgba(232,220,200,.7)" data-en>A share in Hotel Jana is not an expense. It is the most intelligent investment of your lifetime — yielding both financial returns and unparalleled experiences.</p>
-            <p class="font-['Tiro_Bangla'] text-[17px] font-light leading-[1.9] mt-4 mx-auto max-w-[600px] reveal" style="color:rgba(232,220,200,.7)" data-bn style="display:none">হোটেল জানায় একটি শেয়ার কোনো ব্যয় নয়। এটি আপনার জীবনের সবচেয়ে বুদ্ধিমান বিনিয়োগ।</p>
+            <p class="font-['Tiro_Bangla'] text-[17px] font-light leading-[1.9] mt-4 mx-auto max-w-[600px] reveal" style="color:rgba(232,220,200,.7); display:none" data-bn>হোটেল জানায় একটি শেয়ার কোনো ব্যয় নয়। এটি আপনার জীবনের সবচেয়ে বুদ্ধিমান বিনিয়োগ।</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[2px]">
@@ -345,124 +397,124 @@
                 <div class="font-['Cinzel'] text-[11px] tracking-[.3em] mb-4" style="color:rgba(40,172,226,.4)">01</div>
                 <span class="text-[32px] block mb-5" style="filter:sepia(1) saturate(2) hue-rotate(15deg)">💰</span>
                 <div class="font-['Cinzel'] text-sm tracking-[.1em] font-medium mb-3" style="color:var(--gold)" data-en>Discounted Acquisition</div>
-                <div class="font-['Tiro_Bangla'] text-[15px] font-medium mb-3" style="color:var(--gold)" data-bn style="display:none">ছাড়ে মালিকানা ক্রয়</div>
+                <div class="font-['Tiro_Bangla'] text-[15px] font-medium mb-3" style="color:var(--gold); display:none" data-bn>ছাড়ে মালিকানা ক্রয়</div>
                 <div class="font-['Cormorant_Garamond'] text-[17px] font-light leading-[1.7]" style="color:rgba(232,220,200,.6)" data-en>Spot booking price of ৳4,00,000 against the listed share value of ৳5,00,000 — a 20% exclusive discount at launch.</div>
-                <div class="font-['Tiro_Bangla'] text-sm font-light leading-[1.8]" style="color:rgba(232,220,200,.6)" data-bn style="display:none">প্রতিটি শেয়ারের মূল্য ৳৫,০০,০০০ এর বিপরীতে স্পট বুকিং মূল্য মাত্র ৳৪,০০,০০০ — ২০% বিশেষ ছাড়।</div>
+                <div class="font-['Tiro_Bangla'] text-sm font-light leading-[1.8]" style="color:rgba(232,220,200,.6); display:none" data-bn>প্রতিটি শেয়ারের মূল্য ৳৫,০০,০০০ এর বিপরীতে স্পট বুকিং মূল্য মাত্র ৳৪,০০,০০০ — ২০% বিশেষ ছাড়।</div>
             </div>
             <div class="benefit-card relative overflow-hidden p-11 border backdrop-blur-[10px] transition-all duration-[400ms] reveal" style="background:rgba(13,33,55,.4);border-color:rgba(40,172,226,.1)">
                 <div class="benefit-card-shine"></div>
                 <div class="font-['Cinzel'] text-[11px] tracking-[.3em] mb-4" style="color:rgba(40,172,226,.4)">02</div>
                 <span class="text-[32px] block mb-5" style="filter:sepia(1) saturate(2) hue-rotate(15deg)">📈</span>
                 <div class="font-['Cinzel'] text-sm tracking-[.1em] font-medium mb-3" style="color:var(--gold)" data-en>Annual Dividend Income</div>
-                <div class="font-['Tiro_Bangla'] text-[15px] font-medium mb-3" style="color:var(--gold)" data-bn style="display:none">বার্ষিক আয়</div>
+                <div class="font-['Tiro_Bangla'] text-[15px] font-medium mb-3" style="color:var(--gold); display:none" data-bn>বার্ষিক আয়</div>
                 <div class="font-['Cormorant_Garamond'] text-[17px] font-light leading-[1.7]" style="color:rgba(232,220,200,.6)" data-en>Earn approximately ৳60,000 per share annually — guaranteed, interest-free passive income.</div>
-                <div class="font-['Tiro_Bangla'] text-sm font-light leading-[1.8]" style="color:rgba(232,220,200,.6)" data-bn style="display:none">প্রতি বছর প্রতিটি শেয়ারে প্রায় ৬০ হাজার টাকা নিশ্চিত সুদ মুক্ত আয়ের সুযোগ।</div>
+                <div class="font-['Tiro_Bangla'] text-sm font-light leading-[1.8]" style="color:rgba(232,220,200,.6); display:none" data-bn>প্রতি বছর প্রতিটি শেয়ারে প্রায় ৬০ হাজার টাকা নিশ্চিত সুদ মুক্ত আয়ের সুযোগ।</div>
             </div>
             <div class="benefit-card relative overflow-hidden p-11 border backdrop-blur-[10px] transition-all duration-[400ms] reveal" style="background:rgba(13,33,55,.4);border-color:rgba(40,172,226,.1)">
                 <div class="benefit-card-shine"></div>
                 <div class="font-['Cinzel'] text-[11px] tracking-[.3em] mb-4" style="color:rgba(40,172,226,.4)">03</div>
                 <span class="text-[32px] block mb-5" style="filter:sepia(1) saturate(2) hue-rotate(15deg)">🔄</span>
                 <div class="font-['Cinzel'] text-sm tracking-[.1em] font-medium mb-3" style="color:var(--gold)" data-en>10% Annual Return Guarantee</div>
-                <div class="font-['Tiro_Bangla'] text-[15px] font-medium mb-3" style="color:var(--gold)" data-bn style="display:none">১০% মুনাফাসহ রিটার্ন</div>
+                <div class="font-['Tiro_Bangla'] text-[15px] font-medium mb-3" style="color:var(--gold); display:none" data-bn>১০% মুনাফাসহ রিটার্ন</div>
                 <div class="font-['Cormorant_Garamond'] text-[17px] font-light leading-[1.7]" style="color:rgba(232,220,200,.6)" data-en>The company guarantees the buyback of your share at any time with 10% annual profit included.</div>
-                <div class="font-['Tiro_Bangla'] text-sm font-light leading-[1.8]" style="color:rgba(232,220,200,.6)" data-bn style="display:none">মালিকানা ক্রয়ের পর যেকোনো সময় বার্ষিক ১০% মুনাফাসহ টাকা ফেরত নেওয়ার সুবিধা।</div>
+                <div class="font-['Tiro_Bangla'] text-sm font-light leading-[1.8]" style="color:rgba(232,220,200,.6); display:none" data-bn>মালিকানা ক্রয়ের পর যেকোনো সময় বার্ষিক ১০% মুনাফাসহ টাকা ফেরত নেওয়ার সুবিধা।</div>
             </div>
             <div class="benefit-card relative overflow-hidden p-11 border backdrop-blur-[10px] transition-all duration-[400ms] reveal" style="background:rgba(13,33,55,.4);border-color:rgba(40,172,226,.1)">
                 <div class="benefit-card-shine"></div>
                 <div class="font-['Cinzel'] text-[11px] tracking-[.3em] mb-4" style="color:rgba(40,172,226,.4)">04</div>
                 <span class="text-[32px] block mb-5" style="filter:sepia(1) saturate(2) hue-rotate(15deg)">📜</span>
                 <div class="font-['Cinzel'] text-sm tracking-[.1em] font-medium mb-3" style="color:var(--gold)" data-en>Land &amp; Building Registration</div>
-                <div class="font-['Tiro_Bangla'] text-[15px] font-medium mb-3" style="color:var(--gold)" data-bn style="display:none">জমি ও বিল্ডিং সাব-কবলা</div>
+                <div class="font-['Tiro_Bangla'] text-[15px] font-medium mb-3" style="color:var(--gold); display:none" data-bn>জমি ও বিল্ডিং সাব-কবলা</div>
                 <div class="font-['Cormorant_Garamond'] text-[17px] font-light leading-[1.7]" style="color:rgba(232,220,200,.6)" data-en>Receive sub-kabala registration of 2 sq.ft. land and 17 sq.ft. building space — total 19 sq.ft. in your name.</div>
-                <div class="font-['Tiro_Bangla'] text-sm font-light leading-[1.8]" style="color:rgba(232,220,200,.6)" data-bn style="display:none">২ স্কয়ার ফিট জমি ও ১৭ স্কয়ার ফিট বিল্ডিং — মোট ১৯ স্কয়ার ফিট সাব-কবলা রেজিস্ট্রেশন পাবেন।</div>
+                <div class="font-['Tiro_Bangla'] text-sm font-light leading-[1.8]" style="color:rgba(232,220,200,.6); display:none" data-bn>২ স্কয়ার ফিট জমি ও ১৭ স্কয়ার ফিট বিল্ডিং — মোট ১৯ স্কয়ার ফিট সাব-কবলা রেজিস্ট্রেশন পাবেন।</div>
             </div>
             <div class="benefit-card relative overflow-hidden p-11 border backdrop-blur-[10px] transition-all duration-[400ms] reveal" style="background:rgba(13,33,55,.4);border-color:rgba(40,172,226,.1)">
                 <div class="benefit-card-shine"></div>
                 <div class="font-['Cinzel'] text-[11px] tracking-[.3em] mb-4" style="color:rgba(40,172,226,.4)">05</div>
                 <span class="text-[32px] block mb-5" style="filter:sepia(1) saturate(2) hue-rotate(15deg)">🏖️</span>
                 <div class="font-['Cinzel'] text-sm tracking-[.1em] font-medium mb-3" style="color:var(--gold)" data-en>Complimentary Stay</div>
-                <div class="font-['Tiro_Bangla'] text-[15px] font-medium mb-3" style="color:var(--gold)" data-bn style="display:none">বিনামূল্যে থাকার সুযোগ</div>
+                <div class="font-['Tiro_Bangla'] text-[15px] font-medium mb-3" style="color:var(--gold); display:none" data-bn>বিনামূল্যে থাকার সুযোগ</div>
                 <div class="font-['Cormorant_Garamond'] text-[17px] font-light leading-[1.7]" style="color:rgba(232,220,200,.6)" data-en>Enjoy 3 days and 2 nights complimentary accommodation per year, plus family discounts throughout the year.</div>
-                <div class="font-['Tiro_Bangla'] text-sm font-light leading-[1.8]" style="color:rgba(232,220,200,.6)" data-bn style="display:none">বছরে তিন দিন দুই রাত বিনামূল্যে থাকার সুযোগ এবং পরিবারের জন্য সারা বছর বিশেষ ছাড়।</div>
+                <div class="font-['Tiro_Bangla'] text-sm font-light leading-[1.8]" style="color:rgba(232,220,200,.6); display:none" data-bn>বছরে তিন দিন দুই রাত বিনামূল্যে থাকার সুযোগ এবং পরিবারের জন্য সারা বছর বিশেষ ছাড়।</div>
             </div>
             <div class="benefit-card relative overflow-hidden p-11 border backdrop-blur-[10px] transition-all duration-[400ms] reveal" style="background:rgba(13,33,55,.4);border-color:rgba(40,172,226,.1)">
                 <div class="benefit-card-shine"></div>
                 <div class="font-['Cinzel'] text-[11px] tracking-[.3em] mb-4" style="color:rgba(40,172,226,.4)">06</div>
                 <span class="text-[32px] block mb-5" style="filter:sepia(1) saturate(2) hue-rotate(15deg)">💳</span>
                 <div class="font-['Cinzel'] text-sm tracking-[.1em] font-medium mb-3" style="color:var(--gold)" data-en>Exclusive Reward Card</div>
-                <div class="font-['Tiro_Bangla'] text-[15px] font-medium mb-3" style="color:var(--gold)" data-bn style="display:none">রিওয়ার্ড কার্ড</div>
+                <div class="font-['Tiro_Bangla'] text-[15px] font-medium mb-3" style="color:var(--gold); display:none" data-bn>রিওয়ার্ড কার্ড</div>
                 <div class="font-['Cormorant_Garamond'] text-[17px] font-light leading-[1.7]" style="color:rgba(232,220,200,.6)" data-en>A personal Reward Card granting special discounts across all hotel services, dining, and spa.</div>
-                <div class="font-['Tiro_Bangla'] text-sm font-light leading-[1.8]" style="color:rgba(232,220,200,.6)" data-bn style="display:none">রিওয়ার্ড কার্ডে সকল সার্ভিসে বিশেষ ছাড় পাবেন।</div>
+                <div class="font-['Tiro_Bangla'] text-sm font-light leading-[1.8]" style="color:rgba(232,220,200,.6); display:none" data-bn>রিওয়ার্ড কার্ডে সকল সার্ভিসে বিশেষ ছাড় পাবেন।</div>
             </div>
             <div class="benefit-card relative overflow-hidden p-11 border backdrop-blur-[10px] transition-all duration-[400ms] reveal" style="background:rgba(13,33,55,.4);border-color:rgba(40,172,226,.1)">
                 <div class="benefit-card-shine"></div>
                 <div class="font-['Cinzel'] text-[11px] tracking-[.3em] mb-4" style="color:rgba(40,172,226,.4)">07</div>
                 <span class="text-[32px] block mb-5" style="filter:sepia(1) saturate(2) hue-rotate(15deg)">🚀</span>
                 <div class="font-['Cinzel'] text-sm tracking-[.1em] font-medium mb-3" style="color:var(--gold)" data-en>Asset Appreciation</div>
-                <div class="font-['Tiro_Bangla'] text-[15px] font-medium mb-3" style="color:var(--gold)" data-bn style="display:none">সম্পদের মূল্যবৃদ্ধি</div>
+                <div class="font-['Tiro_Bangla'] text-[15px] font-medium mb-3" style="color:var(--gold); display:none" data-bn>সম্পদের মূল্যবৃদ্ধি</div>
                 <div class="font-['Cormorant_Garamond'] text-[17px] font-light leading-[1.7]" style="color:rgba(232,220,200,.6)" data-en>Hotel shares appreciate 5 to 6 times faster than conventional real estate — a superior wealth creation vehicle.</div>
-                <div class="font-['Tiro_Bangla'] text-sm font-light leading-[1.8]" style="color:rgba(232,220,200,.6)" data-bn style="display:none">অন্যান্য সম্পদের তুলনায় ৫/৬ গুণ বেশি মূল্যবৃদ্ধির সুযোগ।</div>
+                <div class="font-['Tiro_Bangla'] text-sm font-light leading-[1.8]" style="color:rgba(232,220,200,.6); display:none" data-bn>অন্যান্য সম্পদের তুলনায় ৫/৬ গুণ বেশি মূল্যবৃদ্ধির সুযোগ।</div>
             </div>
             <div class="benefit-card relative overflow-hidden p-11 border backdrop-blur-[10px] transition-all duration-[400ms] reveal" style="background:rgba(13,33,55,.4);border-color:rgba(40,172,226,.1)">
                 <div class="benefit-card-shine"></div>
                 <div class="font-['Cinzel'] text-[11px] tracking-[.3em] mb-4" style="color:rgba(40,172,226,.4)">08</div>
                 <span class="text-[32px] block mb-5" style="filter:sepia(1) saturate(2) hue-rotate(15deg)">🏛️</span>
                 <div class="font-['Cinzel'] text-sm tracking-[.1em] font-medium mb-3" style="color:var(--gold)" data-en>Board Directorship</div>
-                <div class="font-['Tiro_Bangla'] text-[15px] font-medium mb-3" style="color:var(--gold)" data-bn style="display:none">বোর্ড অব ডিরেক্টর</div>
+                <div class="font-['Tiro_Bangla'] text-[15px] font-medium mb-3" style="color:var(--gold); display:none" data-bn>বোর্ড অব ডিরেক্টর</div>
                 <div class="font-['Cormorant_Garamond'] text-[17px] font-light leading-[1.7]" style="color:rgba(232,220,200,.6)" data-en>Acquire 50 or more shares and earn a prestigious seat on the Board of Directors of Hotel Jana.</div>
-                <div class="font-['Tiro_Bangla'] text-sm font-light leading-[1.8]" style="color:rgba(232,220,200,.6)" data-bn style="display:none">৫০টি শেয়ার ক্রয়ের মাধ্যমে বোর্ড অব ডিরেক্টরের সদস্য হওয়ার সুযোগ।</div>
+                <div class="font-['Tiro_Bangla'] text-sm font-light leading-[1.8]" style="color:rgba(232,220,200,.6); display:none" data-bn>৫০টি শেয়ার ক্রয়ের মাধ্যমে বোর্ড অব ডিরেক্টরের সদস্য হওয়ার সুযোগ।</div>
             </div>
             <div class="benefit-card relative overflow-hidden p-11 border backdrop-blur-[10px] transition-all duration-[400ms] reveal" style="background:rgba(13,33,55,.4);border-color:rgba(40,172,226,.1)">
                 <div class="benefit-card-shine"></div>
                 <div class="font-['Cinzel'] text-[11px] tracking-[.3em] mb-4" style="color:rgba(40,172,226,.4)">09</div>
                 <span class="text-[32px] block mb-5" style="filter:sepia(1) saturate(2) hue-rotate(15deg)">🏗️</span>
                 <div class="font-['Cinzel'] text-sm tracking-[.1em] font-medium mb-3" style="color:var(--gold)" data-en>Flexible Payment</div>
-                <div class="font-['Tiro_Bangla'] text-[15px] font-medium mb-3" style="color:var(--gold)" data-bn style="display:none">কিস্তি সুবিধা</div>
+                <div class="font-['Tiro_Bangla'] text-[15px] font-medium mb-3" style="color:var(--gold); display:none" data-bn>কিস্তি সুবিধা</div>
                 <div class="font-['Cormorant_Garamond'] text-[17px] font-light leading-[1.7]" style="color:rgba(232,220,200,.6)" data-en>Convenient monthly instalment options available for hotel share acquisition.</div>
-                <div class="font-['Tiro_Bangla'] text-sm font-light leading-[1.8]" style="color:rgba(232,220,200,.6)" data-bn style="display:none">হোটেলে মালিকানা ক্রয়ে মাসিক দীর্ঘমেয়াদি কিস্তির সুবিধা।</div>
+                <div class="font-['Tiro_Bangla'] text-sm font-light leading-[1.8]" style="color:rgba(232,220,200,.6); display:none" data-bn>হোটেলে মালিকানা ক্রয়ে মাসিক দীর্ঘমেয়াদি কিস্তির সুবিধা।</div>
             </div>
             <div class="benefit-card relative overflow-hidden p-11 border backdrop-blur-[10px] transition-all duration-[400ms] reveal" style="background:rgba(13,33,55,.4);border-color:rgba(40,172,226,.1)">
                 <div class="benefit-card-shine"></div>
                 <div class="font-['Cinzel'] text-[11px] tracking-[.3em] mb-4" style="color:rgba(40,172,226,.4)">10</div>
                 <span class="text-[32px] block mb-5" style="filter:sepia(1) saturate(2) hue-rotate(15deg)">👑</span>
                 <div class="font-['Cinzel'] text-sm tracking-[.1em] font-medium mb-3" style="color:var(--gold)" data-en>Social Prestige</div>
-                <div class="font-['Tiro_Bangla'] text-[15px] font-medium mb-3" style="color:var(--gold)" data-bn style="display:none">সামাজিক মর্যাদা</div>
+                <div class="font-['Tiro_Bangla'] text-[15px] font-medium mb-3" style="color:var(--gold); display:none" data-bn>সামাজিক মর্যাদা</div>
                 <div class="font-['Cormorant_Garamond'] text-[17px] font-light leading-[1.7]" style="color:rgba(232,220,200,.6)" data-en>Elevate your social standing. Hotel Jana ownership is a symbol of achievement and a prestigious lifestyle.</div>
-                <div class="font-['Tiro_Bangla'] text-sm font-light leading-[1.8]" style="color:rgba(232,220,200,.6)" data-bn style="display:none">সামাজিক মর্যাদাসহ প্রেস্টিজিয়াস লাইফ উপভোগ করুন।</div>
+                <div class="font-['Tiro_Bangla'] text-sm font-light leading-[1.8]" style="color:rgba(232,220,200,.6); display:none" data-bn>সামাজিক মর্যাদাসহ প্রেস্টিজিয়াস লাইফ উপভোগ করুন।</div>
             </div>
             <div class="benefit-card relative overflow-hidden p-11 border backdrop-blur-[10px] transition-all duration-[400ms] reveal" style="background:rgba(13,33,55,.4);border-color:rgba(40,172,226,.1)">
                 <div class="benefit-card-shine"></div>
                 <div class="font-['Cinzel'] text-[11px] tracking-[.3em] mb-4" style="color:rgba(40,172,226,.4)">11</div>
                 <span class="text-[32px] block mb-5" style="filter:sepia(1) saturate(2) hue-rotate(15deg)">🤝</span>
                 <div class="font-['Cinzel'] text-sm tracking-[.1em] font-medium mb-3" style="color:var(--gold)" data-en>Market Resale Rights</div>
-                <div class="font-['Tiro_Bangla'] text-[15px] font-medium mb-3" style="color:var(--gold)" data-bn style="display:none">পুনরায় বিক্রয়ের সুযোগ</div>
+                <div class="font-['Tiro_Bangla'] text-[15px] font-medium mb-3" style="color:var(--gold); display:none" data-bn>পুনরায় বিক্রয়ের সুযোগ</div>
                 <div class="font-['Cormorant_Garamond'] text-[17px] font-light leading-[1.7]" style="color:rgba(232,220,200,.6)" data-en>Sell your share back to the company at market value — complete liquidity at your discretion.</div>
-                <div class="font-['Tiro_Bangla'] text-sm font-light leading-[1.8]" style="color:rgba(232,220,200,.6)" data-bn style="display:none">বাজার মূল্যে কোম্পানির কাছে পুনরায় মালিকানা বিক্রয়ের সুযোগ।</div>
+                <div class="font-['Tiro_Bangla'] text-sm font-light leading-[1.8]" style="color:rgba(232,220,200,.6); display:none" data-bn>বাজার মূল্যে কোম্পানির কাছে পুনরায় মালিকানা বিক্রয়ের সুযোগ।</div>
             </div>
             <div class="benefit-card relative overflow-hidden p-11 border backdrop-blur-[10px] transition-all duration-[400ms] reveal" style="background:rgba(13,33,55,.4);border-color:rgba(40,172,226,.1)">
                 <div class="benefit-card-shine"></div>
                 <div class="font-['Cinzel'] text-[11px] tracking-[.3em] mb-4" style="color:rgba(40,172,226,.4)">12</div>
                 <span class="text-[32px] block mb-5" style="filter:sepia(1) saturate(2) hue-rotate(15deg)">🌿</span>
                 <div class="font-['Cinzel'] text-sm tracking-[.1em] font-medium mb-3" style="color:var(--gold)" data-en>Hereditary Transfer</div>
-                <div class="font-['Tiro_Bangla'] text-[15px] font-medium mb-3" style="color:var(--gold)" data-bn style="display:none">বংশপরম্পরায় মালিকানা</div>
+                <div class="font-['Tiro_Bangla'] text-[15px] font-medium mb-3" style="color:var(--gold); display:none" data-bn>বংশপরম্পরায় মালিকানা</div>
                 <div class="font-['Cormorant_Garamond'] text-[17px] font-light leading-[1.7]" style="color:rgba(232,220,200,.6)" data-en>Your ownership is transferable through generations — a true family legacy, built in paradise.</div>
-                <div class="font-['Tiro_Bangla'] text-sm font-light leading-[1.8]" style="color:rgba(232,220,200,.6)" data-bn style="display:none">বংশ পরম্পরায় মালিকানা পরিবর্তনের সুবিধা — একটি সত্যিকারের পারিবারিক উত্তরাধিকার।</div>
+                <div class="font-['Tiro_Bangla'] text-sm font-light leading-[1.8]" style="color:rgba(232,220,200,.6); display:none" data-bn>বংশ পরম্পরায় মালিকানা পরিবর্তনের সুবিধা — একটি সত্যিকারের পারিবারিক উত্তরাধিকার।</div>
             </div>
         </div>
 
         <div class="text-center mt-16 reveal">
-            <a href="form.html" class="btn-gold"><span data-en>Begin Your Ownership Journey</span><span data-bn style="display:none">মালিকানার যাত্রা শুরু করুন</span></a>
+            <a href="form.html" class="btn-gold w-full sm:w-auto text-center"><span data-en>Begin Your Ownership Journey</span><span data-bn style="display:none">মালিকানার যাত্রা শুরু করুন</span></a>
         </div>
     </div>
 </section>
 
 <!-- ===== AMENITIES ===== -->
-<section id="amenities" class="min-h-screen relative overflow-hidden py-28" style="background:#04080F">
+<section id="amenities" class="min-h-screen relative overflow-hidden py-16 sm:py-20 lg:py-28" style="background:#04080F">
     <div class="amenities-bg"></div>
-    <div class="relative z-10 max-w-[1300px] mx-auto px-12">
+    <div class="relative z-10 max-w-[1300px] mx-auto px-4 sm:px-8 lg:px-12">
         <div class="text-center mb-20">
             <div class="flex items-center justify-center gap-4 mb-5 font-['Cinzel'] text-[10px] tracking-[.5em] uppercase reveal" style="color:var(--gold)" data-en>World-Class Facilities</div>
-            <div class="flex items-center justify-center gap-4 mb-5 font-['Tiro_Bangla'] text-[10px] tracking-[.5em] uppercase reveal" style="color:var(--gold)" data-bn style="display:none">বিশ্বমানের সুবিধা সমূহ</div>
+            <div class="flex items-center justify-center gap-4 mb-5 font-['Tiro_Bangla'] text-[10px] tracking-[.5em] uppercase reveal" style="color:var(--gold); display:none" data-bn>বিশ্বমানের সুবিধা সমূহ</div>
             <h2 class="font-['Cinzel'] font-normal leading-[1.15] text-center reveal" style="font-size:clamp(32px,5vw,60px);color:var(--cream)">
                 <span data-en>Every Desire. Every Detail.<br><em class="font-['Cormorant_Garamond'] italic" style="color:var(--gold)">Delivered.</em></span>
                 <span data-bn style="display:none">প্রতিটি ইচ্ছা। প্রতিটি বিস্তারিত।<br><em class="font-['Cormorant_Garamond'] italic" style="color:var(--gold)">পরিপূর্ণ।</em></span>
@@ -471,36 +523,36 @@
 
         <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-[3px]">
             <!-- amenity items -->
-            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] z-auto hover:z-[1] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="amenity-icon text-[28px] transition-transform duration-300 hover:scale-[1.2]">🛏️</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>264 Rooms</div><div class="font-['Tiro_Bangla'] text-[20px] leading-[1.4]" style="color:rgba(40,172,226,.7)" data-bn style="display:none">২৬৪ টি রুম</div></div>
-            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">🍹</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Juice Bar</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7)" data-bn style="display:none">জুস বার</div></div>
-            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">💆</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Jacuzzi</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7)" data-bn style="display:none">জেড স্পা</div></div>
-            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">🏊</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Rooftop Pool</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7)" data-bn style="display:none">রুফটপ সুইমিং পুল</div></div>
-            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">🍽️</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Lounge</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7)" data-bn style="display:none">লঞ্জ</div></div>
-            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">🐴</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Horse Riding</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7)" data-bn style="display:none">হর্স রাইডিং</div></div>
-            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">🚁</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Helipad</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7)" data-bn style="display:none">হেলিপ্যাড</div></div>
-            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">📋</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Meeting Rooms</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7)" data-bn style="display:none">মিটিং রুম</div></div>
-            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">🎡</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Kids Play Zone</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7)" data-bn style="display:none">চিলড্রেন প্লে জোন</div></div>
-            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">🎭</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Hall Room</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7)" data-bn style="display:none">হল রুম</div></div>
-            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">☀️</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Sun Bath</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7)" data-bn style="display:none">সান বাথ</div></div>
-            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">🍖</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>BBQ Corner</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7)" data-bn style="display:none">বার বি কিউ</div></div>
-            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">🎬</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Cinema</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7)" data-bn style="display:none">সিনেপ্লেক্স</div></div>
-            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">🚐</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Transport</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7)" data-bn style="display:none">ট্রান্সপোর্ট</div></div>
-            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">🍴</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Restaurant</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7)" data-bn style="display:none">রেস্তুরেন্ট</div></div>
-            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">💅</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Spa</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7)" data-bn style="display:none">স্পা</div></div>
-            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">🏄</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Beach Games</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7)" data-bn style="display:none">বিচ গেমস</div></div>
+            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] z-auto hover:z-[1] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="amenity-icon text-[28px] transition-transform duration-300 hover:scale-[1.2]">🛏️</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>264 Rooms</div><div class="font-['Tiro_Bangla'] text-[20px] leading-[1.4]" style="color:rgba(40,172,226,.7); display:none" data-bn>২৬৪ টি রুম</div></div>
+            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">🍹</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Juice Bar</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7); display:none" data-bn>জুস বার</div></div>
+            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">💆</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Jacuzzi</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7); display:none" data-bn>জেড স্পা</div></div>
+            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">🏊</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Rooftop Pool</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7); display:none" data-bn>রুফটপ সুইমিং পুল</div></div>
+            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">🍽️</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Lounge</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7); display:none" data-bn>লঞ্জ</div></div>
+            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">🐴</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Horse Riding</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7); display:none" data-bn>হর্স রাইডিং</div></div>
+            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">🚁</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Helipad</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7); display:none" data-bn>হেলিপ্যাড</div></div>
+            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">📋</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Meeting Rooms</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7); display:none" data-bn>মিটিং রুম</div></div>
+            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">🎡</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Kids Play Zone</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7); display:none" data-bn>চিলড্রেন প্লে জোন</div></div>
+            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">🎭</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Hall Room</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7); display:none" data-bn>হল রুম</div></div>
+            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">☀️</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Sun Bath</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7); display:none" data-bn>সান বাথ</div></div>
+            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">🍖</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>BBQ Corner</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7); display:none" data-bn>বার বি কিউ</div></div>
+            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">🎬</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Cinema</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7); display:none" data-bn>সিনেপ্লেক্স</div></div>
+            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">🚐</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Transport</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7); display:none" data-bn>ট্রান্সপোর্ট</div></div>
+            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">🍴</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Restaurant</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7); display:none" data-bn>রেস্তুরেন্ট</div></div>
+            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">💅</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Spa</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7); display:none" data-bn>স্পা</div></div>
+            <div class="amenity-item aspect-square flex flex-col items-center justify-center gap-3 relative overflow-hidden p-6 text-center border transition-all duration-[400ms] hover:scale-[1.03] reveal" style="background:rgba(13,33,55,.3);border-color:rgba(40,172,226,.08)"><span class="text-[28px]">🏄</span><div class="font-['Cinzel'] text-[16px] tracking-[.15em] uppercase leading-[1.3]" style="color:rgba(40,172,226,.7)" data-en>Beach Games</div><div class="font-['Tiro_Bangla'] text-[20px]" style="color:rgba(40,172,226,.7); display:none" data-bn>বিচ গেমস</div></div>
         </div>
 
         <p class="text-center mt-10 font-['Cormorant_Garamond'] text-lg italic reveal" style="color:rgba(232,220,200,.45)" data-en>And countless more luxuries to be unveiled. Hotel Jana hands over in December 2030.</p>
-        <p class="text-center mt-10 font-['Tiro_Bangla'] text-[15px] reveal" style="color:rgba(232,220,200,.45)" data-bn style="display:none">ইত্যাদি সহ আরও অনেক কিছু। হোটেলটি হস্তান্তর হবে ডিসেম্বর ২০৩০ সালে।</p>
+        <p class="text-center mt-10 font-['Tiro_Bangla'] text-[15px] reveal" style="color:rgba(232,220,200,.45); display:none" data-bn>ইত্যাদি সহ আরও অনেক কিছু। হোটেলটি হস্তান্তর হবে ডিসেম্বর ২০৩০ সালে।</p>
     </div>
 </section>
 
 <!-- ===== PRIVILEGE ===== -->
-<section id="privilege" class="min-h-screen relative overflow-hidden py-28" style="background:var(--ocean-dark)">
+<section id="privilege" class="min-h-screen relative overflow-hidden py-16 sm:py-20 lg:py-28" style="background:var(--ocean-dark)">
     <div class="privilege-bg"></div>
-    <div class="relative z-10 max-w-[1300px] mx-auto px-12 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+    <div class="relative z-10 max-w-[1300px] mx-auto px-4 sm:px-8 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 items-center">
 
-        <div class="privilege-cards-wrap relative reveal-left" style="width:420px;height:265px">
+        <div class="privilege-cards-wrap relative reveal-left mx-auto" style="width:420px;height:265px;max-width:100%">
             <!-- BACK CARD -->
             <div class="priv-card priv-back absolute flex flex-col justify-between overflow-hidden rounded-2xl p-7" style="width:420px;height:265px;top:80px;left:140px;z-index:2;filter:brightness(.85);background:linear-gradient(135deg,#0773bb 0%,#28ace2 35%,#4fc3f0 55%,#28ace2 75%,#0773bb 100%);box-shadow:0 20px 60px rgba(0,0,0,.5),0 0 40px rgba(40,172,226,.15);transition:transform .4s ease">
                 <div class="privilege-card-shine"></div>
@@ -512,15 +564,15 @@
                     <li class="priv-term flex gap-2 items-baseline py-[5px] border-b font-['Cormorant_Garamond'] text-sm leading-[1.4]" style="color:rgba(10,15,30,.75);border-color:rgba(10,15,30,.1)" data-en>10% Discount — In-room Dining Service</li>
                     <li class="priv-term flex gap-2 items-baseline py-[5px] border-b font-['Cormorant_Garamond'] text-sm leading-[1.4]" style="color:rgba(10,15,30,.75);border-color:rgba(10,15,30,.1)" data-en>Not valid for banqueting or special events</li>
                     <li class="priv-term flex gap-2 items-baseline py-[5px] font-['Cormorant_Garamond'] text-sm leading-[1.4]" style="color:rgba(10,15,30,.75)" data-en>Blackout dates as defined by the hotel apply</li>
-                    <li class="priv-term flex gap-2 items-baseline py-[5px] border-b font-['Tiro_Bangla'] text-sm" style="color:rgba(10,15,30,.75);border-color:rgba(10,15,30,.1)" data-bn style="display:none">রুম ট্যারিফে ২৫% ছাড়</li>
-                    <li class="priv-term flex gap-2 items-baseline py-[5px] border-b font-['Tiro_Bangla'] text-sm" style="color:rgba(10,15,30,.75);border-color:rgba(10,15,30,.1)" data-bn style="display:none">রেস্তুরেন্ট ও অর্ডারে ২৫% ছাড়</li>
-                    <li class="priv-term flex gap-2 items-baseline py-[5px] border-b font-['Tiro_Bangla'] text-sm" style="color:rgba(10,15,30,.75);border-color:rgba(10,15,30,.1)" data-bn style="display:none">আয়ুর্বেদিক স্পায় ১৫% ছাড়</li>
-                    <li class="priv-term flex gap-2 items-baseline py-[5px] border-b font-['Tiro_Bangla'] text-sm" style="color:rgba(10,15,30,.75);border-color:rgba(10,15,30,.1)" data-bn style="display:none">ইন-রুম ডাইনিংয়ে ১০% ছাড়</li>
-                    <li class="priv-term flex gap-2 items-baseline py-[5px] font-['Tiro_Bangla'] text-sm" style="color:rgba(10,15,30,.75)" data-bn style="display:none">ব্যাংকোয়েটিং বা বিশেষ অনুষ্ঠানে প্রযোজ্য নয়</li>
+                    <li class="priv-term flex gap-2 items-baseline py-[5px] border-b font-['Tiro_Bangla'] text-sm" style="color:rgba(10,15,30,.75);border-color:rgba(10,15,30,.1); display:none" data-bn>রুম ট্যারিফে ২৫% ছাড়</li>
+                    <li class="priv-term flex gap-2 items-baseline py-[5px] border-b font-['Tiro_Bangla'] text-sm" style="color:rgba(10,15,30,.75);border-color:rgba(10,15,30,.1); display:none" data-bn>রেস্তুরেন্ট ও অর্ডারে ২৫% ছাড়</li>
+                    <li class="priv-term flex gap-2 items-baseline py-[5px] border-b font-['Tiro_Bangla'] text-sm" style="color:rgba(10,15,30,.75);border-color:rgba(10,15,30,.1); display:none" data-bn>আয়ুর্বেদিক স্পায় ১৫% ছাড়</li>
+                    <li class="priv-term flex gap-2 items-baseline py-[5px] border-b font-['Tiro_Bangla'] text-sm" style="color:rgba(10,15,30,.75);border-color:rgba(10,15,30,.1); display:none" data-bn>ইন-রুম ডাইনিংয়ে ১০% ছাড়</li>
+                    <li class="priv-term flex gap-2 items-baseline py-[5px] font-['Tiro_Bangla'] text-sm" style="color:rgba(10,15,30,.75); display:none" data-bn>ব্যাংকোয়েটিং বা বিশেষ অনুষ্ঠানে প্রযোজ্য নয়</li>
                 </ul>
                 <div class="priv-contact-bar flex flex-wrap gap-x-4 gap-y-1.5 mt-1 rounded-md p-2" style="background:rgba(255,255,255,.25)">
                     <span class="font-['Cinzel'] text-[9px] tracking-[.05em]" style="color:rgba(10,15,30,.65)">+88 01896 204401</span>
-                    <span class="font-['Cinzel'] text-[9px] tracking-[.05em]" style="color:rgba(10,15,30,.65)">asad@alliancebuildersltd.org</span>
+                    <span class="font-['Cinzel'] text-[9px] tracking-[.05em]" style="color:rgba(10,15,30,.65)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="7c1d0f1d183c1d1010151d121f191e09151018190e0f10081852130e1b">[email&#160;protected]</a></span>
                     <span class="font-['Cinzel'] text-[9px] tracking-[.05em]" style="color:rgba(10,15,30,.65)">www.alliancebuilders.org</span>
                 </div>
             </div>
@@ -544,17 +596,17 @@
 
         <div class="reveal-right">
             <div class="flex items-center gap-4 mb-5 font-['Cinzel'] text-[10px] tracking-[.5em] uppercase" style="color:var(--gold)" data-en>The Privilege Card</div>
-            <div class="flex items-center gap-4 mb-5 font-['Tiro_Bangla'] text-[10px] tracking-[.5em] uppercase" style="color:var(--gold)" data-bn style="display:none">প্রিভিলেজ কার্ড</div>
+            <div class="flex items-center gap-4 mb-5 font-['Tiro_Bangla'] text-[10px] tracking-[.5em] uppercase" style="color:var(--gold); display:none" data-bn>প্রিভিলেজ কার্ড</div>
             <h2 class="font-['Cinzel'] font-normal leading-[1.15] mb-6" style="font-size:clamp(32px,5vw,60px);color:var(--cream)">
                 <span data-en>Your Key to a Life of<br><em class="font-['Cormorant_Garamond'] italic" style="color:var(--gold)">Unlimited Privilege</em></span>
                 <span data-bn style="display:none">সীমাহীন সুবিধার<br><em class="font-['Cormorant_Garamond'] italic" style="color:var(--gold)">জীবনের চাবিকাঠি</em></span>
             </h2>
             <div class="my-7 pl-7 py-6 font-['Cormorant_Garamond'] text-[22px] italic leading-[1.6]" style="background:rgba(40,172,226,.06);border-left:2px solid var(--gold);color:rgba(232,220,200,.8)" data-en>"Every share you own opens a door to privileges that money alone cannot buy — a life lived at the pinnacle."</div>
-            <div class="my-7 pl-7 py-6 font-['Tiro_Bangla'] text-[16px] leading-[1.6]" style="background:rgba(40,172,226,.06);border-left:2px solid var(--gold);color:rgba(232,220,200,.8)" data-bn style="display:none">"আপনার প্রতিটি শেয়ার এমন সুবিধার দরজা খুলে দেয় যা শুধু অর্থ দিয়ে কেনা যায় না।"</div>
+            <div class="my-7 pl-7 py-6 font-['Tiro_Bangla'] text-[16px] leading-[1.6]" style="background:rgba(40,172,226,.06);border-left:2px solid var(--gold);color:rgba(232,220,200,.8); display:none" data-bn>"আপনার প্রতিটি শেয়ার এমন সুবিধার দরজা খুলে দেয় যা শুধু অর্থ দিয়ে কেনা যায় না।"</div>
             <p class="font-['Cormorant_Garamond'] text-xl font-light leading-[1.9]" style="color:rgba(232,220,200,.7)" data-en>As a Hotel Jana shareholder, you receive a personal Privilege Card — your golden key to a world of curated luxury, reserved only for those who have claimed their place among the elite.</p>
-            <p class="font-['Tiro_Bangla'] text-[17px] font-light leading-[1.9]" style="color:rgba(232,220,200,.7)" data-bn style="display:none">হোটেল জানার শেয়ারহোল্ডার হিসেবে আপনি পাবেন একটি ব্যক্তিগত প্রিভিলেজ কার্ড।</p>
+            <p class="font-['Tiro_Bangla'] text-[17px] font-light leading-[1.9]" style="color:rgba(232,220,200,.7); display:none" data-bn>হোটেল জানার শেয়ারহোল্ডার হিসেবে আপনি পাবেন একটি ব্যক্তিগত প্রিভিলেজ কার্ড।</p>
             <div class="mt-9">
-                <a href="form.html" class="btn-gold"><span data-en>Claim Your Privilege</span><span data-bn style="display:none">আপনার সুবিধা নিন</span></a>
+                <a href="form.html" class="btn-gold w-full sm:w-auto text-center"><span data-en>Claim Your Privilege</span><span data-bn style="display:none">আপনার সুবিধা নিন</span></a>
             </div>
         </div>
     </div>
@@ -564,7 +616,7 @@
 <section id="invest" class="min-h-screen relative overflow-hidden flex items-center justify-center text-center">
     <div class="invest-bg"></div>
     <div class="invest-overlay"></div>
-    <div class="relative z-10 px-12 py-20">
+    <div class="relative z-10 px-4 sm:px-10 lg:px-12 py-16 sm:py-20 w-full max-w-5xl mx-auto">
         <div class="reveal">
             <div class="flex items-center justify-center gap-4 mb-8">
                 <div class="gold-divider-line"></div>
@@ -573,7 +625,7 @@
             </div>
         </div>
         <p class="font-['Cormorant_Garamond'] italic font-light leading-[1.3] mx-auto mb-6 reveal" style="font-size:clamp(28px,5vw,64px);color:var(--cream);max-width:900px" data-en>"The sun rises from the sea here — and so does your fortune."</p>
-        <p class="font-['Tiro_Bangla'] font-light leading-[1.5] mx-auto mb-6 reveal" style="font-size:clamp(20px,3.5vw,42px);color:var(--cream);max-width:900px" data-bn style="display:none">"এখানে সূর্য সমুদ্র থেকে উদয় হয় — আর তেমনিভাবে উদয় হয় আপনার ভাগ্যও।"</p>
+        <p class="font-['Tiro_Bangla'] font-light leading-[1.5] mx-auto mb-6 reveal" style="font-size:clamp(20px,3.5vw,42px);color:var(--cream);max-width:900px; display:none" data-bn>"এখানে সূর্য সমুদ্র থেকে উদয় হয় — আর তেমনিভাবে উদয় হয় আপনার ভাগ্যও।"</p>
 
         <div class="flex justify-center items-baseline gap-4 my-12 reveal">
             <span class="font-['Cinzel'] text-[28px] line-through" style="color:rgba(232,220,200,.4)">৳5,00,000</span>
@@ -582,22 +634,22 @@
         </div>
 
         <div class="inline-block px-5 py-2 mb-12 font-['Cinzel'] text-[11px] tracking-[.3em] reveal" style="background:var(--gold);color:var(--deep-navy)" data-en>✦ SPOT BOOKING — 20% EXCLUSIVE DISCOUNT ✦</div>
-        <div class="inline-block px-5 py-2 mb-12 font-['Tiro_Bangla'] text-[11px] tracking-[.3em] reveal" style="background:var(--gold);color:var(--deep-navy)" data-bn style="display:none">✦ স্পট বুকিং — ২০% বিশেষ ছাড় ✦</div>
+        <div class="inline-block px-5 py-2 mb-12 font-['Tiro_Bangla'] text-[11px] tracking-[.3em] reveal" style="background:var(--gold);color:var(--deep-navy); display:none" data-bn>✦ স্পট বুকিং — ২০% বিশেষ ছাড় ✦</div>
 
         <p class="font-['Cormorant_Garamond'] text-[22px] italic mx-auto mb-12 reveal" style="color:rgba(232,220,200,.6);max-width:600px" data-en>Limited shares. Unlimited legacy. The sea does not wait — and neither should you.</p>
-        <p class="font-['Tiro_Bangla'] text-[17px] mx-auto mb-12 reveal" style="color:rgba(232,220,200,.6);max-width:600px" data-bn style="display:none">সীমিত শেয়ার। অসীম উত্তরাধিকার। সমুদ্র অপেক্ষা করে না।</p>
+        <p class="font-['Tiro_Bangla'] text-[17px] mx-auto mb-12 reveal" style="color:rgba(232,220,200,.6);max-width:600px; display:none" data-bn>সীমিত শেয়ার। অসীম উত্তরাধিকার। সমুদ্র অপেক্ষা করে না।</p>
 
-        <div class="flex gap-5 justify-center flex-wrap reveal">
-            <a href="form.html" class="btn-gold"><span data-en>Reserve My Share Now</span><span data-bn style="display:none">এখনই শেয়ার সংরক্ষণ করুন</span></a>
-            <a href="tel:+8801994045693" class="btn-outline" data-en>Speak to an Advisor</a>
-            <a href="tel:+8801994045693" class="btn-outline" data-bn style="display:none">পরামর্শকের সাথে কথা বলুন</a>
+        <div class="flex flex-col sm:flex-row gap-4 sm:gap-5 justify-center items-center flex-wrap reveal">
+            <a href="form.html" class="btn-gold w-full sm:w-auto text-center"><span data-en>Reserve My Share Now</span><span data-bn style="display:none">এখনই শেয়ার সংরক্ষণ করুন</span></a>
+            <a href="tel:+8801994045693" class="btn-outline w-full sm:w-auto text-center" data-en>Speak to an Advisor</a>
+            <a href="tel:+8801994045693" class="btn-outline w-full sm:w-auto text-center" data-bn style="display:none">পরামর্শকের সাথে কথা বলুন</a>
         </div>
     </div>
 </section>
 
 <!-- ===== BRAND ===== -->
-<section id="brand" class="min-h-screen relative overflow-hidden py-24" style="background:#04080F">
-    <div class="relative z-10 max-w-[1300px] mx-auto px-12">
+<section id="brand" class="min-h-screen relative overflow-hidden py-16 sm:py-20 lg:py-24" style="background:#04080F">
+    <div class="relative z-10 max-w-[1300px] mx-auto px-4 sm:px-8 lg:px-12">
         <div class="text-center mb-16">
             <div class="inline-flex items-center gap-3 px-6 py-2.5 mb-8 font-['Cinzel'] text-[11px] tracking-[.3em] border reveal" style="background:rgba(40,172,226,.06);border-color:rgba(40,172,226,.2);color:var(--gold)">
                 <span>✦</span>
@@ -610,7 +662,7 @@
                 <span data-bn style="display:none">উৎকর্ষতার <em class="font-['Cormorant_Garamond'] italic" style="color:var(--gold)">উত্তরাধিকার</em></span>
             </h2>
             <p class="font-['Cormorant_Garamond'] text-xl font-light leading-[1.9] mt-4 mx-auto max-w-[600px] text-center reveal" style="color:rgba(232,220,200,.7)" data-en>Hotel Jana is brought to you by Alliance Group — a family of six distinguished companies committed to building Bangladesh's future.</p>
-            <p class="font-['Tiro_Bangla'] text-[17px] font-light leading-[1.9] mt-4 mx-auto max-w-[600px] text-center reveal" style="color:rgba(232,220,200,.7)" data-bn style="display:none">হোটেল জানা আপনার কাছে নিয়ে এসেছে অ্যালায়েন্স গ্রুপ — ছয়টি বিশিষ্ট কোম্পানির একটি পরিবার।</p>
+            <p class="font-['Tiro_Bangla'] text-[17px] font-light leading-[1.9] mt-4 mx-auto max-w-[600px] text-center reveal" style="color:rgba(232,220,200,.7); display:none" data-bn>হোটেল জানা আপনার কাছে নিয়ে এসেছে অ্যালায়েন্স গ্রুপ — ছয়টি বিশিষ্ট কোম্পানির একটি পরিবার।</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[2px]">
@@ -626,17 +678,17 @@
 
         <div class="text-center pb-5 reveal">
             <p class="font-['Cormorant_Garamond'] text-[18px] tracking-[.1em]" style="color:rgba(232,220,200,.45)" data-en>www.alliancebuilders.org &nbsp;·&nbsp; www.hoteljanabd.com</p>
-            <p class="font-['Tiro_Bangla'] text-[15px] mt-1" style="color:rgba(232,220,200,.45)" data-bn style="display:none">www.alliancebuilders.org &nbsp;·&nbsp; www.hoteljanabd.com</p>
+            <p class="font-['Tiro_Bangla'] text-[15px] mt-1" style="color:rgba(232,220,200,.45); display:none" data-bn>www.alliancebuilders.org &nbsp;·&nbsp; www.hoteljanabd.com</p>
         </div>
     </div>
 </section>
 
 <!-- ===== CONTACT ===== -->
-<div id="contact" class="py-15 px-12 border-t" style="background:rgba(40,172,226,.06);border-color:rgba(40,172,226,.2)">
-    <div class="max-w-[1300px] mx-auto grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-12 items-center">
+<div id="contact" class="py-12 px-6 sm:px-10 lg:px-12 border-t" style="background:rgba(40,172,226,.06);border-color:rgba(40,172,226,.2)">
+    <div class="max-w-[1300px] mx-auto grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-8 md:gap-12 items-center text-center md:text-left">
         <div class="contact-info">
             <div class="font-['Cinzel'] text-[10px] tracking-[.4em] uppercase mb-3" style="color:var(--gold)" data-en>Head Office</div>
-            <div class="font-['Cinzel'] text-[10px] tracking-[.4em] uppercase mb-3" style="color:var(--gold)" data-bn style="display:none">প্রধান কার্যালয়</div>
+            <div class="font-['Cinzel'] text-[10px] tracking-[.4em] uppercase mb-3" style="color:var(--gold); display:none" data-bn>প্রধান কার্যালয়</div>
             <div class="contact-value font-['Cormorant_Garamond'] text-[15px] leading-[2]" style="color:rgba(232,220,200,.7)">
                 Ahmud Villa, House #640 (1st Floor)<br>West Kazipara, Mirpur, Dhaka-1216
             </div>
@@ -644,21 +696,48 @@
         <div class="text-center">
             <span class="font-['Cinzel'] text-[28px] tracking-[.3em] block mb-2" style="color:var(--gold)">JANA</span>
             <span class="font-['Cormorant_Garamond'] text-[13px] tracking-[.15em]" style="color:rgba(232,220,200,.4)" data-en>WHERE THE BAY MEETS INFINITY</span>
-            <span class="font-['Tiro_Bangla'] text-[13px] tracking-[.15em]" style="color:rgba(232,220,200,.4)" data-bn style="display:none">যেখানে সমুদ্র মিলিত হয় অনন্তের সাথে</span>
+            <span class="font-['Tiro_Bangla'] text-[13px] tracking-[.15em]" style="color:rgba(232,220,200,.4); display:none" data-bn>যেখানে সমুদ্র মিলিত হয় অনন্তের সাথে</span>
         </div>
-        <div class="contact-info text-right">
+        <div class="contact-info text-center md:text-right">
             <div class="font-['Cinzel'] text-[10px] tracking-[.4em] uppercase mb-3" style="color:var(--gold)" data-en>Contact</div>
-            <div class="font-['Cinzel'] text-[10px] tracking-[.4em] uppercase mb-3" style="color:var(--gold)" data-bn style="display:none">যোগাযোগ</div>
+            <div class="font-['Cinzel'] text-[10px] tracking-[.4em] uppercase mb-3" style="color:var(--gold); display:none" data-bn>যোগাযোগ</div>
             <div class="contact-value font-['Cormorant_Garamond'] text-[15px] leading-[2]" style="color:rgba(232,220,200,.7)">
                 <a href="tel:+8801994045693">+88 01994 045693</a><br>
                 <a href="tel:+8801994045705">+88 01994 045705</a><br>
-                <a href="mailto:asad@alliancebuildersltd.org">asad@alliancebuildersltd.org</a>
+                <a href="/cdn-cgi/l/email-protection#bddccedcd9fddcd1d1d4dcd3ded8dfc8d4d1d9d8cfced1c9d993d2cfda"><span class="__cf_email__" data-cfemail="38594b595c785954545159565b5d5a4d51545c5d4a4b544c5c16574a5f">[email&#160;protected]</span></a>
             </div>
         </div>
     </div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    // HAMBURGER MENU
+    let menuOpen = false;
+    function toggleMenu() {
+        menuOpen = !menuOpen;
+        const menu = document.getElementById('mobileMenu');
+        const bar1 = document.getElementById('bar1');
+        const bar2 = document.getElementById('bar2');
+        const bar3 = document.getElementById('bar3');
+        if (menuOpen) {
+            menu.style.opacity = '1';
+            menu.style.pointerEvents = 'auto';
+            bar1.style.transform = 'translateY(6px) rotate(45deg)';
+            bar2.style.opacity = '0';
+            bar3.style.transform = 'translateY(-6px) rotate(-45deg)';
+            bar3.style.width = '100%';
+            document.body.style.overflow = 'hidden';
+        } else {
+            menu.style.opacity = '0';
+            menu.style.pointerEvents = 'none';
+            bar1.style.transform = '';
+            bar2.style.opacity = '1';
+            bar3.style.transform = '';
+            bar3.style.width = '75%';
+            document.body.style.overflow = '';
+        }
+    }
+
     // CUSTOM CURSOR
     const cursor = document.getElementById('cursor');
     const cursorRing = document.getElementById('cursorRing');
@@ -711,11 +790,13 @@
     // SMOOTH SCROLL
     document.querySelectorAll('a[href^="#"]').forEach(a => { a.addEventListener('click', e => { const target = document.querySelector(a.getAttribute('href')); if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); } }); });
 
-    // CARD 3D TILT
-    document.querySelectorAll('.benefit-card').forEach(card => {
-        card.addEventListener('mousemove', e => { const rect = card.getBoundingClientRect(); const x = (e.clientX - rect.left) / rect.width - 0.5; const y = (e.clientY - rect.top) / rect.height - 0.5; card.style.transform = `perspective(600px) rotateY(${x*8}deg) rotateX(${-y*8}deg) scale(1.02)`; });
-        card.addEventListener('mouseleave', () => { card.style.transform = ''; });
-    });
+    // CARD 3D TILT (desktop/hover devices only)
+    if (window.matchMedia('(hover: hover)').matches) {
+        document.querySelectorAll('.benefit-card').forEach(card => {
+            card.addEventListener('mousemove', e => { const rect = card.getBoundingClientRect(); const x = (e.clientX - rect.left) / rect.width - 0.5; const y = (e.clientY - rect.top) / rect.height - 0.5; card.style.transform = `perspective(600px) rotateY(${x*8}deg) rotateX(${-y*8}deg) scale(1.02)`; });
+            card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+        });
+    }
 </script>
 </body>
 </html>
