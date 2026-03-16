@@ -129,6 +129,8 @@
             obj.cus_email = document.getElementById('email').value;
             obj.cus_amount = parseInt(document.getElementById('totalprice').textContent.replace(/,/g, ''));
             obj.cus_addr1 = document.getElementById('address').value;
+            obj.cus_unit = document.getElementById('count').value;
+            obj.cus_unitprice = parseInt(document.getElementById('unitprice').textContent.replace(/,/g, ''));
 
             $('#sslczPayBtn').prop('postdata', obj);
         });

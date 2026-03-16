@@ -2,14 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\QRProcessor;
 use App\Helpers\TransactionIdHelper;
+use App\Mail\PaymentConfirmationMail;
+use App\Mail\PaymentReceiveConfirmationMail;
 use App\Models\Invoice;
+use App\Models\Submission;
 use App\Models\Transaction;
 use App\Services\Payment\MoneyReceiptGenerator;
+use Barryvdh\DomPDF\Facade\Pdf;
 use DB;
 use Illuminate\Http\Request;
 use App\Library\SslCommerz\SslCommerzNotification;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class SslCommerzPaymentController extends Controller
 {
@@ -140,8 +146,8 @@ class SslCommerzPaymentController extends Controller
         $post_data['product_profile'] = 'Service';
 
         // OPTIONAL PARAMETERS
-        $post_data['value_a'] = '';
-        $post_data['value_b'] = '';
+        $post_data['value_a'] = $cartData->cus_unitprice;
+        $post_data['value_b'] = $cartData->cus_unit;
         $post_data['value_c'] = '';
         $post_data['value_d'] = 'ref004';
 
@@ -217,8 +223,7 @@ class SslCommerzPaymentController extends Controller
                     'subscription_id' => $request->input('subscription_id'),
                     'risk_level' => $request->input('risk_level'),
                     'risk_title' => $request->input('risk_title'),
-                    'cl_identifier' => $request->input('value_a'),
-                    'cn_identifier' => $request->input('value_b'),
+                    'cn_identifier' => 2,
                 ]);
 
                 $data = [
@@ -236,6 +241,19 @@ class SslCommerzPaymentController extends Controller
                     'invoice_number' => $invoice->invoice_number,
                 ]);
 
+                $data = [
+                    'name' => $request->input('name'),
+                    'email' => $request->input('email'),
+                    'phone' => $request->input('phone'),
+                    'address' => $request->input('address'),
+                    'unit_price' => $request->input('value_a'),
+                    'unit' => $request->input('value_b'),
+                    'total_price' => $request->input('amount'),
+                    'invoice_number' => $invoice->invoice_number,
+                ];
+
+                $submission = Submission::create($data);
+
                 $update_transaction = Transaction::where('transaction_id', $tran_id)->first();
 
                 $invoice = Invoice::where('invoice_number', $update_transaction->invoice_number)->first();
@@ -245,37 +263,53 @@ class SslCommerzPaymentController extends Controller
                     'invoice_status' => $update_transaction->status,
                     'money_receipt_number' => MoneyReceiptGenerator::generate(),
                 ]);
+
+                $downloadUrl = route('invoice-access', [
+                    'token' => $invoice->public_token,
+                ]);
+
+                $qrDataUri = QRProcessor::generate($downloadUrl);
+
+                $pdf = PDF::loadView('content.invoice', ['invoice' => $invoice, 'concern' => $update_transaction->cn_identifier, 'qrDataUri' => $qrDataUri, 'transaction' => $update_transaction, 'unitprice'=> $request->input('value_a'), 'unit'=> $request->input('value_b')])->output();
+
+                Mail::to($update_transaction->email)
+                    ->queue(new PaymentConfirmationMail(base64_encode($pdf), $update_transaction->invoice_number, $update_transaction->cn_identifier, $invoice->money_receipt_number));
+
+                Mail::to(config('portal.email_address.managing_director'))
+                    ->cc(config('portal.email_address.accounts'))
+                    ->bcc(config('portal.email_address.osl'))
+                    ->queue(new PaymentReceiveConfirmationMail(base64_encode($pdf), $update_transaction->invoice_number, $update_transaction->cn_identifier, $invoice->money_receipt_number, $update_transaction->name, $amount, $update_transaction->tran_date, 'Online Payment'));
+
+
+                return redirect()->back()->with('success', [$amount, $update_transaction->invoice_number]);
             }
         } else if ($order_details->status == 'Processing' || $order_details->status == 'Complete') {
-            /*
-             That means through IPN Order status already updated. Now you can just show the customer that transaction is completed. No need to udate database.
-             */
-            echo "Transaction is successfully Completed";
+
+            return redirect()->back()->with('info', 'Transaction already processed');
+//            echo "Transaction is successfully Completed";
         } else {
             #That means something wrong happened. You can redirect customer to your product page.
-            echo "Invalid Transaction";
+            return redirect()->back()->with('cancel', 'Transaction is cancelled');
         }
-
-
     }
 
     public function fail(Request $request)
     {
         $tran_id = $request->input('tran_id');
 
-        $order_details = DB::table('orders')
+        $order_details = DB::table('transactions')
             ->where('transaction_id', $tran_id)
             ->select('transaction_id', 'status', 'currency', 'amount')->first();
 
         if ($order_details->status == 'Pending') {
-            $update_product = DB::table('orders')
+            $update_product = DB::table('transactions')
                 ->where('transaction_id', $tran_id)
                 ->update(['status' => 'Failed']);
-            echo "Transaction is Falied";
+            return redirect()->back()->with('fail', 'Transaction is failed');
         } else if ($order_details->status == 'Processing' || $order_details->status == 'Complete') {
-            echo "Transaction is already Successful";
+            return redirect()->back()->with('info', 'Transaction is already successful');
         } else {
-            echo "Transaction is Invalid";
+            return redirect()->back()->with('error', 'Transaction is invalid');
         }
 
     }
@@ -284,19 +318,24 @@ class SslCommerzPaymentController extends Controller
     {
         $tran_id = $request->input('tran_id');
 
-        $order_details = DB::table('orders')
+        $order_details = DB::table('transactions')
             ->where('transaction_id', $tran_id)
             ->select('transaction_id', 'status', 'currency', 'amount')->first();
 
         if ($order_details->status == 'Pending') {
-            $update_product = DB::table('orders')
+            $update_product = DB::table('transactions')
                 ->where('transaction_id', $tran_id)
-                ->update(['status' => 'Canceled']);
-            echo "Transaction is Cancel";
+                ->update(['status' => 'Cancelled']);
+
+            return redirect()->back()->with('cancel', 'Transaction is cancelled');
+
         } else if ($order_details->status == 'Processing' || $order_details->status == 'Complete') {
-            echo "Transaction is already Successful";
+
+            return redirect()->back()->with('info', 'Transaction is already successful');
+
         } else {
-            echo "Transaction is Invalid";
+
+            return redirect()->back()->with('error', 'Transaction is invalid');
         }
 
 
@@ -304,44 +343,128 @@ class SslCommerzPaymentController extends Controller
 
     public function ipn(Request $request)
     {
-        #Received all the payement information from the gateway
-        if ($request->input('tran_id')) #Check transation id is posted or not.
-        {
-
+        $amount = $request->input('amount');
+        // Received all the payement information from the gateway
+        if ($request->input('tran_id')) { // Check transation id is posted or not.
             $tran_id = $request->input('tran_id');
 
-            #Check order status in order tabel against the transaction id or order id.
-            $order_details = DB::table('orders')
-                ->where('transaction_id', $tran_id)
+            // Check order status in order tabel against the transaction id or order id.
+            $order_details = Transaction::where('transaction_id', $tran_id)
                 ->select('transaction_id', 'status', 'currency', 'amount')->first();
 
             if ($order_details->status == 'Pending') {
-                $sslc = new SslCommerzNotification();
+                $sslc = new SslCommerzNotification;
                 $validation = $sslc->orderValidate($request->all(), $tran_id, $order_details->amount, $order_details->currency);
-                if ($validation == TRUE) {
+                if ($validation == true) {
                     /*
                     That means IPN worked. Here you need to update order status
                     in order table as Processing or Complete.
                     Here you can also sent sms or email for successful transaction to customer
                     */
-                    $update_product = DB::table('orders')
-                        ->where('transaction_id', $tran_id)
-                        ->update(['status' => 'Processing']);
+                    $update_product = Transaction::where('transaction_id', $tran_id)->firstOrFail();
+                    $update_product->update(['status' => 'Processing',
+                        'val_id' => $request->input('val_id'),
+                        'card_type' => $request->input('card_type'),
+                        'store_amount' => $request->input('store_amount'),
+                        'card_no' => $request->input('card_no'),
+                        'bank_tran_id' => $request->input('bank_tran_id'),
+                        'tran_date' => $request->input('tran_date'),
+                        'error' => $request->input('error'),
+                        'currency' => $request->input('currency'),
+                        'card_issuer' => $request->input('card_issuer'),
+                        'card_brand' => $request->input('card_brand'),
+                        'card_sub_brand' => $request->input('card_sub_brand'),
+                        'card_issuer_country' => $request->input('card_issuer_country'),
+                        'card_issuer_country_code' => $request->input('card_issuer_country_code'),
+                        'store_id' => $request->input('store_id'),
+                        'verify_sign' => $request->input('verify_sign'),
+                        'verify_sign_sha2' => $request->input('verify_sign_sha2'),
+                        'currency_type' => $request->input('currency_type'),
+                        'currency_amount' => $request->input('currency_amount'),
+                        'currency_rate' => $request->input('currency_rate'),
+                        'base_fair' => $request->input('base_fair'),
+                        'subscription_id' => $request->input('subscription_id'),
+                        'risk_level' => $request->input('risk_level'),
+                        'risk_title' => $request->input('risk_title'),
+                        'cn_identifier' => 2
+                    ]);
 
-                    echo "Transaction is successfully Completed";
+                    $data = [
+                        'invoice_date' => now()->format('Y-m-d'),
+                        'payment_amount' => $request->input('amount'),
+                        'invoice_status' => 'Processing',
+                        'remarks' => 'Online Payment',
+                        'public_token' => bin2hex(random_bytes(32)),
+                        'public_token_expires_at' => now()->addYears(1),
+                        'public_token_revoked_at' => null,
+                    ];
+
+                    $invoice = Invoice::create($data);
+                    $update_product->update([
+                        'invoice_number' => $invoice->invoice_number,
+                    ]);
+
+                    $data = [
+                        'name' => $request->input('name'),
+                        'email' => $request->input('email'),
+                        'phone' => $request->input('phone'),
+                        'address' => $request->input('address'),
+                        'unit_price' => $request->input('value_a'),
+                        'unit' => $request->input('value_b'),
+                        'total_price' => $request->input('amount'),
+                        'invoice_number' => $invoice->invoice_number,
+                    ];
+
+                    $submission = Submission::create($data);
+
+                    $update_transaction = Transaction::where('transaction_id', $tran_id)->first();
+
+                    $invoice = Invoice::where('invoice_number', $update_transaction->invoice_number)->first();
+
+                    $invoice->update([
+                        'payment_date' => $update_transaction->updated_at->format('Y-m-d'),
+                        'invoice_status' => $update_transaction->status,
+                        'money_receipt_number' => MoneyReceiptGenerator::generate(),
+                    ]);
+
+
+                    $downloadUrl = route('invoice-access', [
+                        'token' => $invoice->public_token,
+                    ]);
+
+                    $downloadUrl = route('invoice-access', [
+                        'token' => $invoice->public_token,
+                    ]);
+
+                    $qrDataUri = QRProcessor::generate($downloadUrl);
+
+                    $pdf = PDF::loadView('content.invoice', ['invoice' => $invoice, 'concern' => $update_transaction->cn_identifier, 'qrDataUri' => $qrDataUri, 'transaction' => $update_transaction, 'unitprice'=> $request->input('value_a'), 'unit'=> $request->input('value_b')])->output();
+
+                    Mail::to($update_transaction->email)
+                        ->queue(new PaymentConfirmationMail(base64_encode($pdf), $update_transaction->invoice_number, $update_transaction->cn_identifier, $invoice->money_receipt_number));
+
+                    Mail::to(config('portal.email_address.managing_director'))
+                        ->cc(config('portal.email_address.accounts'))
+                        ->bcc(config('portal.email_address.osl'))
+                        ->queue(new PaymentReceiveConfirmationMail(base64_encode($pdf), $update_transaction->invoice_number, $update_transaction->cn_identifier, $invoice->money_receipt_number, $update_transaction->name, $amount, $update_transaction->tran_date, 'Online Payment'));
+
+
+                    return response('IPN OK', 200);
                 }
-            } else if ($order_details->status == 'Processing' || $order_details->status == 'Complete') {
 
-                #That means Order status already updated. No need to udate database.
+                return response('SIGNATURE MISMATCH', 400);
+            } elseif ($order_details->status == 'Processing' || $order_details->status == 'Complete') {
 
-                echo "Transaction is already successfully Completed";
+                // That means Order status already updated. No need to udate database.
+
+                return response('ALREADY PROCESSED', 200);
             } else {
-                #That means something wrong happened. You can redirect customer to your product page.
+                // That means something wrong happened. You can redirect customer to your product page.
 
-                echo "Invalid Transaction";
+                return response('INVALID TRANSACTION', 400);
             }
         } else {
-            echo "Invalid Data";
+            return response('INVALID DATA', 400);
         }
     }
 
