@@ -388,9 +388,9 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[2px]">
             <!-- benefit macro — repeated 12× -->
-            {% set benefits = [
-            ['01','💰','Discounted Acquisition','ছাড়ে মালিকানা ক্রয়','Spot booking price of ৳4,00,000 against the listed share value of ৳5,00,000 — a 20% exclusive discount at launch.','প্রতিটি শেয়ারের মূল্য ৳৫,০০,০০০ এর বিপরীতে স্পট বুকিং মূল্য মাত্র ৳৪,০০,০০০ — ২০% বিশেষ ছাড়।'],
-            ] %}
+{{--            {% set benefits = [--}}
+{{--            ['01','💰','Discounted Acquisition','ছাড়ে মালিকানা ক্রয়','Spot booking price of ৳4,00,000 against the listed share value of ৳5,00,000 — a 20% exclusive discount at launch.','প্রতিটি শেয়ারের মূল্য ৳৫,০০,০০০ এর বিপরীতে স্পট বুকিং মূল্য মাত্র ৳৪,০০,০০০ — ২০% বিশেষ ছাড়।'],--}}
+{{--            ] %}--}}
 
             <div class="benefit-card relative overflow-hidden p-11 border backdrop-blur-[10px] transition-all duration-[400ms] reveal" style="background:rgba(13,33,55,.4);border-color:rgba(40,172,226,.1)">
                 <div class="benefit-card-shine"></div>
