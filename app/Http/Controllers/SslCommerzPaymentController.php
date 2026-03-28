@@ -120,7 +120,7 @@ class SslCommerzPaymentController extends Controller
 
         // CUSTOMER INFORMATION
         $post_data['cus_name'] = $cartData->cus_name;
-        $post_data['cus_email'] = $cartData->cus_email;
+        $post_data['cus_email'] = $cartData->cus_email ?? null;
         $post_data['cus_add1'] = $cartData->cus_addr1;
         $post_data['cus_add2'] = '';
         $post_data['cus_city'] = '';
@@ -155,7 +155,7 @@ class SslCommerzPaymentController extends Controller
         $update_product = Transaction::where('transaction_id', $post_data['tran_id'])
             ->updateOrInsert([
                 'name' => $post_data['cus_name'],
-                'email' => $post_data['cus_email'],
+                'email' => $post_data['cus_email'] ?? null,
                 'phone' => $post_data['cus_phone'],
                 'amount' => $post_data['total_amount'],
                 'status' => 'Pending',
@@ -243,7 +243,7 @@ class SslCommerzPaymentController extends Controller
 
                 $data = [
                     'name' => $request->input('name'),
-                    'email' => $request->input('email'),
+                    'email' => $request->input('email') ?? null,
                     'phone' => $request->input('phone'),
                     'address' => $request->input('address'),
                     'unit_price' => $request->input('value_a'),
@@ -272,8 +272,11 @@ class SslCommerzPaymentController extends Controller
 
                 $pdf = PDF::loadView('content.invoice', ['invoice' => $invoice, 'concern' => $update_transaction->cn_identifier, 'qrDataUri' => $qrDataUri, 'transaction' => $update_transaction, 'unitprice'=> $request->input('value_a'), 'unit'=> $request->input('value_b')])->output();
 
-                Mail::to($update_transaction->email)
-                    ->queue(new PaymentConfirmationMail(base64_encode($pdf), $update_transaction->invoice_number, $update_transaction->cn_identifier, $invoice->money_receipt_number));
+                if($request->input('email'))
+                {
+                    Mail::to($update_transaction->email)
+                        ->queue(new PaymentConfirmationMail(base64_encode($pdf), $update_transaction->invoice_number, $update_transaction->cn_identifier, $invoice->money_receipt_number));
+                }
 
                 Mail::to(config('portal.email_address.managing_director'))
                     ->cc(config('portal.email_address.accounts'))
@@ -406,7 +409,7 @@ class SslCommerzPaymentController extends Controller
 
                     $data = [
                         'name' => $request->input('name'),
-                        'email' => $request->input('email'),
+                        'email' => $request->input('email') ?? null,
                         'phone' => $request->input('phone'),
                         'address' => $request->input('address'),
                         'unit_price' => $request->input('value_a'),
@@ -439,6 +442,12 @@ class SslCommerzPaymentController extends Controller
                     $qrDataUri = QRProcessor::generate($downloadUrl);
 
                     $pdf = PDF::loadView('content.invoice', ['invoice' => $invoice, 'concern' => $update_transaction->cn_identifier, 'qrDataUri' => $qrDataUri, 'transaction' => $update_transaction, 'unitprice'=> $request->input('value_a'), 'unit'=> $request->input('value_b')])->output();
+
+                    if($request->input('email'))
+                    {
+                        Mail::to($update_transaction->email)
+                            ->queue(new PaymentConfirmationMail(base64_encode($pdf), $update_transaction->invoice_number, $update_transaction->cn_identifier, $invoice->money_receipt_number));
+                    }
 
                     Mail::to($update_transaction->email)
                         ->queue(new PaymentConfirmationMail(base64_encode($pdf), $update_transaction->invoice_number, $update_transaction->cn_identifier, $invoice->money_receipt_number));
