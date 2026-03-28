@@ -221,7 +221,7 @@
         <a href="#benefits"  class="font-['Cinzel'] text-xs tracking-widest text-white uppercase">Ownership</a>
         <a href="#amenities" class="font-['Cinzel'] text-xs tracking-widest text-white uppercase">Amenities</a>
         <a href="#privilege" class="font-['Cinzel'] text-xs tracking-widest text-white uppercase">Privileges</a>
-        <a href="form.html"  class="font-['Cinzel'] text-xs tracking-widest uppercase px-5 py-2.5 rounded-md border"
+        <a href="form"  class="font-['Cinzel'] text-xs tracking-widest uppercase px-5 py-2.5 rounded-md border"
            style="color:var(--gold);border-color:rgb(40,172,226);background-color:#F7F1E8;">Reserve a Share</a>
     </div>
 
@@ -248,7 +248,7 @@
     <a href="#benefits"  onclick="toggleMenu()" class="font-['Cinzel'] text-2xl tracking-[.3em] uppercase transition-colors" style="color:var(--cream)">Ownership</a>
     <a href="#amenities" onclick="toggleMenu()" class="font-['Cinzel'] text-2xl tracking-[.3em] uppercase transition-colors" style="color:var(--cream)">Amenities</a>
     <a href="#privilege" onclick="toggleMenu()" class="font-['Cinzel'] text-2xl tracking-[.3em] uppercase transition-colors" style="color:var(--cream)">Privileges</a>
-    <div class="mt-4"><a href="form.html" class="btn-gold"><span data-en>Reserve a Share</span><span data-bn style="display:none">শেয়ার বুক করুন</span></a></div>
+    <div class="mt-4"><a href="form" class="btn-gold"><span data-en>Reserve a Share</span><span data-bn style="display:none">শেয়ার বুক করুন</span></a></div>
 </div>
 
 <!-- ===== HERO ===== -->
@@ -269,7 +269,7 @@
         <p class="hero-subtitle font-['Tiro_Bangla'] font-light mb-8 sm:mb-12" style="font-size:clamp(15px,2.5vw,26px);color:rgba(232,220,200,.75); display:none" data-bn>যেখানে দিগন্ত নতজানু হয়, সমুদ্র বলে অনন্তকালের কথা।</p>
 
         <div class="hero-cta flex flex-col sm:flex-row gap-4 sm:gap-5 justify-center items-center flex-wrap">
-            <a href="form.html" class="btn-gold w-full sm:w-auto text-center"><span data-en>Claim Your Share</span><span data-bn style="display:none">আপনার শেয়ার নিন</span></a>
+            <a href="form" class="btn-gold w-full sm:w-auto text-center"><span data-en>Claim Your Share</span><span data-bn style="display:none">আপনার শেয়ার নিন</span></a>
             <a href="#story" class="btn-outline w-full sm:w-auto text-center" data-en>Discover the Vision</a>
             <a href="#story" class="btn-outline w-full sm:w-auto text-center" data-bn style="display:none">আমাদের স্বপ্ন জানুন</a>
         </div>
@@ -503,7 +503,7 @@
         </div>
 
         <div class="text-center mt-16 reveal">
-            <a href="form.html" class="btn-gold w-full sm:w-auto text-center"><span data-en>Begin Your Ownership Journey</span><span data-bn style="display:none">মালিকানার যাত্রা শুরু করুন</span></a>
+            <a href="form" class="btn-gold w-full sm:w-auto text-center"><span data-en>Begin Your Ownership Journey</span><span data-bn style="display:none">মালিকানার যাত্রা শুরু করুন</span></a>
         </div>
     </div>
 </section>
@@ -606,7 +606,7 @@
             <p class="font-['Cormorant_Garamond'] text-xl font-light leading-[1.9]" style="color:rgba(232,220,200,.7)" data-en>As a Hotel Jana shareholder, you receive a personal Privilege Card — your golden key to a world of curated luxury, reserved only for those who have claimed their place among the elite.</p>
             <p class="font-['Tiro_Bangla'] text-[17px] font-light leading-[1.9]" style="color:rgba(232,220,200,.7); display:none" data-bn>হোটেল জানার শেয়ারহোল্ডার হিসেবে আপনি পাবেন একটি ব্যক্তিগত প্রিভিলেজ কার্ড।</p>
             <div class="mt-9">
-                <a href="form.html" class="btn-gold w-full sm:w-auto text-center"><span data-en>Claim Your Privilege</span><span data-bn style="display:none">আপনার সুবিধা নিন</span></a>
+                <a href="form" class="btn-gold w-full sm:w-auto text-center"><span data-en>Claim Your Privilege</span><span data-bn style="display:none">আপনার সুবিধা নিন</span></a>
             </div>
         </div>
     </div>
@@ -640,7 +640,7 @@
         <p class="font-['Tiro_Bangla'] text-[17px] mx-auto mb-12 reveal" style="color:rgba(232,220,200,.6);max-width:600px; display:none" data-bn>সীমিত শেয়ার। অসীম উত্তরাধিকার। সমুদ্র অপেক্ষা করে না।</p>
 
         <div class="flex flex-col sm:flex-row gap-4 sm:gap-5 justify-center items-center flex-wrap reveal">
-            <a href="form.html" class="btn-gold w-full sm:w-auto text-center"><span data-en>Reserve My Share Now</span><span data-bn style="display:none">এখনই শেয়ার সংরক্ষণ করুন</span></a>
+            <a href="form" class="btn-gold w-full sm:w-auto text-center"><span data-en>Reserve My Share Now</span><span data-bn style="display:none">এখনই শেয়ার সংরক্ষণ করুন</span></a>
             <a href="tel:+8801994045693" class="btn-outline w-full sm:w-auto text-center" data-en>Speak to an Advisor</a>
             <a href="tel:+8801994045693" class="btn-outline w-full sm:w-auto text-center" data-bn style="display:none">পরামর্শকের সাথে কথা বলুন</a>
         </div>
