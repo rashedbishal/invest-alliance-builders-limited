@@ -710,6 +710,82 @@
     </div>
 </div>
 
+<!-- SUCCESS MODAL -->
+@if(session('success'))
+    <div id="successModal" class="fixed inset-0 z-[99999] flex items-center justify-center p-6"
+         style="background:rgba(6,13,26,0.92);backdrop-filter:blur(16px)">
+
+        <div class="relative max-w-lg w-full text-center px-10 py-14 border"
+             style="background:rgba(13,33,55,0.9);border-color:rgba(40,172,226,0.3)">
+
+            <!-- Close button -->
+            <button onclick="document.getElementById('successModal').remove()"
+                    class="absolute top-4 right-5 font-['Cinzel'] text-xs tracking-widest"
+                    style="color:rgba(40,172,226,0.5)">✕ CLOSE</button>
+
+            <!-- Icon -->
+            <div class="w-20 h-20 rounded-full border-2 flex items-center justify-center mx-auto mb-8 text-3xl"
+                 style="border-color:var(--gold);animation:successPop 0.6s cubic-bezier(0.68,-0.55,0.27,1.55) forwards">
+                ✦
+            </div>
+
+            <!-- Title -->
+            <h2 class="font-['Cinzel'] text-2xl font-normal mb-3" style="color:var(--gold)">
+                Payment Successful
+            </h2>
+
+            <!-- Amount -->
+            <p class="font-['Cormorant_Garamond'] text-4xl font-light mb-6" style="color:var(--cream)">
+                ৳ {{ number_format(session('success')[0]) }}
+            </p>
+
+            <!-- Invoice number -->
+            <div class="px-6 py-3 mb-8 border" style="background:rgba(40,172,226,0.06);border-color:rgba(40,172,226,0.2)">
+                <span class="font-['Cinzel'] text-[10px] tracking-[.4em] uppercase block mb-1" style="color:rgba(40,172,226,0.6)">Invoice Number</span>
+                <span class="font-['Cinzel'] text-lg" style="color:var(--cream)">{{ session('success')[1] }}</span>
+            </div>
+
+            <p class="font-['Cormorant_Garamond'] text-lg italic mb-8" style="color:rgba(232,220,200,0.6)">
+                A confirmation and invoice has been sent to your email. Welcome to Hotel Jana.
+            </p>
+
+            <button onclick="document.getElementById('successModal').remove()" class="btn-gold">
+                <span>✦ &nbsp; Continue &nbsp; ✦</span>
+            </button>
+        </div>
+    </div>
+@endif
+
+@if(session('info'))
+    <div id="infoModal" class="fixed inset-0 z-[99999] flex items-center justify-center p-6"
+         style="background:rgba(6,13,26,0.85);backdrop-filter:blur(12px)">
+        <div class="relative max-w-md w-full text-center px-10 py-12 border"
+             style="background:rgba(13,33,55,0.9);border-color:rgba(40,172,226,0.2)">
+            <button onclick="document.getElementById('infoModal').remove()"
+                    class="absolute top-4 right-5 font-['Cinzel'] text-xs" style="color:rgba(40,172,226,0.5)">✕</button>
+            <div class="text-4xl mb-6">ℹ️</div>
+            <h2 class="font-['Cinzel'] text-xl mb-4" style="color:var(--gold)">Already Processed</h2>
+            <p class="font-['Cormorant_Garamond'] text-lg mb-8" style="color:rgba(232,220,200,0.6)">{{ session('info') }}</p>
+            <button onclick="document.getElementById('infoModal').remove()" class="btn-outline">Dismiss</button>
+        </div>
+    </div>
+@endif
+
+@if(session('cancel'))
+    <div id="cancelModal" class="fixed inset-0 z-[99999] flex items-center justify-center p-6"
+         style="background:rgba(6,13,26,0.85);backdrop-filter:blur(12px)">
+        <div class="relative max-w-md w-full text-center px-10 py-12 border"
+             style="background:rgba(13,33,55,0.9);border-color:rgba(200,50,50,0.3)">
+            <button onclick="document.getElementById('cancelModal').remove()"
+                    class="absolute top-4 right-5 font-['Cinzel'] text-xs" style="color:rgba(232,220,200,0.4)">✕</button>
+            <div class="text-4xl mb-6">✕</div>
+            <h2 class="font-['Cinzel'] text-xl mb-4" style="color:#f87171">Transaction Cancelled</h2>
+            <p class="font-['Cormorant_Garamond'] text-lg mb-8" style="color:rgba(232,220,200,0.6)">{{ session('cancel') }}</p>
+            <button onclick="document.getElementById('cancelModal').remove()" class="btn-outline">Dismiss</button>
+        </div>
+    </div>
+@endif
+
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     // HAMBURGER MENU
     let menuOpen = false;
