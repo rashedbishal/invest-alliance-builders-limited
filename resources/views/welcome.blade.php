@@ -28,8 +28,8 @@
         body { background:var(--ocean-dark); color:var(--cream); font-family:'Cormorant Garamond',serif; cursor:none; overflow-x:hidden; }
 
         /* ── CURSOR ── */
-        .cursor { position:fixed; width:8px; height:8px; background:var(--gold); border-radius:50%; pointer-events:none; z-index:99999; transform:translate(-50%,-50%); transition:width .3s,height .3s,opacity .3s; mix-blend-mode:difference; }
-        .cursor-ring { position:fixed; width:36px; height:36px; border:1px solid rgba(40,172,226,.5); border-radius:50%; pointer-events:none; z-index:99998; transform:translate(-50%,-50%); transition:all .15s ease; }
+        .cursor { position:fixed; width:8px; height:8px; background:var(--gold); border-radius:50%; pointer-events:none; z-index:999999; transform:translate(-50%,-50%); transition:width .3s,height .3s,opacity .3s; mix-blend-mode:difference; }
+        .cursor-ring { position:fixed; width:36px; height:36px; border:1px solid rgba(40,172,226,.5); border-radius:50%; pointer-events:none; z-index:999998; transform:translate(-50%,-50%); transition:all .15s ease; }
         body:hover .cursor { opacity:1; }
 
         /* ── LANG ORB (custom shape + animation) ── */
@@ -715,7 +715,7 @@
     <div id="successModal" class="fixed inset-0 z-[99999] flex items-center justify-center p-6"
          style="background:rgba(6,13,26,0.92);backdrop-filter:blur(16px)">
 
-        <div class="relative max-w-lg w-full text-center px-10 py-14 border"
+        <div class="relative max-w-lg w-full text-center px-10 py-14 border rounded-xl"
              style="background:rgba(13,33,55,0.9);border-color:rgba(40,172,226,0.3)">
 
             <!-- Close button -->
@@ -735,18 +735,18 @@
             </h2>
 
             <!-- Amount -->
-            <p class="font-['Cormorant_Garamond'] text-4xl font-light mb-6" style="color:var(--cream)">
-                ৳ {{ number_format(session('success')[0]) }}
-            </p>
+{{--            <p class="font-['Cormorant_Garamond'] text-4xl font-light mb-6" style="color:var(--cream)">--}}
+{{--                ৳ {{ number_format(session('success')[0]) }}--}}
+{{--            </p>--}}
 
             <!-- Invoice number -->
-            <div class="px-6 py-3 mb-8 border" style="background:rgba(40,172,226,0.06);border-color:rgba(40,172,226,0.2)">
-                <span class="font-['Cinzel'] text-[10px] tracking-[.4em] uppercase block mb-1" style="color:rgba(40,172,226,0.6)">Invoice Number</span>
-                <span class="font-['Cinzel'] text-lg" style="color:var(--cream)">{{ session('success')[1] }}</span>
-            </div>
+{{--            <div class="px-6 py-3 mb-8 border" style="background:rgba(40,172,226,0.06);border-color:rgba(40,172,226,0.2)">--}}
+{{--                <span class="font-['Cinzel'] text-[10px] tracking-[.4em] uppercase block mb-1" style="color:rgba(40,172,226,0.6)">Invoice Number</span>--}}
+{{--                <span class="font-['Cinzel'] text-lg" style="color:var(--cream)">{{ session('success')[1] }}</span>--}}
+{{--            </div>--}}
 
             <p class="font-['Cormorant_Garamond'] text-lg italic mb-8" style="color:rgba(232,220,200,0.6)">
-                A confirmation and invoice has been sent to your email. Welcome to Hotel Jana.
+                One of our officials will contact you soon.
             </p>
 
             <button onclick="document.getElementById('successModal').remove()" class="btn-gold">
