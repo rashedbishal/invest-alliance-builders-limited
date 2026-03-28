@@ -28,8 +28,8 @@
         body { background:var(--ocean-dark); color:var(--cream); font-family:'Cormorant Garamond',serif; cursor:none; overflow-x:hidden; }
 
         /* ── CURSOR ── */
-        .cursor { position:fixed; width:8px; height:8px; background:var(--gold); border-radius:50%; pointer-events:none; z-index:99999; transform:translate(-50%,-50%); transition:width .3s,height .3s,opacity .3s; mix-blend-mode:difference; }
-        .cursor-ring { position:fixed; width:36px; height:36px; border:1px solid rgba(40,172,226,.5); border-radius:50%; pointer-events:none; z-index:99998; transform:translate(-50%,-50%); transition:all .15s ease; }
+        .cursor { position:fixed; width:8px; height:8px; background:var(--gold); border-radius:50%; pointer-events:none; z-index:999999; transform:translate(-50%,-50%); transition:width .3s,height .3s,opacity .3s; mix-blend-mode:difference; }
+        .cursor-ring { position:fixed; width:36px; height:36px; border:1px solid rgba(40,172,226,.5); border-radius:50%; pointer-events:none; z-index:999998; transform:translate(-50%,-50%); transition:all .15s ease; }
         body:hover .cursor { opacity:1; }
 
         /* ── LANG ORB (custom shape + animation) ── */
@@ -221,7 +221,7 @@
         <a href="#benefits"  class="font-['Cinzel'] text-xs tracking-widest text-white uppercase">Ownership</a>
         <a href="#amenities" class="font-['Cinzel'] text-xs tracking-widest text-white uppercase">Amenities</a>
         <a href="#privilege" class="font-['Cinzel'] text-xs tracking-widest text-white uppercase">Privileges</a>
-        <a href="form.html"  class="font-['Cinzel'] text-xs tracking-widest uppercase px-5 py-2.5 rounded-md border"
+        <a href="form"  class="font-['Cinzel'] text-xs tracking-widest uppercase px-5 py-2.5 rounded-md border"
            style="color:var(--gold);border-color:rgb(40,172,226);background-color:#F7F1E8;">Reserve a Share</a>
     </div>
 
@@ -248,7 +248,7 @@
     <a href="#benefits"  onclick="toggleMenu()" class="font-['Cinzel'] text-2xl tracking-[.3em] uppercase transition-colors" style="color:var(--cream)">Ownership</a>
     <a href="#amenities" onclick="toggleMenu()" class="font-['Cinzel'] text-2xl tracking-[.3em] uppercase transition-colors" style="color:var(--cream)">Amenities</a>
     <a href="#privilege" onclick="toggleMenu()" class="font-['Cinzel'] text-2xl tracking-[.3em] uppercase transition-colors" style="color:var(--cream)">Privileges</a>
-    <div class="mt-4"><a href="form.html" class="btn-gold"><span data-en>Reserve a Share</span><span data-bn style="display:none">শেয়ার বুক করুন</span></a></div>
+    <div class="mt-4"><a href="form" class="btn-gold"><span data-en>Reserve a Share</span><span data-bn style="display:none">শেয়ার বুক করুন</span></a></div>
 </div>
 
 <!-- ===== HERO ===== -->
@@ -269,7 +269,7 @@
         <p class="hero-subtitle font-['Tiro_Bangla'] font-light mb-8 sm:mb-12" style="font-size:clamp(15px,2.5vw,26px);color:rgba(232,220,200,.75); display:none" data-bn>যেখানে দিগন্ত নতজানু হয়, সমুদ্র বলে অনন্তকালের কথা।</p>
 
         <div class="hero-cta flex flex-col sm:flex-row gap-4 sm:gap-5 justify-center items-center flex-wrap">
-            <a href="form.html" class="btn-gold w-full sm:w-auto text-center"><span data-en>Claim Your Share</span><span data-bn style="display:none">আপনার শেয়ার নিন</span></a>
+            <a href="form" class="btn-gold w-full sm:w-auto text-center"><span data-en>Claim Your Share</span><span data-bn style="display:none">আপনার শেয়ার নিন</span></a>
             <a href="#story" class="btn-outline w-full sm:w-auto text-center" data-en>Discover the Vision</a>
             <a href="#story" class="btn-outline w-full sm:w-auto text-center" data-bn style="display:none">আমাদের স্বপ্ন জানুন</a>
         </div>
@@ -503,7 +503,7 @@
         </div>
 
         <div class="text-center mt-16 reveal">
-            <a href="form.html" class="btn-gold w-full sm:w-auto text-center"><span data-en>Begin Your Ownership Journey</span><span data-bn style="display:none">মালিকানার যাত্রা শুরু করুন</span></a>
+            <a href="form" class="btn-gold w-full sm:w-auto text-center"><span data-en>Begin Your Ownership Journey</span><span data-bn style="display:none">মালিকানার যাত্রা শুরু করুন</span></a>
         </div>
     </div>
 </section>
@@ -606,7 +606,7 @@
             <p class="font-['Cormorant_Garamond'] text-xl font-light leading-[1.9]" style="color:rgba(232,220,200,.7)" data-en>As a Hotel Jana shareholder, you receive a personal Privilege Card — your golden key to a world of curated luxury, reserved only for those who have claimed their place among the elite.</p>
             <p class="font-['Tiro_Bangla'] text-[17px] font-light leading-[1.9]" style="color:rgba(232,220,200,.7); display:none" data-bn>হোটেল জানার শেয়ারহোল্ডার হিসেবে আপনি পাবেন একটি ব্যক্তিগত প্রিভিলেজ কার্ড।</p>
             <div class="mt-9">
-                <a href="form.html" class="btn-gold w-full sm:w-auto text-center"><span data-en>Claim Your Privilege</span><span data-bn style="display:none">আপনার সুবিধা নিন</span></a>
+                <a href="form" class="btn-gold w-full sm:w-auto text-center"><span data-en>Claim Your Privilege</span><span data-bn style="display:none">আপনার সুবিধা নিন</span></a>
             </div>
         </div>
     </div>
@@ -640,7 +640,7 @@
         <p class="font-['Tiro_Bangla'] text-[17px] mx-auto mb-12 reveal" style="color:rgba(232,220,200,.6);max-width:600px; display:none" data-bn>সীমিত শেয়ার। অসীম উত্তরাধিকার। সমুদ্র অপেক্ষা করে না।</p>
 
         <div class="flex flex-col sm:flex-row gap-4 sm:gap-5 justify-center items-center flex-wrap reveal">
-            <a href="form.html" class="btn-gold w-full sm:w-auto text-center"><span data-en>Reserve My Share Now</span><span data-bn style="display:none">এখনই শেয়ার সংরক্ষণ করুন</span></a>
+            <a href="form" class="btn-gold w-full sm:w-auto text-center"><span data-en>Reserve My Share Now</span><span data-bn style="display:none">এখনই শেয়ার সংরক্ষণ করুন</span></a>
             <a href="tel:+8801994045693" class="btn-outline w-full sm:w-auto text-center" data-en>Speak to an Advisor</a>
             <a href="tel:+8801994045693" class="btn-outline w-full sm:w-auto text-center" data-bn style="display:none">পরামর্শকের সাথে কথা বলুন</a>
         </div>
@@ -709,6 +709,82 @@
         </div>
     </div>
 </div>
+
+<!-- SUCCESS MODAL -->
+@if(session('success'))
+    <div id="successModal" class="fixed inset-0 z-[99999] flex items-center justify-center p-6"
+         style="background:rgba(6,13,26,0.92);backdrop-filter:blur(16px)">
+
+        <div class="relative max-w-lg w-full text-center px-10 py-14 border rounded-xl"
+             style="background:rgba(13,33,55,0.9);border-color:rgba(40,172,226,0.3)">
+
+            <!-- Close button -->
+            <button onclick="document.getElementById('successModal').remove()"
+                    class="absolute top-4 right-5 font-['Cinzel'] text-xs tracking-widest"
+                    style="color:rgba(40,172,226,0.5)">✕ CLOSE</button>
+
+            <!-- Icon -->
+            <div class="w-20 h-20 rounded-full border-2 flex items-center justify-center mx-auto mb-8 text-3xl"
+                 style="border-color:var(--gold);animation:successPop 0.6s cubic-bezier(0.68,-0.55,0.27,1.55) forwards">
+                ✦
+            </div>
+
+            <!-- Title -->
+            <h2 class="font-['Cinzel'] text-2xl font-normal mb-3" style="color:var(--gold)">
+                Payment Successful
+            </h2>
+
+            <!-- Amount -->
+{{--            <p class="font-['Cormorant_Garamond'] text-4xl font-light mb-6" style="color:var(--cream)">--}}
+{{--                ৳ {{ number_format(session('success')[0]) }}--}}
+{{--            </p>--}}
+
+            <!-- Invoice number -->
+{{--            <div class="px-6 py-3 mb-8 border" style="background:rgba(40,172,226,0.06);border-color:rgba(40,172,226,0.2)">--}}
+{{--                <span class="font-['Cinzel'] text-[10px] tracking-[.4em] uppercase block mb-1" style="color:rgba(40,172,226,0.6)">Invoice Number</span>--}}
+{{--                <span class="font-['Cinzel'] text-lg" style="color:var(--cream)">{{ session('success')[1] }}</span>--}}
+{{--            </div>--}}
+
+            <p class="font-['Cormorant_Garamond'] text-lg italic mb-8" style="color:rgba(232,220,200,0.6)">
+                One of our officials will contact you soon.
+            </p>
+
+            <button onclick="document.getElementById('successModal').remove()" class="btn-gold">
+                <span>✦ &nbsp; Continue &nbsp; ✦</span>
+            </button>
+        </div>
+    </div>
+@endif
+
+@if(session('info'))
+    <div id="infoModal" class="fixed inset-0 z-[99999] flex items-center justify-center p-6"
+         style="background:rgba(6,13,26,0.85);backdrop-filter:blur(12px)">
+        <div class="relative max-w-md w-full text-center px-10 py-12 border"
+             style="background:rgba(13,33,55,0.9);border-color:rgba(40,172,226,0.2)">
+            <button onclick="document.getElementById('infoModal').remove()"
+                    class="absolute top-4 right-5 font-['Cinzel'] text-xs" style="color:rgba(40,172,226,0.5)">✕</button>
+            <div class="text-4xl mb-6">ℹ️</div>
+            <h2 class="font-['Cinzel'] text-xl mb-4" style="color:var(--gold)">Already Processed</h2>
+            <p class="font-['Cormorant_Garamond'] text-lg mb-8" style="color:rgba(232,220,200,0.6)">{{ session('info') }}</p>
+            <button onclick="document.getElementById('infoModal').remove()" class="btn-outline">Dismiss</button>
+        </div>
+    </div>
+@endif
+
+@if(session('cancel'))
+    <div id="cancelModal" class="fixed inset-0 z-[99999] flex items-center justify-center p-6"
+         style="background:rgba(6,13,26,0.85);backdrop-filter:blur(12px)">
+        <div class="relative max-w-md w-full text-center px-10 py-12 border"
+             style="background:rgba(13,33,55,0.9);border-color:rgba(200,50,50,0.3)">
+            <button onclick="document.getElementById('cancelModal').remove()"
+                    class="absolute top-4 right-5 font-['Cinzel'] text-xs" style="color:rgba(232,220,200,0.4)">✕</button>
+            <div class="text-4xl mb-6">✕</div>
+            <h2 class="font-['Cinzel'] text-xl mb-4" style="color:#f87171">Transaction Cancelled</h2>
+            <p class="font-['Cormorant_Garamond'] text-lg mb-8" style="color:rgba(232,220,200,0.6)">{{ session('cancel') }}</p>
+            <button onclick="document.getElementById('cancelModal').remove()" class="btn-outline">Dismiss</button>
+        </div>
+    </div>
+@endif
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     // HAMBURGER MENU
