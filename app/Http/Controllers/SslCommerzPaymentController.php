@@ -14,6 +14,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use DB;
 use Illuminate\Http\Request;
 use App\Library\SslCommerz\SslCommerzNotification;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
@@ -115,6 +116,7 @@ class SslCommerzPaymentController extends Controller
 
         $post_data = [];
         $post_data['total_amount'] = $cartData->cus_amount; // You cant not pay less than 10
+        // $post_data['total_amount'] = '10';
         $post_data['currency'] = 'BDT';
         $post_data['tran_id'] = TransactionIdHelper::generate(); // tran_id must be unique
 
@@ -158,6 +160,7 @@ class SslCommerzPaymentController extends Controller
                 'email' => $post_data['cus_email'] ?? null,
                 'phone' => $post_data['cus_phone'],
                 'amount' => $post_data['total_amount'],
+                // 'amount' => '10',
                 'status' => 'Pending',
                 'address' => $post_data['cus_add1'],
                 'transaction_id' => $post_data['tran_id'],
@@ -284,15 +287,20 @@ class SslCommerzPaymentController extends Controller
                     ->queue(new PaymentReceiveConfirmationMail(base64_encode($pdf), $update_transaction->invoice_number, $update_transaction->cn_identifier, $invoice->money_receipt_number, $update_transaction->name, $amount, $update_transaction->tran_date, 'Online Payment'));
 
 
-                return redirect()->back()->with('success', [$amount, $update_transaction->invoice_number]);
+                return redirect()->route('home')->with('info', 'Transaction Successful with NON IPN');
             }
         } else if ($order_details->status == 'Processing' || $order_details->status == 'Complete') {
 
-            return redirect()->back()->with('info', 'Transaction already processed');
+            Cache::forget('jana-monthly-payment-count');
+            Cache::forget('daily-jana-payment'); 
+            Cache::forget('weekly-jana-payment'); 
+            Cache::forget('monthly-jana-payment'); 
+            Cache::forget('monthly-total-payment'); 
+            return redirect()->route('home')->with('success', 'Transaction is successful');
 //            echo "Transaction is successfully Completed";
         } else {
             #That means something wrong happened. You can redirect customer to your product page.
-            return redirect()->back()->with('cancel', 'Transaction is cancelled');
+            return redirect()->route('home')->with('cancel', 'Transaction is cancelled');
         }
     }
 
@@ -308,11 +316,11 @@ class SslCommerzPaymentController extends Controller
             $update_product = DB::table('transactions')
                 ->where('transaction_id', $tran_id)
                 ->update(['status' => 'Failed']);
-            return redirect()->back()->with('fail', 'Transaction is failed');
+            return redirect()->route('home')->with('fail', 'Transaction is failed');
         } else if ($order_details->status == 'Processing' || $order_details->status == 'Complete') {
-            return redirect()->back()->with('info', 'Transaction is already successful');
+            return redirect()->route('home')->with('info', 'Transaction is already successful');
         } else {
-            return redirect()->back()->with('error', 'Transaction is invalid');
+            return redirect()->route('home')->with('error', 'Transaction is invalid');
         }
 
     }
@@ -330,15 +338,15 @@ class SslCommerzPaymentController extends Controller
                 ->where('transaction_id', $tran_id)
                 ->update(['status' => 'Cancelled']);
 
-            return redirect()->back()->with('cancel', 'Transaction is cancelled');
+            return redirect()->route('home')->with('cancel', 'Transaction is cancelled');
 
         } else if ($order_details->status == 'Processing' || $order_details->status == 'Complete') {
 
-            return redirect()->back()->with('info', 'Transaction is already successful');
+            return redirect()->route('home')->with('info', 'Transaction is already successful');
 
         } else {
 
-            return redirect()->back()->with('error', 'Transaction is invalid');
+            return redirect()->route('home')->with('error', 'Transaction is invalid');
         }
 
 

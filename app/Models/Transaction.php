@@ -16,6 +16,7 @@ class Transaction extends Model
         'invoice_number',
         'transaction_id',
         'tran_id',
+        'gateway_transaction_id',
         'val_id',
         'amount',
         'card_type',
