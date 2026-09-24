@@ -8,9 +8,9 @@ export default defineConfig({
             input: [
                 'resources/css/app.css',
                 'resources/js/app.js',
-                // Phase 03 visual prototype (standalone, frontend only)
-                'resources/css/prototype.css',
-                'resources/js/prototype.js',
+                // Main site theme (welcome.blade.php)
+                'resources/css/site.css',
+                'resources/js/site.js',
             ],
             refresh: true,
         }),

@@ -18,9 +18,6 @@ Route::get('/form', function (ShareCatalog $catalog) {
     ]);
 });
 
-// Phase 03 visual prototype — standalone view, no controllers or backend logic involved.
-Route::view('/prototype', 'prototype.index')->name('prototype');
-
 Route::get('/currency', [CurrencyController::class, 'show'])->middleware('throttle:60,1')->name('currency.show');
 
 Route::post('/pay', [SslCommerzPaymentController::class, 'index']);
