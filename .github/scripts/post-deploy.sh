@@ -21,6 +21,11 @@ chmod -R ug+rwX storage bootstrap/cache
 
 echo "Using: $("$PHP_BIN" -v | head -n 1)"
 
+# bootstrap/cache/ is never uploaded, so it can hold cache files from an earlier install that
+# list packages this build no longer has (e.g. dev-only providers such as laravel/pail).
+# Artisan would crash while booting on them, so remove them first; Laravel rebuilds them.
+rm -f bootstrap/cache/*.php
+
 "$PHP_BIN" artisan package:discover --ansi
 
 # Do NOT cache config or routes: SslCommerzNotification calls env('APP_URL') directly, which
