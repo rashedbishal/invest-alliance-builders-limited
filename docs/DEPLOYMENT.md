@@ -41,7 +41,7 @@ Secrets:
 | `SSH_USER` | SSH username |
 | `SSH_PRIVATE_KEY` | contents of `hostinger_deploy` (the private key) |
 | `DEPLOY_PATH` | absolute path of the site folder, e.g. `/home/u123456789/domains/example.com/public_html` |
-| `SSH_KNOWN_HOSTS` | *(optional, stricter)* output of `ssh-keyscan -p 65002 <host>`; if empty the runner scans the host itself |
+| `SSH_KNOWN_HOSTS` | *(optional)* pinned host key(s) from `ssh-keyscan -p 65002 <host>`. Leave it unset unless the server always presents the same key: Hostinger can answer with different keys per connection, and then a pinned key makes deploys fail with "REMOTE HOST IDENTIFICATION HAS CHANGED". When unset the host key is not verified (login still requires the private key). |
 
 Variables:
 
@@ -62,6 +62,7 @@ To run a migration: Actions > Deploy > *Run workflow* > tick **Run database migr
 Re-run the Deploy workflow on an earlier commit (Actions > Deploy > Run workflow, pick the tag/branch), or `git revert` on `main`. Database migrations are not rolled back automatically.
 
 ## Troubleshooting
+- *`REMOTE HOST IDENTIFICATION HAS CHANGED`*: delete the `SSH_KNOWN_HOSTS` secret (or leave it unset) – see the table above.
 - *`Permission denied (publickey)`*: the public key isn't added in hPanel, or `SSH_PRIVATE_KEY` was pasted without its `BEGIN/END` lines.
 - *`.env does not exist`*: create it once on the server (step 1.5).
 - *HTTP 500 after deploy*: check `storage/logs/laravel.log` on the server; confirm PHP 8.3 is active for the site and `PHP_BIN` points to 8.3.

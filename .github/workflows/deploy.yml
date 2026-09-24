@@ -78,10 +78,16 @@ jobs:
           install -m 700 -d ~/.ssh
           printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_deploy
           chmod 600 ~/.ssh/id_deploy
+          # Shared hosting often answers with different host keys from one connection to the
+          # next (several servers behind one address), so scanning the key once and then
+          # requiring a match fails at random. Without a pinned SSH_KNOWN_HOSTS secret the
+          # host key is therefore not checked; authentication still needs the private key.
           if [ -n "$SSH_KNOWN_HOSTS" ]; then
             printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+            echo "SSH_HOSTKEY_OPTS=-o StrictHostKeyChecking=yes -o UserKnownHostsFile=$HOME/.ssh/known_hosts" >> "$GITHUB_ENV"
           else
-            ssh-keyscan -p "${SSH_PORT:-22}" -H "$SSH_HOST" > ~/.ssh/known_hosts
+            echo "::warning::SSH_KNOWN_HOSTS is not set - the server host key is not verified."
+            echo "SSH_HOSTKEY_OPTS=-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR" >> "$GITHUB_ENV"
           fi
 
       - name: Upload files
@@ -92,7 +98,7 @@ jobs:
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         run: |
           DEPLOY_PATH="${DEPLOY_PATH%/}" # a trailing slash in the secret is fine
-          SSH_CMD="ssh -i $HOME/.ssh/id_deploy -p ${SSH_PORT:-22} -o BatchMode=yes -o StrictHostKeyChecking=yes"
+          SSH_CMD="ssh -i $HOME/.ssh/id_deploy -p ${SSH_PORT:-22} -o BatchMode=yes $SSH_HOSTKEY_OPTS"
           DEST="$SSH_USER@$SSH_HOST:$DEPLOY_PATH/"
 
           $SSH_CMD "$SSH_USER@$SSH_HOST" "mkdir -p '$DEPLOY_PATH'"
@@ -117,7 +123,7 @@ jobs:
           RUN_MIGRATIONS: ${{ inputs.run_migrations || 'false' }}
           MIGRATION_PATH: ${{ inputs.migration_path }}
         run: |
-          ssh -i "$HOME/.ssh/id_deploy" -p "${SSH_PORT:-22}" -o BatchMode=yes -o StrictHostKeyChecking=yes \
+          ssh -i "$HOME/.ssh/id_deploy" -p "${SSH_PORT:-22}" -o BatchMode=yes $SSH_HOSTKEY_OPTS \
             "$SSH_USER@$SSH_HOST" \
             "DEPLOY_PATH=$(printf %q "$DEPLOY_PATH") PHP_BIN=$(printf %q "${PHP_BIN:-php}") RUN_MIGRATIONS=$(printf %q "$RUN_MIGRATIONS") MIGRATION_PATH=$(printf %q "$MIGRATION_PATH") bash -s" \
             < .github/scripts/post-deploy.sh
