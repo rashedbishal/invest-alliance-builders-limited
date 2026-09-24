@@ -11,31 +11,36 @@
     $paypalCurrency = (string) config('paypal.currency', 'USD');
 
     $img = fn ($path) => Vite::asset('resources/images/' . $path);
-    // Representative coastal imagery (no architecture) until Hotel Jana The Dove photography is supplied.
-    $ph = fn ($id, $w = 1920) => "https://images.unsplash.com/photo-{$id}?w={$w}&q=80&auto=format&fit=crop";
     $money = fn ($n) => number_format((float) $n, 0, '.', ',');
+    // A price. Rendered in BDT on the server; site.js swaps the visitor's local currency into the
+    // main figure and keeps the BDT amount beside it in small type (BDT alone in Bangladesh).
+    $price = fn ($n, string $attrs = '', bool $inline = false) =>
+        '<span class="money' . ($inline ? ' money--inline' : '') . '" data-bdt="' . (float) $n . '"' . ($attrs ? ' ' . $attrs : '') . '>'
+        . '<span class="money__main"><span class="ccy">BDT</span><span class="money__num">' . $money($n) . '</span></span>'
+        . '<span class="money__alt" hidden>BDT ' . $money($n) . '</span></span>';
 
     // Presentation for each bookable hotel key from the share catalog.
     $present = [
         'jana' => [
             'eyebrowEn' => 'Five-Star · Kuakata', 'eyebrowBn' => 'পাঁচ তারকা · কুয়াকাটা',
             'titleEn' => 'Hotel Jana Kuakata', 'titleBn' => 'হোটেল জানা কুয়াকাটা',
-            'img' => $img('Hotel-Jana-resized.jpg.jpeg'), 'pos' => '50% 30%', 'stars' => 5,
+            'img' => $img('kuakata/entrance.webp'), 'pos' => '50% 42%', 'stars' => 5,
         ],
         'dove' => [
             'eyebrowEn' => "Four-Star · Cox's Bazar", 'eyebrowBn' => 'চার তারকা · কক্সবাজার',
             'titleEn' => 'Hotel Jana The Dove', 'titleBn' => 'হোটেল জানা দ্য ডোভ',
-            'img' => $ph('1471922694854-ff1b63b20054', 1200), 'pos' => '50% 55%', 'stars' => 4,
+            'img' => $img('dove/dusk.webp'), 'pos' => '50% 38%', 'stars' => 4,
         ],
     ];
     $sharePrice = $hotels['jana']['price'] ?? ($hotels['dove']['price'] ?? null);
 
     $heroSlides = [
-        ['src' => $img('swimming-pool-2.jpeg'), 'pos' => '50% 55%', 'en' => 'Hotel Jana Kuakata', 'bn' => 'হোটেল জানা কুয়াকাটা'],
-        ['src' => $ph('1473116763249-2faaef81ccda'), 'pos' => '50% 60%', 'en' => "Cox's Bazar", 'bn' => 'কক্সবাজার'],
-        ['src' => $img('Reception-2.jpeg'), 'pos' => '50% 50%', 'en' => 'Hotel Jana Kuakata · Lobby', 'bn' => 'হোটেল জানা কুয়াকাটা · লবি'],
-        ['src' => $ph('1507525428034-b723cf961d3e'), 'pos' => '50% 55%', 'en' => 'The Bay of Bengal', 'bn' => 'বঙ্গোপসাগর'],
-        ['src' => $img('Suite.jpeg'), 'pos' => '50% 55%', 'en' => 'Hotel Jana Kuakata · Suite', 'bn' => 'হোটেল জানা কুয়াকাটা · স্যুইট'],
+        ['src' => $img('kuakata/facade-west.webp'), 'pos' => '50% 52%', 'en' => 'Hotel Jana Kuakata', 'bn' => 'হোটেল জানা কুয়াকাটা'],
+        ['src' => $img('dove/seafront.webp'), 'pos' => '50% 42%', 'en' => "Hotel Jana The Dove · Cox's Bazar", 'bn' => 'হোটেল জানা দ্য ডোভ · কক্সবাজার'],
+        ['src' => $img('kuakata/aerial-pool.webp'), 'pos' => '50% 50%', 'en' => 'Hotel Jana Kuakata · Rooftop', 'bn' => 'হোটেল জানা কুয়াকাটা · ছাদ'],
+        ['src' => $img('dove/rooftop-pool.webp'), 'pos' => '50% 45%', 'en' => 'Hotel Jana The Dove · Infinity Pool', 'bn' => 'হোটেল জানা দ্য ডোভ · ইনফিনিটি পুল'],
+        ['src' => $img('kuakata/entrance.webp'), 'pos' => '50% 50%', 'en' => 'Hotel Jana Kuakata · Entrance', 'bn' => 'হোটেল জানা কুয়াকাটা · প্রবেশপথ'],
+        ['src' => $img('dove/dusk.webp'), 'pos' => '50% 40%', 'en' => 'Hotel Jana The Dove · Dusk', 'bn' => 'হোটেল জানা দ্য ডোভ · গোধূলি'],
     ];
 
     // YouTube links → id + optional start time (t=…s is honoured when present in the link).
@@ -66,16 +71,22 @@
     ]);
 
     $galleryPool = [
-        ['src' => $img('Hotel-Jana-resized.jpg.jpeg'), 'pos' => '50% 40%', 'en' => 'Kuakata · The Tower', 'bn' => 'কুয়াকাটা · ভবন'],
-        ['src' => $img('Reception-2.jpeg'), 'pos' => '50% 50%', 'en' => 'Kuakata · Lobby', 'bn' => 'কুয়াকাটা · লবি'],
-        ['src' => $img('Suite.jpeg'), 'pos' => '55% 50%', 'en' => 'Kuakata · Suite', 'bn' => 'কুয়াকাটা · স্যুইট'],
-        ['src' => $img('swimming-pool.jpeg'), 'pos' => '50% 60%', 'en' => 'Kuakata · Rooftop Pool', 'bn' => 'কুয়াকাটা · ছাদের পুল'],
-        ['src' => $img('cafeteria-5.jpg'), 'pos' => '50% 50%', 'en' => 'Kuakata · Dining', 'bn' => 'কুয়াকাটা · ডাইনিং'],
-        ['src' => $img('swimming-pool-2.jpeg'), 'pos' => '50% 50%', 'en' => 'Kuakata · Sea Terrace', 'bn' => 'কুয়াকাটা · সমুদ্র টেরেস'],
-        ['src' => $img('Reception.jpeg'), 'pos' => '40% 50%', 'en' => 'Kuakata · Reception', 'bn' => 'কুয়াকাটা · রিসেপশন'],
-        ['src' => $ph('1473116763249-2faaef81ccda', 1600), 'pos' => '50% 60%', 'en' => "Cox's Bazar · The Shore", 'bn' => 'কক্সবাজার · সৈকত'],
-        ['src' => $ph('1471922694854-ff1b63b20054', 1600), 'pos' => '50% 50%', 'en' => "Cox's Bazar · Morning", 'bn' => 'কক্সবাজার · সকাল'],
-        ['src' => $ph('1507525428034-b723cf961d3e', 1600), 'pos' => '50% 50%', 'en' => 'The Bay of Bengal', 'bn' => 'বঙ্গোপসাগর'],
+        ['src' => $img('kuakata/facade-east.webp'), 'pos' => '50% 50%', 'en' => 'Kuakata · The Façade', 'bn' => 'কুয়াকাটা · সম্মুখভাগ'],
+        ['src' => $img('dove/tower-sunset.webp'), 'pos' => '50% 40%', 'en' => "The Dove · Sunset", 'bn' => 'দ্য ডোভ · সূর্যাস্ত'],
+        ['src' => $img('kuakata/aerial-pool.webp'), 'pos' => '55% 50%', 'en' => 'Kuakata · Rooftop Pool', 'bn' => 'কুয়াকাটা · ছাদের পুল'],
+        ['src' => $img('dove/pool-deck.webp'), 'pos' => '50% 50%', 'en' => 'The Dove · Pool Deck', 'bn' => 'দ্য ডোভ · পুল ডেক'],
+        ['src' => $img('Reception-2.jpeg'), 'pos' => '50% 50%', 'en' => 'Hotel Jana · Lobby', 'bn' => 'হোটেল জানা · লবি'],
+        ['src' => $img('dove/night.webp'), 'pos' => '50% 40%', 'en' => 'The Dove · By Night', 'bn' => 'দ্য ডোভ · রাতে'],
+        ['src' => $img('kuakata/entrance.webp'), 'pos' => '50% 50%', 'en' => 'Kuakata · Entrance', 'bn' => 'কুয়াকাটা · প্রবেশপথ'],
+        ['src' => $img('dove/marine-drive.webp'), 'pos' => '60% 45%', 'en' => 'The Dove · Marine Drive', 'bn' => 'দ্য ডোভ · মেরিন ড্রাইভ'],
+        ['src' => $img('Suite.jpeg'), 'pos' => '55% 50%', 'en' => 'Hotel Jana · Suite', 'bn' => 'হোটেল জানা · স্যুইট'],
+        ['src' => $img('kuakata/facade-west.webp'), 'pos' => '50% 50%', 'en' => 'Kuakata · West Façade', 'bn' => 'কুয়াকাটা · পশ্চিম সম্মুখভাগ'],
+        ['src' => $img('dove/day.webp'), 'pos' => '50% 40%', 'en' => 'The Dove · By Day', 'bn' => 'দ্য ডোভ · দিনের আলোয়'],
+        ['src' => $img('dove/rooftop-pool.webp'), 'pos' => '50% 50%', 'en' => 'The Dove · Infinity Pool', 'bn' => 'দ্য ডোভ · ইনফিনিটি পুল'],
+        ['src' => $img('cafeteria-5.jpg'), 'pos' => '50% 50%', 'en' => 'Hotel Jana · Dining', 'bn' => 'হোটেল জানা · ডাইনিং'],
+        ['src' => $img('dove/seafront.webp'), 'pos' => '50% 45%', 'en' => 'The Dove · Seafront', 'bn' => 'দ্য ডোভ · সমুদ্রতীর'],
+        ['src' => $img('Reception.jpeg'), 'pos' => '40% 50%', 'en' => 'Hotel Jana · Reception', 'bn' => 'হোটেল জানা · রিসেপশন'],
+        ['src' => $img('dove/dusk.webp'), 'pos' => '50% 40%', 'en' => 'The Dove · Dusk', 'bn' => 'দ্য ডোভ · গোধূলি'],
     ];
 
     $arrow = '<svg class="icon-arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h13M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>';
@@ -147,7 +158,7 @@
         <div class="hero__cta">
             <a class="btn btn--inverse btn--lg" href="#invest" data-magnetic><x-t en="Buy now" bn="এখনই কিনুন" />{!! $arrow !!}</a>
             @if ($sharePrice)
-                <p class="hero__price"><x-t en="From" bn="শুরু" /> <strong>BDT {{ $money($sharePrice) }}</strong> <x-t en="per share" bn="প্রতি শেয়ার" /></p>
+                <p class="hero__price"><x-t en="From" bn="শুরু" /> <strong>{!! $price($sharePrice, '', true) !!}</strong> <x-t en="per share" bn="প্রতি শেয়ার" /></p>
             @endif
         </div>
     </div>
@@ -173,10 +184,10 @@
     <div class="property__grid">
         <div class="property__media" data-reveal="image-left">
             <figure class="property__main">
-                <img src="{{ $img('swimming-pool.jpeg') }}" alt="Rooftop pool at Hotel Jana Kuakata overlooking the sea" loading="lazy" style="object-position: 50% 62%" data-parallax>
+                <img src="{{ $img('kuakata/facade-west.webp') }}" alt="Hotel Jana Kuakata, the street façade" loading="lazy" style="object-position: 50% 55%" data-parallax>
             </figure>
             <figure class="property__detail">
-                <img src="{{ $img('Hotel-Jana-resized.jpg.jpeg') }}" alt="The Hotel Jana Kuakata tower" loading="lazy" style="object-position: 50% 30%">
+                <img src="{{ $img('kuakata/aerial-pool.webp') }}" alt="Hotel Jana Kuakata from above, with the rooftop pool" loading="lazy" style="object-position: 42% 50%">
             </figure>
             <p class="property__credit"><x-t en="Architectural visualisation" bn="স্থাপত্য নকশার চিত্র" /></p>
         </div>
@@ -203,8 +214,7 @@
                 <div class="property__invest" data-reveal style="--d: 400ms">
                     <div>
                         <p class="label-sm"><x-t en="Share price" bn="শেয়ার মূল্য" /></p>
-                        <p class="price-inline"><span class="ccy">BDT</span> {{ $money($hotels['jana']['price']) }}</p>
-                        <p class="approx" data-approx-bdt="{{ $hotels['jana']['price'] }}" hidden></p>
+                        <p class="price-inline">{!! $price($hotels['jana']['price']) !!}</p>
                     </div>
                     <a class="btn btn--primary" href="#invest" data-preselect="jana" data-magnetic><x-t en="Buy now" bn="এখনই কিনুন" />{!! $arrow !!}</a>
                 </div>
@@ -237,8 +247,7 @@
                 <div class="property__invest" data-reveal style="--d: 400ms">
                     <div>
                         <p class="label-sm"><x-t en="Share price" bn="শেয়ার মূল্য" /></p>
-                        <p class="price-inline"><span class="ccy">BDT</span> {{ $money($hotels['dove']['price']) }}</p>
-                        <p class="approx" data-approx-bdt="{{ $hotels['dove']['price'] }}" hidden></p>
+                        <p class="price-inline">{!! $price($hotels['dove']['price']) !!}</p>
                     </div>
                     <a class="btn btn--primary" href="#invest" data-preselect="dove" data-magnetic><x-t en="Buy now" bn="এখনই কিনুন" />{!! $arrow !!}</a>
                 </div>
@@ -247,12 +256,12 @@
 
         <div class="property__media" data-reveal="image-right">
             <figure class="property__main">
-                <img src="{{ $ph('1473116763249-2faaef81ccda') }}" alt="" loading="lazy" style="object-position: 50% 58%" data-parallax>
+                <img src="{{ $img('dove/seafront.webp') }}" alt="Hotel Jana The Dove on the Cox's Bazar seafront at sunset" loading="lazy" style="object-position: 50% 45%" data-parallax>
             </figure>
             <figure class="property__detail">
-                <img src="{{ $ph('1507525428034-b723cf961d3e', 900) }}" alt="" loading="lazy" style="object-position: 62% 50%">
+                <img src="{{ $img('dove/night.webp') }}" alt="Hotel Jana The Dove lit up at night" loading="lazy" style="object-position: 50% 35%">
             </figure>
-            <p class="property__credit"><x-t en="Representative imagery" bn="প্রতিনিধিত্বমূলক ছবি" /></p>
+            <p class="property__credit"><x-t en="Architectural visualisation" bn="স্থাপত্য নকশার চিত্র" /></p>
         </div>
     </div>
 </section>
@@ -386,6 +395,7 @@
 <section class="privilege grain" id="privilege" aria-labelledby="privilege-title">
     <div class="container privilege__grid">
         <div class="privilege__stage" data-reveal>
+            <i class="marks__c" aria-hidden="true"></i><i class="marks__c" aria-hidden="true"></i><i class="marks__c" aria-hidden="true"></i><i class="marks__c" aria-hidden="true"></i>
             <button type="button" class="gcards" data-gcards data-tilt aria-label="Show the other side of the Privilege Card">
                 {{-- Back: terms --}}
                 <span class="gcard gcard--back">
@@ -455,9 +465,9 @@
 </section>
 
 {{-- ============ 08 OWNERSHIP ============ --}}
-<section class="invest" id="invest" aria-labelledby="invest-title">
+<section class="invest grain" id="invest" aria-labelledby="invest-title">
     {{-- Block A: the two shares, side by side, sized to one screen --}}
-    <div class="invest__select grain">
+    <div class="invest__select">
         <div class="container">
             <div class="section-head section-head--split invest__head">
                 <div>
@@ -500,8 +510,7 @@
                                 <div class="product__terms">
                                     <div>
                                         <p class="label-sm"><x-t en="Price per share" bn="প্রতি শেয়ারের মূল্য" /></p>
-                                        <p class="price"><span class="ccy">BDT</span>{{ $money($hotel['price']) }}</p>
-                                        <p class="approx" data-approx-bdt="{{ $hotel['price'] }}" hidden></p>
+                                        <p class="price">{!! $price($hotel['price']) !!}</p>
                                     </div>
                                     <div class="product__limit">
                                         <p class="label-sm"><x-t en="Per booking" bn="প্রতি বুকিংয়ে" /></p>
@@ -515,7 +524,7 @@
                                         <input class="stepper__val" type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-qty="{{ $key }}" aria-label="{{ $hotel['name'] }} share count">
                                         <button type="button" class="stepper__btn" data-inc="{{ $key }}" aria-label="Increase {{ $hotel['name'] }} shares"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M8 3v10" stroke="currentColor" stroke-width="1.5"/></svg></button>
                                     </div>
-                                    <p class="product__sub"><span class="label-sm"><x-t en="Subtotal" bn="উপমোট" /></span><span class="product__sub-val" data-subtotal="{{ $key }}"><span class="ccy">BDT</span>0</span></p>
+                                    <p class="product__sub"><span class="label-sm"><x-t en="Subtotal" bn="উপমোট" /></span><span class="product__sub-val">{!! $price(0, 'data-subtotal="' . e($key) . '"') !!}</span></p>
                                 </div>
                             </div>
                         </article>
@@ -576,9 +585,9 @@
                                     <img class="srow__img" src="{{ $p['img'] }}" alt="" loading="lazy" style="object-position: {{ $p['pos'] }}">
                                     <div class="srow__info">
                                         <p class="srow__name"><x-t :en="$p['titleEn']" :bn="$p['titleBn']" /></p>
-                                        <p class="srow__calc"><span data-srow-qty>0</span> × BDT {{ $money($hotel['price']) }}</p>
+                                        <p class="srow__calc"><span data-srow-qty>0</span> × {!! $price($hotel['price'], '', true) !!}</p>
                                     </div>
-                                    <p class="srow__amt" data-srow-amt>BDT 0</p>
+                                    <p class="srow__amt">{!! $price(0, 'data-srow-amt') !!}</p>
                                 </div>
                             </div>
                         @endforeach
@@ -591,10 +600,10 @@
                     <div class="summary__total">
                         <div class="summary__total-row">
                             <p class="summary__total-label"><x-t en="Total" bn="মোট" /></p>
-                            <p class="total" aria-live="polite"><span class="ccy">BDT</span><span data-total>0</span></p>
+                            <p class="total" aria-live="polite">{!! $price(0, 'data-total') !!}</p>
                         </div>
                         <div class="summary__ccy">
-                            <p class="approx approx--total" data-approx-total hidden></p>
+                            <p class="summary__ccy-label"><x-t en="Show prices in" bn="মূল্য দেখান" /></p>
                             <div class="picker picker--dark picker--compact" data-picker="currency" data-value="BDT" data-label="Display currency"></div>
                         </div>
                         <p class="rate-note" data-rate-note hidden><x-t en="Converted at today's rate for reference only. You pay in BDT (SSLCommerz) or USD (PayPal)." bn="আজকের হারে শুধুমাত্র তথ্যের জন্য দেখানো হয়েছে। পেমেন্ট হবে BDT (SSLCommerz) বা USD (PayPal)-এ।" /></p>
@@ -608,7 +617,7 @@
                                 <span class="spinner" aria-hidden="true"></span>
                             </button>
                             <p class="paybtn__note"><x-t en="Cards, mobile banking &amp; net banking · BDT" bn="কার্ড, মোবাইল ব্যাংকিং ও নেট ব্যাংকিং · BDT" /></p>
-                            <p class="paybtn__reason"><x-t :en="'For totals below BDT ' . $money($sslLimit) . '. Please use PayPal for this order.'" :bn="'BDT ' . $money($sslLimit) . '-এর কম মোটের জন্য। এই অর্ডারের জন্য PayPal ব্যবহার করুন।'" /></p>
+                            <p class="paybtn__reason"><x-t :en="'SSLCommerz allows up to ' . $price($sslLimit, '', true) . ' per transaction. Since this order exceeds the per-transaction limit, SSLCommerz cannot be used. Please pay with PayPal.'" :bn="'SSLCommerz-এ প্রতি লেনদেনে সর্বোচ্চ ' . $price($sslLimit, '', true) . ' পর্যন্ত পেমেন্ট করা যায়। এই অর্ডারটি প্রতি লেনদেনের সীমা ছাড়িয়ে যাওয়ায় SSLCommerz ব্যবহার করা যাবে না। অনুগ্রহ করে PayPal ব্যবহার করুন।'" /></p>
                         </div>
                         <div class="paybtn-wrap" data-method="paypal" data-state="{{ $paypalRate > 0 ? 'active' : 'unavailable' }}">
                             <button type="button" class="paybtn paybtn--paypal" data-pay="paypal" disabled aria-describedby="pay-help">
@@ -658,7 +667,7 @@
 <div class="orderbar" data-orderbar aria-hidden="true">
     <div>
         <p class="orderbar__count" data-orderbar-count></p>
-        <p class="orderbar__total"><span class="ccy">BDT</span> <span data-orderbar-total>0</span></p>
+        <p class="orderbar__total">{!! $price(0, 'data-orderbar-total', true) !!}</p>
     </div>
     <a class="btn btn--primary btn--sm" href="#summary" tabindex="-1"><x-t en="Pay now" bn="পেমেন্ট করুন" /></a>
 </div>

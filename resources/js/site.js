@@ -591,14 +591,36 @@ const state = {
 };
 
 const fmtBdt = (n) => new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(n);
-function fmtLocal(bdt) {
-    const value = bdt * state.local.rate;
+const fmtNum = (value) => {
     const digits = value >= 100 || value === 0 ? 0 : 2;
-    try {
-        return new Intl.NumberFormat(isBn() ? 'bn-BD' : 'en-US', { style: 'currency', currency: state.local.currency, minimumFractionDigits: digits, maximumFractionDigits: digits }).format(value);
-    } catch (e) {
-        return `${state.local.currency} ${value.toFixed(digits)}`;
-    }
+    return new Intl.NumberFormat('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(value);
+};
+
+/*
+ * Every price on the page is a .money[data-bdt]. With a local currency the converted
+ * amount is the main figure and BDT follows in small type; in Bangladesh (or with BDT
+ * chosen) BDT stands alone. Display only; the server prices every order in BDT.
+ */
+function paintMoney(el, bdt) {
+    if (bdt !== undefined) el.dataset.bdt = String(bdt);
+    const amount = Number(el.dataset.bdt) || 0;
+    const local = state.local;
+    const ccy = local ? local.currency : 'BDT';
+    const num = local ? fmtNum(amount * local.rate) : fmtBdt(amount);
+    const key = `${ccy} ${num}`;
+    if (el.dataset.painted === key) return;
+    const first = el.dataset.painted === undefined;
+    el.dataset.painted = key;
+    el.classList.toggle('is-local', Boolean(local));
+    $('.ccy', el).textContent = ccy;
+    $('.money__num', el).textContent = num;
+    const alt = $('.money__alt', el);
+    alt.hidden = !local;
+    alt.textContent = `BDT ${fmtBdt(amount)}`;
+    if (first || reducedMotion.matches) return;
+    el.classList.remove('swap');
+    void el.offsetWidth;
+    el.classList.add('swap');
 }
 
 function setText(el, text) {
@@ -661,14 +683,7 @@ function render() {
         if (document.activeElement !== input) input.value = String(q);
         $('[data-dec]', card).disabled = q <= 0;
         $('[data-inc]', card).disabled = q >= HOTELS[key].max;
-        const sub = $('[data-subtotal]', card);
-        const subText = fmtBdt(q * HOTELS[key].price);
-        if (sub.dataset.v !== subText) { sub.dataset.v = subText; sub.innerHTML = `<span class="ccy">BDT</span>${subText}`; }
-    });
-
-    $$('[data-approx-bdt]').forEach((el) => {
-        el.hidden = !local;
-        if (local) el.textContent = `≈ ${fmtLocal(Number(el.dataset.approxBdt))} ${t('per share', 'প্রতি শেয়ার')}`;
+        paintMoney($('[data-subtotal]', card), q * HOTELS[key].price);
     });
 
     $$('[data-srow]').forEach((row) => {
@@ -676,17 +691,15 @@ function render() {
         const q = state.qty[key];
         row.classList.toggle('is-on', q > 0);
         setText($('[data-srow-qty]', row), fmtBdt(q));
-        setText($('[data-srow-amt]', row), `BDT ${fmtBdt(q * HOTELS[key].price)}`);
+        paintMoney($('[data-srow-amt]', row), q * HOTELS[key].price);
     });
     const empty = $('[data-summary-empty]');
     if (empty) empty.hidden = count > 0;
 
-    setText($('[data-total]'), fmtBdt(bdt));
-    const approxTotal = $('[data-approx-total]');
-    if (approxTotal) {
-        approxTotal.hidden = !local || !count;
-        if (local) approxTotal.textContent = `≈ ${fmtLocal(bdt)}`;
-    }
+    paintMoney($('[data-total]'), bdt);
+    paintMoney($('[data-orderbar-total]'), bdt);
+    // Static prices (hero, hotel spreads, product cards, limits) follow the currency too.
+    $$('.money:not([data-total]):not([data-orderbar-total]):not([data-subtotal]):not([data-srow-amt])').forEach((el) => paintMoney(el));
     const rateNote = $('[data-rate-note]');
     if (rateNote) rateNote.hidden = !local;
     currencyPickers.forEach((pk) => pk.set(local ? local.currency : 'BDT'));
@@ -716,7 +729,6 @@ function render() {
     });
 
     $('[data-orderbar-count]').textContent = t(`${fmtBdt(count)} ${count === 1 ? 'share' : 'shares'} selected`, `${fmtBdt(count)}টি শেয়ার নির্বাচিত`);
-    $('[data-orderbar-total]').textContent = fmtBdt(bdt);
     updateOrderBar();
 }
 

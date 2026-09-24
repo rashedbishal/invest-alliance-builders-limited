@@ -171,13 +171,32 @@ export function createPicker(root, { items, value, onChange, kind }) {
         const r = btn.getBoundingClientRect();
         root.classList.toggle('is-up', window.innerHeight - r.bottom < 340 && r.top > 340);
         renderList();
+        place();
+        window.addEventListener('resize', place);
         requestAnimationFrame(() => search.focus({ preventScroll: true }));
         document.addEventListener('pointerdown', outside, true);
+    }
+
+    // Keep the popover inside the page: shift it sideways so it never pokes past the viewport edge.
+    function place() {
+        if (!open) return;
+        const gutter = 12;
+        const vw = document.documentElement.clientWidth;
+        pop.style.left = '0px';
+        pop.style.right = 'auto';
+        const r = root.getBoundingClientRect();
+        const w = pop.offsetWidth;
+        let x = 0;
+        if (r.left + w > vw - gutter) x = vw - gutter - w - r.left;
+        if (r.left + x < gutter) x = gutter - r.left;
+        pop.style.left = `${Math.round(x)}px`;
+        pop.style.transformOrigin = x < 0 ? 'top right' : 'top left';
     }
 
     function hide(focusBtn = true) {
         if (!open) return;
         open = false;
+        window.removeEventListener('resize', place);
         root.classList.remove('is-open');
         btn.setAttribute('aria-expanded', 'false');
         pop.hidden = true;
