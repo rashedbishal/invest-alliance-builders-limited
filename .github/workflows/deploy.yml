@@ -76,8 +76,13 @@ jobs:
           SSH_PORT: ${{ secrets.SSH_PORT }}
         run: |
           install -m 700 -d ~/.ssh
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_deploy
+          # Drop Windows line endings that sneak in when the key is pasted from Windows
+          printf '%s\n' "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_deploy
           chmod 600 ~/.ssh/id_deploy
+          if ! ssh-keygen -y -P '' -f ~/.ssh/id_deploy > /dev/null 2>&1; then
+            echo "::error::SSH_PRIVATE_KEY is not a usable private key. Paste the ENTIRE private key file (from '-----BEGIN ... PRIVATE KEY-----' to '-----END ... PRIVATE KEY-----', on separate lines), created without a passphrase, in OpenSSH/PEM format (not .ppk, not the .pub file)."
+            exit 1
+          fi
           # Shared hosting often answers with different host keys from one connection to the
           # next (several servers behind one address), so scanning the key once and then
           # requiring a match fails at random. Without a pinned SSH_KNOWN_HOSTS secret the

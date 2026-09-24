@@ -63,6 +63,7 @@ Re-run the Deploy workflow on an earlier commit (Actions > Deploy > Run workflow
 
 ## Troubleshooting
 - *`REMOTE HOST IDENTIFICATION HAS CHANGED`*: delete the `SSH_KNOWN_HOSTS` secret (or leave it unset) – see the table above.
+- *`Load key ... error in libcrypto`* or *`SSH_PRIVATE_KEY is not a usable private key`*: the secret isn't a valid key. Paste the whole private-key file (both `-----BEGIN/END ... PRIVATE KEY-----` lines, each on its own line), generated without a passphrase, in OpenSSH format – not the `.pub` file and not a PuTTY `.ppk`.
 - *`Permission denied (publickey)`*: the public key isn't added in hPanel, or `SSH_PRIVATE_KEY` was pasted without its `BEGIN/END` lines.
 - *`.env does not exist`*: create it once on the server (step 1.5).
 - *HTTP 500 after deploy*: check `storage/logs/laravel.log` on the server; confirm PHP 8.3 is active for the site and `PHP_BIN` points to 8.3.
