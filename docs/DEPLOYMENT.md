@@ -5,13 +5,13 @@
 | Workflow | Runs when | What it does |
 |---|---|---|
 | `.github/workflows/tests.yml` | pull requests, pushes to any branch except `main` | Installs dependencies, builds the Vite assets, runs `php artisan test` (SQLite in memory, config from `.env.example` – never the real `.env`). |
-| `.github/workflows/deploy.yml` | push to `main`, or manually (Actions > Deploy > Run workflow) | Runs the tests, then builds `vendor/` (no dev packages) and the Vite assets (`public/build`), uploads with rsync over SSH, runs `.github/scripts/post-deploy.sh` on the server, and checks the site answers HTTP 200. |
+| `.github/workflows/deploy.yml` | push to `main`, or manually (Actions > Deploy > Run workflow) | Runs the tests, then builds `vendor/` (no dev packages) and the Vite assets (`public/build`), uploads with rsync over SSH, runs `.github/scripts/post-deploy.sh` on the server (including `php artisan migrate --force`), and checks the site answers HTTP 200. |
 
 Deploy behaviour worth knowing:
 
 - **Nothing is deployed if a test fails.** Only one deploy runs at a time.
 - **Server state is never touched:** `.env`, `storage/` (logs, sessions, cache), `bootstrap/cache/`, `.well-known/`, `default.php` and any other folders in `public_html` are excluded from upload and from deletion (`.github/deploy-excludes.txt`). Only the app's own folders (`app`, `bootstrap`, `config`, `database`, `public`, `resources`, `routes`, `vendor`) are mirrored exactly, so deleted files disappear from the server.
-- **Migrations do NOT run automatically** (see "Database migrations" below).
+- **Migrations run automatically** on every deploy (see "Database migrations" below).
 - **Config and route caching are deliberately not used.** `SslCommerzNotification` reads `env('APP_URL')` directly; once config is cached that returns `null` and the SSLCommerz success/fail/IPN URLs break. The deploy script actively clears those caches.
 - The root `.htaccess` makes Apache serve only `public/` and blocks `.env`, `vendor/`, `storage/`, `*.sql`, etc., because the whole project sits inside `public_html`.
 
@@ -53,10 +53,9 @@ Variables:
 Optional: Settings > Environments > `production` > add *required reviewers* to make every deploy wait for an approval click.
 
 ## Database migrations
-The production database is shared with other tables/apps and some older migrations in this repo (`submissions`, `jobs`) have no "table already exists" guard, so a blanket `migrate` can fail on production. Deploys therefore only print `migrate:status`.
+Every deploy runs `php artisan migrate --force` after the files are uploaded, so a push to `main` needs no manual step. All migrations that touch tables shared with the other app are guarded ("skip if the table already exists"), so this is safe on the production database. **When you write a new migration, keep it additive** (new tables/nullable columns): the new code is live for a few seconds before the migration finishes, and a migration that fails stops the deploy after the upload.
 
-To run a migration: Actions > Deploy > *Run workflow* > tick **Run database migrations**. For the share-booking feature run only the new one by entering
-`database/migrations/2026_09_24_000001_create_transaction_shares_table.php` in *migration_path*. Leave it empty only after `migrate:status` shows that just the intended migrations are pending. **Deploy this migration before (or with) the code that needs it**, otherwise both payment methods fail when they save the booking lines.
+Manual runs (Actions > Deploy > *Run workflow*) can untick **Run database migrations** to skip them, or fill *migration_path* to run a single migration file.
 
 ## Rolling back
 Re-run the Deploy workflow on an earlier commit (Actions > Deploy > Run workflow, pick the tag/branch), or `git revert` on `main`. Database migrations are not rolled back automatically.

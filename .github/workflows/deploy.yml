@@ -6,9 +6,9 @@ on:
   workflow_dispatch:
     inputs:
       run_migrations:
-        description: 'Run database migrations after deploying'
+        description: 'Run database migrations after deploying (pushes to main always do)'
         type: boolean
-        default: false
+        default: true
       migration_path:
         description: 'Only run this migration file (e.g. database/migrations/2026_09_24_000001_create_transaction_shares_table.php). Empty = all pending.'
         type: string
@@ -125,9 +125,16 @@ jobs:
           SSH_USER: ${{ secrets.SSH_USER }}
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
           PHP_BIN: ${{ vars.PHP_BIN }}
-          RUN_MIGRATIONS: ${{ inputs.run_migrations || 'false' }}
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_MIGRATE: ${{ inputs.run_migrations }}
           MIGRATION_PATH: ${{ inputs.migration_path }}
         run: |
+          # Pushes to main always migrate; a manual run can opt out with the checkbox.
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$INPUT_MIGRATE" != "true" ]; then
+            RUN_MIGRATIONS=false
+          else
+            RUN_MIGRATIONS=true
+          fi
           ssh -i "$HOME/.ssh/id_deploy" -p "${SSH_PORT:-22}" -o BatchMode=yes $SSH_HOSTKEY_OPTS \
             "$SSH_USER@$SSH_HOST" \
             "DEPLOY_PATH=$(printf %q "$DEPLOY_PATH") PHP_BIN=$(printf %q "${PHP_BIN:-php}") RUN_MIGRATIONS=$(printf %q "$RUN_MIGRATIONS") MIGRATION_PATH=$(printf %q "$MIGRATION_PATH") bash -s" \

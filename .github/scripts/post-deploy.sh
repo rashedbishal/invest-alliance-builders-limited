@@ -48,7 +48,7 @@ if [ "$RUN_MIGRATIONS" = "true" ]; then
     "$PHP_BIN" artisan migrate --force
   fi
 else
-  echo "Skipping migrations (enable them when running the workflow manually). Current state:"
+  echo "Skipping migrations (switched off for this manual run). Current state:"
   "$PHP_BIN" artisan migrate:status || true
 fi
 
