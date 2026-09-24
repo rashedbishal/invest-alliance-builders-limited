@@ -1,0 +1,128 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      run_migrations:
+        description: 'Run database migrations after deploying'
+        type: boolean
+        default: false
+      migration_path:
+        description: 'Only run this migration file (e.g. database/migrations/2026_09_24_000001_create_transaction_shares_table.php). Empty = all pending.'
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  tests:
+    uses: ./.github/workflows/tests.yml
+
+  deploy:
+    needs: tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, dom, gd, curl, fileinfo, intl, openssl
+          tools: composer:v2
+          coverage: none
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      # Built here so the shared host never has to run Composer. Scripts are skipped
+      # because package discovery runs on the server (post-deploy.sh).
+      - name: Install production dependencies
+        run: composer install --no-dev --no-interaction --prefer-dist --no-progress --no-scripts --optimize-autoloader
+
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          if [ -n "$SSH_KNOWN_HOSTS" ]; then
+            printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -p "${SSH_PORT:-22}" -H "$SSH_HOST" > ~/.ssh/known_hosts
+          fi
+
+      - name: Upload files
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          DEPLOY_PATH="${DEPLOY_PATH%/}" # a trailing slash in the secret is fine
+          SSH_CMD="ssh -i $HOME/.ssh/id_deploy -p ${SSH_PORT:-22} -o BatchMode=yes -o StrictHostKeyChecking=yes"
+          DEST="$SSH_USER@$SSH_HOST:$DEPLOY_PATH/"
+
+          $SSH_CMD "$SSH_USER@$SSH_HOST" "mkdir -p '$DEPLOY_PATH'"
+
+          # 1) Everything, without deleting anything (public_html may hold other things).
+          rsync -rltz --chmod=D755,F644 --human-readable --stats \
+            --exclude-from=.github/deploy-excludes.txt \
+            -e "$SSH_CMD" ./ "$DEST"
+
+          # 2) Directories owned by the app are mirrored exactly, so removed files disappear.
+          rsync -rltz --chmod=D755,F644 --delete --relative \
+            --exclude-from=.github/deploy-excludes.txt \
+            -e "$SSH_CMD" ./app ./bootstrap ./config ./database ./public ./resources ./routes ./vendor "$DEST"
+
+      - name: Post-deploy tasks
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          PHP_BIN: ${{ vars.PHP_BIN }}
+          RUN_MIGRATIONS: ${{ inputs.run_migrations || 'false' }}
+          MIGRATION_PATH: ${{ inputs.migration_path }}
+        run: |
+          ssh -i "$HOME/.ssh/id_deploy" -p "${SSH_PORT:-22}" -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$SSH_USER@$SSH_HOST" \
+            "DEPLOY_PATH=$(printf %q "$DEPLOY_PATH") PHP_BIN=$(printf %q "${PHP_BIN:-php}") RUN_MIGRATIONS=$(printf %q "$RUN_MIGRATIONS") MIGRATION_PATH=$(printf %q "$MIGRATION_PATH") bash -s" \
+            < .github/scripts/post-deploy.sh
+
+      - name: Health check
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: |
+          if [ -z "$SITE_URL" ]; then
+            echo "SITE_URL variable not set - skipping health check."
+            exit 0
+          fi
+          for attempt in 1 2 3 4 5; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$SITE_URL" || true)
+            echo "Attempt $attempt: HTTP $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 5
+          done
+          echo "::error::$SITE_URL did not return HTTP 200 after the deploy."
+          exit 1

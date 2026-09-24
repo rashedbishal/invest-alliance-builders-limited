@@ -1,0 +1,39 @@
+# Files that are never uploaded. Because they are excluded, rsync also never
+# deletes them on the server (server-side state is safe).
+
+# Server-only state and hosting-provider files
+/.env
+/.env.*
+/storage/
+/bootstrap/cache/
+/.well-known/
+/public/.well-known/
+/public/storage
+/public/hot
+/default.php
+/cgi-bin/
+/error_log
+/.user.ini
+/.htpasswd
+
+# Development, CI and repository files
+/.git/
+/.github/
+/.gitattributes
+/.gitignore
+/.editorconfig
+/.idea/
+/.vscode/
+/.phpunit.result.cache
+/.phpunit.cache/
+/node_modules/
+/tests/
+/docs/
+/phpunit.xml
+/package.json
+/package-lock.json
+/vite.config.js
+/README.md
+
+# Database dump (contains customer data)
+/*.sql

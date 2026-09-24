@@ -1,0 +1,26 @@
+# The whole project lives in public_html, so this file makes Apache serve only
+# public/ and keeps everything else (.env, vendor, storage, ...) unreachable.
+# Laravel's own front controller rules are in public/.htaccess.
+
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Never expose dotfiles/dirs (.env, .git, ...) - except .well-known (SSL validation)
+    RewriteRule ^\.well-known/ - [L]
+    RewriteRule (^|/)\.(?!well-known/) - [F,L]
+
+    # Application directories and project files must not be reachable over HTTP
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor|node_modules|docs)(/|$) - [F,L]
+    RewriteRule ^(artisan|composer\.(json|lock)|package(-lock)?\.json|phpunit\.xml|vite\.config\.js|README\.md|default\.php)$ - [F,L]
+    RewriteRule \.sql$ - [F,L]
+
+    # Drop a trailing slash (public/.htaccess would do it, but only after rewriting to /public/...)
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.+)/$ /$1 [R=301,L]
+
+    # Everything else is served from public/
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
