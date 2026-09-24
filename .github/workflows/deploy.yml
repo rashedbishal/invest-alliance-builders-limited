@@ -56,6 +56,18 @@ jobs:
       - name: Install production dependencies
         run: composer install --no-dev --no-interaction --prefer-dist --no-progress --no-scripts --optimize-autoloader
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      # Built here and uploaded with public/ (the server has no Node). The landing page needs
+      # public/build/manifest.json because it uses Vite::asset() for its images.
+      - name: Build front-end assets
+        run: |
+          npm ci
+          npm run build
+
       - name: Configure SSH
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}

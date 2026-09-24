@@ -4,8 +4,8 @@
 
 | Workflow | Runs when | What it does |
 |---|---|---|
-| `.github/workflows/tests.yml` | pull requests, pushes to any branch except `main` | Installs dependencies, runs `php artisan test` (SQLite in memory, config from `.env.example` – never the real `.env`). |
-| `.github/workflows/deploy.yml` | push to `main`, or manually (Actions > Deploy > Run workflow) | Runs the tests, then builds `vendor/` (no dev packages), uploads with rsync over SSH, runs `.github/scripts/post-deploy.sh` on the server, and checks the site answers HTTP 200. |
+| `.github/workflows/tests.yml` | pull requests, pushes to any branch except `main` | Installs dependencies, builds the Vite assets, runs `php artisan test` (SQLite in memory, config from `.env.example` – never the real `.env`). |
+| `.github/workflows/deploy.yml` | push to `main`, or manually (Actions > Deploy > Run workflow) | Runs the tests, then builds `vendor/` (no dev packages) and the Vite assets (`public/build`), uploads with rsync over SSH, runs `.github/scripts/post-deploy.sh` on the server, and checks the site answers HTTP 200. |
 
 Deploy behaviour worth knowing:
 

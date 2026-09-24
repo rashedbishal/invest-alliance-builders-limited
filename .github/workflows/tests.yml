@@ -37,6 +37,17 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      # The landing page uses Vite::asset() for its images, so it needs public/build/manifest.json.
+      - name: Build front-end assets
+        run: |
+          npm ci
+          npm run build
+
       # The tracked .env holds real credentials, so it must never be used here:
       # start from the example file and generate a throw-away key instead.
       - name: Prepare environment
