@@ -309,7 +309,10 @@
                         <div class="flex justify-between flex-wrap gap-2">
                             <span class="text-black/85" data-en>{{ $hotel['name'] }} · Price per Share</span>
                             <span class="text-black/85 hidden" data-bn>{{ $hotel['name_bn'] }} · প্রতি শেয়ারের মূল্য</span>
-                            <span class="text-[#0A2F5E] font-semibold">৳ {{ $inr($hotel['price']) }}</span>
+                            <span class="text-right">
+                                <span class="text-[#0A2F5E] font-semibold">৳ {{ $inr($hotel['price']) }}</span>
+                                <span class="local-price hidden text-[#0A2F5E]/75 text-sm" data-bdt="{{ $hotel['price'] }}"></span>
+                            </span>
                         </div>
                     @endforeach
                     <div class="flex justify-between flex-wrap gap-2">
@@ -375,6 +378,7 @@
                                             <div class="text-[#28ace2] text-sm mt-1">
                                                 ৳ {{ $inr($hotel['price']) }}
                                                 <span data-en>per share</span><span data-bn style="display:none">প্রতি শেয়ার</span>
+                                                <span class="local-price hidden text-white/60 text-xs" data-bdt="{{ $hotel['price'] }}"></span>
                                             </div>
                                         </div>
                                         <span class="share-check" aria-hidden="true">✓</span>
@@ -405,6 +409,11 @@
                         <label class="block text-[#28ace2] text-[10px] sm:text-xs  mb-1.5 hidden" data-bn>মোট বিনিয়োগ</label>
                         <div id="totalAmount" class="bg-white/10 border border-[#28ace2]/40 px-4 sm:px-6 py-2 rounded-xl sm:rounded-2xl text-xl sm:text-2xl text-[#28ace2] font-light">
                             ৳ 0
+                        </div>
+                        <div id="totalLocal" class="hidden text-sm text-white/75 mt-1"></div>
+                        <div id="localNote" class="hidden text-xs text-white/55 mt-1">
+                            <span data-en>Converted at today's exchange rate for reference only. Payment is processed in BDT (SSLCommerz) or USD (PayPal).</span>
+                            <span data-bn style="display:none">আজকের বিনিময় হারে রূপান্তরিত, শুধুমাত্র তথ্যের জন্য। পেমেন্ট বাংলাদেশি টাকা (SSLCommerz) বা মার্কিন ডলারে (PayPal) সম্পন্ন হয়।</span>
                         </div>
                     </div>
 
@@ -615,6 +624,37 @@
     let sharesTouched = false; // only show share errors after the visitor has interacted
 
     const formatBdt = n => Number(n).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+
+    // ---- Local currency (display only; nothing here is sent to the payment endpoints) ----
+    let localCurrency = null; // { currency: 'USD', rate: <per 1 BDT> }, set once /currency answers
+    const totalLocalEl = document.getElementById('totalLocal');
+    const localNoteEl = document.getElementById('localNote');
+
+    function formatLocal(bdt) {
+        const value = bdt * localCurrency.rate;
+        try {
+            return new Intl.NumberFormat(undefined, {
+                style: 'currency', currency: localCurrency.currency, maximumFractionDigits: value >= 100 ? 0 : 2
+            }).format(value);
+        } catch (e) {
+            return localCurrency.currency + ' ' + value.toFixed(2);
+        }
+    }
+
+    function renderLocal() {
+        if(!localCurrency) return;
+        document.querySelectorAll('.local-price').forEach(el => {
+            el.textContent = '(≈ ' + formatLocal(parseFloat(el.dataset.bdt)) + ')';
+            el.classList.remove('hidden');
+        });
+        if(currentTotal > 0) {
+            totalLocalEl.textContent = '≈ ' + formatLocal(currentTotal);
+            totalLocalEl.classList.remove('hidden');
+        } else {
+            totalLocalEl.classList.add('hidden');
+        }
+        localNoteEl.classList.remove('hidden');
+    }
     const isSelected = key => Object.prototype.hasOwnProperty.call(selection, key);
 
     function parseCount(raw, max) {
@@ -702,6 +742,7 @@
         currentTotal = total;
         totalAmountEl.textContent = '৳ ' + formatBdt(total);
         renderSslOption();
+        renderLocal();
         validateShares();
     }
 
@@ -900,6 +941,21 @@
 
     renderShares();
     updatePayButtonState();
+
+    // Ask the server which currency this visitor should see (by IP). If it fails or the
+    // visitor is in Bangladesh nothing changes and only BDT is shown.
+    (function() {
+        const preview = new URLSearchParams(window.location.search).get('currency'); // ?currency=USD to preview
+        fetch("{{ route('currency.show') }}" + (preview ? '?currency=' + encodeURIComponent(preview) : ''), { headers: { 'Accept': 'application/json' } })
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+                if(data && data.currency && data.rate > 0) {
+                    localCurrency = data;
+                    renderLocal();
+                }
+            })
+            .catch(() => {});
+    })();
 
     document.querySelectorAll('input').forEach(el => {
         el.addEventListener('focus', () => { cursor.style.width='16px'; cursor.style.height='16px'; });

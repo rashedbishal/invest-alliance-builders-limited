@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CurrencyController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PayPalPaymentController;
 use App\Http\Controllers\SslCommerzPaymentController;
@@ -16,6 +17,8 @@ Route::get('/form', function (ShareCatalog $catalog) {
         'sslLimit' => (float) config('shares.sslcommerz_limit'),
     ]);
 })->name('form');
+
+Route::get('/currency', [CurrencyController::class, 'show'])->middleware('throttle:60,1')->name('currency.show');
 
 Route::post('/pay', [SslCommerzPaymentController::class, 'index']);
 Route::post('/pay-via-ajax', [SslCommerzPaymentController::class, 'payViaAjax']);
