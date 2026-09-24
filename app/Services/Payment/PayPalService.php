@@ -51,12 +51,14 @@ class PayPalService
     public function captureOrder(string $orderId, string $reference): array
     {
         $response = $this->client()
-            ->withHeaders(['PayPal-Request-Id' => 'capture-'.$reference])
+            ->withHeaders(['PayPal-Request-Id' => 'capture-'.$reference] + $this->mockHeaders())
             ->withBody('{}', 'application/json')
             ->post("/v2/checkout/orders/{$orderId}/capture");
 
         if ($response->failed()) {
-            throw new RuntimeException('PayPal capture failed: '.$response->body());
+            $issue = $response->json('details.0.issue') ?? $response->json('name');
+
+            throw new PayPalApiException('PayPal capture failed: '.$response->body(), is_string($issue) ? $issue : null, $response->status());
         }
 
         return $response->json();
@@ -74,6 +76,22 @@ class PayPalService
         }
 
         return null;
+    }
+
+    /**
+     * Sandbox-only negative testing. Never sent in live mode, whatever PAYPAL_MOCK_RESPONSE says.
+     *
+     * @return array<string, string>
+     */
+    private function mockHeaders(): array
+    {
+        $code = (string) config('paypal.mock_response');
+
+        if (config('paypal.mode') !== 'sandbox' || ! preg_match('/^[A-Z_]+$/', $code)) {
+            return [];
+        }
+
+        return ['PayPal-Mock-Response' => json_encode(['mock_application_codes' => $code])];
     }
 
     private function client(): PendingRequest

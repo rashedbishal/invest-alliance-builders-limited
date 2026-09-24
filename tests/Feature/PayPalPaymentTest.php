@@ -222,6 +222,171 @@ class PayPalPaymentTest extends TestCase
         $this->get('/paypal/success')->assertSessionHas('fail');
     }
 
+    private function fakeCapture(array $body, int $status): void
+    {
+        Http::fake([
+            '*/v1/oauth2/token' => Http::response(['access_token' => 'tok']),
+            '*/v2/checkout/orders/ORDER123/capture' => Http::response($body, $status),
+        ]);
+    }
+
+    private function paypalError(string $issue, string $name = 'UNPROCESSABLE_ENTITY'): array
+    {
+        return ['name' => $name, 'details' => [['issue' => $issue, 'description' => $issue]]];
+    }
+
+    public function test_declined_payment_is_marked_failed_and_customer_is_told_why(): void
+    {
+        Mail::fake();
+        $this->fakeCapture($this->paypalError('INSTRUMENT_DECLINED'), 422);
+        $this->pendingTransaction();
+
+        $this->get('/paypal/success?token=ORDER123')
+            ->assertRedirect(route('home'))
+            ->assertSessionHas('fail')
+            ->assertSessionHas('fail_reason', fn ($m) => str_contains($m, 'declined'));
+
+        $tx = Transaction::firstOrFail();
+        $this->assertSame('Failed', $tx->status);
+        $this->assertSame('INSTRUMENT_DECLINED', $tx->error);
+        $this->assertNull($tx->invoice_number);
+        $this->assertSame(0, Invoice::count());
+        Mail::assertNothingQueued();
+
+        // Reloading the return page does not try to capture again.
+        $this->get('/paypal/success?token=ORDER123')->assertSessionHas('fail');
+        Http::assertSentCount(2); // token + one capture
+        $this->assertSame('Failed', Transaction::firstOrFail()->status);
+    }
+
+    public function test_declined_status_in_a_successful_response_is_marked_failed(): void
+    {
+        Mail::fake();
+        $this->fakeCapture([
+            'id' => 'ORDER123', 'status' => 'COMPLETED',
+            'purchase_units' => [['payments' => ['captures' => [['id' => 'C1', 'status' => 'DECLINED', 'amount' => ['currency_code' => 'USD', 'value' => '122.88']]]]]],
+        ], 201);
+        $this->pendingTransaction();
+
+        $this->get('/paypal/success?token=ORDER123')->assertSessionHas('fail_reason');
+
+        $this->assertSame('Failed', Transaction::firstOrFail()->status);
+        $this->assertSame(0, Invoice::count());
+        Mail::assertNothingQueued();
+    }
+
+    public function test_pending_review_keeps_the_transaction_pending_and_informs_the_customer(): void
+    {
+        Mail::fake();
+        $this->fakeCapture([
+            'id' => 'ORDER123', 'status' => 'COMPLETED',
+            'purchase_units' => [['payments' => ['captures' => [['id' => 'C1', 'status' => 'PENDING', 'amount' => ['currency_code' => 'USD', 'value' => '122.88']]]]]],
+        ], 201);
+        $this->pendingTransaction();
+
+        $this->get('/paypal/success?token=ORDER123')
+            ->assertSessionHas('info', fn ($m) => str_contains($m, 'reviewing'))
+            ->assertSessionHas('info_title', 'Payment Under Review')
+            ->assertSessionMissing('fail');
+
+        $this->assertSame('Pending', Transaction::firstOrFail()->status);
+        $this->assertSame(0, Invoice::count());
+        Mail::assertNothingQueued();
+    }
+
+    /**
+     * @dataProvider unclearErrors
+     */
+    public function test_errors_that_are_not_a_clear_decline_leave_the_transaction_pending(array $body, int $status): void
+    {
+        Mail::fake();
+        $this->fakeCapture($body, $status);
+        $this->pendingTransaction();
+
+        $this->get('/paypal/success?token=ORDER123')
+            ->assertSessionHas('fail')
+            ->assertSessionMissing('fail_reason');
+
+        $this->assertSame('Pending', Transaction::firstOrFail()->status);
+        $this->assertSame(0, Invoice::count());
+    }
+
+    public static function unclearErrors(): array
+    {
+        return [
+            'order not approved' => [['name' => 'UNPROCESSABLE_ENTITY', 'details' => [['issue' => 'ORDER_NOT_APPROVED']]], 422],
+            'already captured' => [['name' => 'UNPROCESSABLE_ENTITY', 'details' => [['issue' => 'ORDER_ALREADY_CAPTURED']]], 422],
+            'merchant side problem' => [['name' => 'UNPROCESSABLE_ENTITY', 'details' => [['issue' => 'PAYEE_ACCOUNT_RESTRICTED']]], 422],
+            'paypal outage' => [['name' => 'INTERNAL_SERVER_ERROR'], 500],
+        ];
+    }
+
+    public function test_sandbox_mock_response_is_sent_on_capture(): void
+    {
+        config(['paypal.mode' => 'sandbox', 'paypal.mock_response' => 'INSTRUMENT_DECLINED']);
+        $this->fakeCapture($this->paypalError('INSTRUMENT_DECLINED'), 422);
+        $this->pendingTransaction();
+
+        $this->get('/paypal/success?token=ORDER123')->assertSessionHas('fail_reason');
+
+        Http::assertSent(fn ($r) => str_ends_with($r->url(), '/capture')
+            && $r->header('PayPal-Mock-Response') === ['{"mock_application_codes":"INSTRUMENT_DECLINED"}']);
+    }
+
+    /**
+     * @dataProvider mockThatMustNotBeSent
+     */
+    public function test_mock_response_is_never_sent_in_live_mode_or_when_unset_or_malformed(string $mode, ?string $code): void
+    {
+        config(['paypal.mode' => $mode, 'paypal.mock_response' => $code]);
+        Mail::fake();
+        $this->fakePayPal();
+        $this->pendingTransaction();
+
+        $this->get('/paypal/success?token=ORDER123')->assertSessionHas('success');
+
+        Http::assertSent(fn ($r) => str_ends_with($r->url(), '/capture') && ! $r->hasHeader('PayPal-Mock-Response'));
+    }
+
+    public static function mockThatMustNotBeSent(): array
+    {
+        return [
+            'live mode' => ['live', 'INSTRUMENT_DECLINED'],
+            'sandbox, unset' => ['sandbox', null],
+            'sandbox, empty' => ['sandbox', ''],
+            'sandbox, lower case' => ['sandbox', 'instrument_declined'],
+            'sandbox, injection attempt' => ['sandbox', 'X","y":"z'],
+        ];
+    }
+
+    public function test_cancel_does_not_change_a_failed_or_paid_transaction(): void
+    {
+        $this->pendingTransaction(['status' => 'Failed']);
+
+        $this->get('/paypal/cancel?token=ORDER123')->assertSessionHas('cancel');
+
+        $this->assertSame('Failed', Transaction::firstOrFail()->status);
+    }
+
+    public function test_home_page_shows_the_decline_reason_and_custom_info_title(): void
+    {
+        $this->withSession(['fail' => 'Transaction is failed', 'fail_reason' => 'Boom reason text'])
+            ->get('/')->assertSee('Payment Failed')->assertSee('Boom reason text');
+
+        $this->withSession(['info' => 'Under review text', 'info_title' => 'Payment Under Review'])
+            ->get('/')->assertSee('Payment Under Review')->assertSee('Under review text')->assertDontSee('Already Processed');
+    }
+
+    public function test_home_page_modals_look_the_same_as_before_when_no_extras_are_set(): void
+    {
+        // SSLCommerz (and older PayPal) flashes only set `fail` / `info`.
+        $this->withSession(['fail' => 'Transaction is failed'])
+            ->get('/')->assertSee('Payment Failed')->assertDontSee('Transaction is failed');
+
+        $this->withSession(['info' => 'Transaction is already successful'])
+            ->get('/')->assertSee('Already Processed')->assertSee('Transaction is already successful');
+    }
+
     public function test_cancel_marks_pending_transaction_cancelled(): void
     {
         $this->pendingTransaction();

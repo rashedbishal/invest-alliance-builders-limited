@@ -1593,7 +1593,7 @@
             <button onclick="document.getElementById('infoModal').remove()"
                     class="absolute top-4 right-5 font-['Cinzel'] text-xs" style="color:rgba(40,172,226,0.5)">✕</button>
             <div class="text-4xl mb-6">ℹ️</div>
-            <h2 class="font-['Cinzel'] text-xl mb-4" style="color:var(--gold)">Already Processed</h2>
+            <h2 class="font-['Cinzel'] text-xl mb-4" style="color:var(--gold)">{{ session('info_title', 'Already Processed') }}</h2>
             <p class="font-['Cormorant_Garamond'] text-lg mb-8" style="color:rgba(232,220,200,0.6)">{{ session('info') }}</p>
             <button onclick="document.getElementById('infoModal').remove()" class="btn-outline">Dismiss</button>
         </div>
@@ -1633,6 +1633,10 @@
             <h2 class="font-['Cinzel'] text-2xl font-normal" style="color:#f87171">
                 Payment Failed
             </h2>
+
+            @if(session('fail_reason'))
+                <p class="font-['Cormorant_Garamond'] text-lg mt-6" style="color:rgba(232,220,200,0.7)">{{ session('fail_reason') }}</p>
+            @endif
 
 {{--            <p class="font-['Cormorant_Garamond'] text-lg italic mb-8"--}}
 {{--               style="color:rgba(232,220,200,0.6)">{{ session('fail') }}</p>--}}

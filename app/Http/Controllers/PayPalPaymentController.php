@@ -12,6 +12,7 @@ use App\Models\Transaction;
 use App\Models\TransactionShare;
 use App\Services\Booking\ShareCatalog;
 use App\Services\Payment\MoneyReceiptGenerator;
+use App\Services\Payment\PayPalApiException;
 use App\Services\Payment\PayPalService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
@@ -26,6 +27,26 @@ use Throwable;
 
 class PayPalPaymentController extends Controller
 {
+    /**
+     * PayPal capture errors that mean "this payment will not go through", so the
+     * transaction is closed as Failed. Anything else (network trouble, ORDER_NOT_APPROVED,
+     * ORDER_ALREADY_CAPTURED, merchant-side problems) leaves it Pending: the money may
+     * really have moved, so it needs a look instead of being written off.
+     */
+    private const DECLINED_ISSUES = [
+        'INSTRUMENT_DECLINED',
+        'TRANSACTION_REFUSED',
+        'PAYER_ACCOUNT_RESTRICTED',
+        'PAYER_ACCOUNT_LOCKED_OR_CLOSED',
+        'PAYER_CANNOT_PAY',
+        'TRANSACTION_LIMIT_EXCEEDED',
+        'MAX_NUMBER_OF_PAYMENT_ATTEMPTS_EXCEEDED',
+    ];
+
+    private const DECLINED_MESSAGE = 'Your PayPal payment was declined and you have not been charged. Please try again with another payment method or contact PayPal.';
+
+    private const PENDING_MESSAGE = 'PayPal is reviewing your payment. We will confirm it as soon as PayPal completes the review - please contact us if you do not hear from us.';
+
     public function __construct(private PayPalService $paypal, private ShareCatalog $catalog)
     {
     }
@@ -144,10 +165,30 @@ class PayPalPaymentController extends Controller
             } catch (Throwable $e) {
                 Log::error($e->getMessage());
 
+                if ($e instanceof PayPalApiException && in_array($e->issue, self::DECLINED_ISSUES, true)) {
+                    $transaction->update(['status' => 'Failed', 'error' => $e->issue]);
+
+                    return ['outcome' => 'declined'];
+                }
+
                 return ['outcome' => 'fail'];
             }
 
             $capture = $order['purchase_units'][0]['payments']['captures'][0] ?? null;
+            $captureStatus = $capture['status'] ?? null;
+
+            if (in_array($captureStatus, ['DECLINED', 'FAILED'], true)) {
+                Log::warning('PayPal capture '.$captureStatus.': '.json_encode($order));
+                $transaction->update(['status' => 'Failed', 'error' => $captureStatus]);
+
+                return ['outcome' => 'declined'];
+            }
+
+            if ($captureStatus === 'PENDING') {
+                Log::warning('PayPal capture pending review for '.$transaction->transaction_id.': '.json_encode($order));
+
+                return ['outcome' => 'pending'];
+            }
 
             if (($order['status'] ?? null) !== 'COMPLETED' || ! $capture || ($capture['status'] ?? null) !== 'COMPLETED') {
                 Log::warning('PayPal capture not completed: '.json_encode($order));
@@ -222,6 +263,10 @@ class PayPalPaymentController extends Controller
                 return redirect()->route('home')->with('success', 'Transaction is successful');
             case 'already':
                 return redirect()->route('home')->with('info', 'Transaction is already successful');
+            case 'declined':
+                return redirect()->route('home')->with('fail', 'Transaction is failed')->with('fail_reason', self::DECLINED_MESSAGE);
+            case 'pending':
+                return redirect()->route('home')->with('info', self::PENDING_MESSAGE)->with('info_title', 'Payment Under Review');
             default:
                 return redirect()->route('home')->with('fail', 'Transaction is failed');
         }
