@@ -195,6 +195,8 @@
         .offer-box > div {
             word-break: break-word;
         }
+        /* When a local currency is shown, the BDT amount follows it in small brackets */
+        .money-alt { font-size: 0.7em; font-weight: 400; opacity: 0.75; white-space: nowrap; }
         /* Hotel share cards */
         .share-card {
             background: rgba(255,255,255,0.08);
@@ -309,10 +311,7 @@
                         <div class="flex justify-between flex-wrap gap-2">
                             <span class="text-black/85" data-en>{{ $hotel['name'] }} · Price per Share</span>
                             <span class="text-black/85 hidden" data-bn>{{ $hotel['name_bn'] }} · প্রতি শেয়ারের মূল্য</span>
-                            <span class="text-right">
-                                <span class="text-[#0A2F5E] font-semibold">৳ {{ $inr($hotel['price']) }}</span>
-                                <span class="local-price hidden text-[#0A2F5E]/75 text-sm" data-bdt="{{ $hotel['price'] }}"></span>
-                            </span>
+                            <span class="money text-[#0A2F5E] font-semibold" data-bdt="{{ $hotel['price'] }}">৳ {{ $inr($hotel['price']) }}</span>
                         </div>
                     @endforeach
                     <div class="flex justify-between flex-wrap gap-2">
@@ -376,9 +375,8 @@
                                             <div class="text-[#F7F1E8] text-lg leading-tight" data-en>{{ $hotel['name'] }}</div>
                                             <div class="text-[#F7F1E8] text-lg leading-tight hidden" data-bn>{{ $hotel['name_bn'] }}</div>
                                             <div class="text-[#28ace2] text-sm mt-1">
-                                                ৳ {{ $inr($hotel['price']) }}
+                                                <span class="money" data-bdt="{{ $hotel['price'] }}">৳ {{ $inr($hotel['price']) }}</span>
                                                 <span data-en>per share</span><span data-bn style="display:none">প্রতি শেয়ার</span>
-                                                <span class="local-price hidden text-white/60 text-xs" data-bdt="{{ $hotel['price'] }}"></span>
                                             </div>
                                         </div>
                                         <span class="share-check" aria-hidden="true">✓</span>
@@ -410,10 +408,9 @@
                         <div id="totalAmount" class="bg-white/10 border border-[#28ace2]/40 px-4 sm:px-6 py-2 rounded-xl sm:rounded-2xl text-xl sm:text-2xl text-[#28ace2] font-light">
                             ৳ 0
                         </div>
-                        <div id="totalLocal" class="hidden text-sm text-white/75 mt-1"></div>
                         <div id="localNote" class="hidden text-xs text-white/55 mt-1">
-                            <span data-en>Converted at today's exchange rate for reference only. Payment is processed in BDT (SSLCommerz) or USD (PayPal).</span>
-                            <span data-bn style="display:none">আজকের বিনিময় হারে রূপান্তরিত, শুধুমাত্র তথ্যের জন্য। পেমেন্ট বাংলাদেশি টাকা (SSLCommerz) বা মার্কিন ডলারে (PayPal) সম্পন্ন হয়।</span>
+                            <span data-en>Shown in your local currency at today's exchange rate, for reference only. The BDT amount in brackets is the actual price; payment is processed in BDT (SSLCommerz) or USD (PayPal).</span>
+                            <span data-bn style="display:none">আপনার স্থানীয় মুদ্রায় আজকের বিনিময় হারে দেখানো হয়েছে, শুধুমাত্র তথ্যের জন্য। বন্ধনীর মধ্যে বাংলাদেশি টাকার পরিমাণই আসল মূল্য; পেমেন্ট বাংলাদেশি টাকা (SSLCommerz) বা মার্কিন ডলারে (PayPal) সম্পন্ন হয়।</span>
                         </div>
                     </div>
 
@@ -626,33 +623,43 @@
     const formatBdt = n => Number(n).toLocaleString('en-IN', { maximumFractionDigits: 2 });
 
     // ---- Local currency (display only; nothing here is sent to the payment endpoints) ----
+    // Outside Bangladesh the local currency is the main figure and the BDT amount follows in brackets.
     let localCurrency = null; // { currency: 'USD', rate: <per 1 BDT> }, set once /currency answers
-    const totalLocalEl = document.getElementById('totalLocal');
     const localNoteEl = document.getElementById('localNote');
 
     function formatLocal(bdt) {
         const value = bdt * localCurrency.rate;
         try {
+            const digits = (value >= 100 || value === 0) ? 0 : 2; // "$3,256", "$0", but "$5.50"
             return new Intl.NumberFormat(undefined, {
-                style: 'currency', currency: localCurrency.currency, maximumFractionDigits: value >= 100 ? 0 : 2
+                style: 'currency', currency: localCurrency.currency, minimumFractionDigits: digits, maximumFractionDigits: digits
             }).format(value);
         } catch (e) {
             return localCurrency.currency + ' ' + value.toFixed(2);
         }
     }
 
+    function addBdtBracket(el, bdt) {
+        const alt = document.createElement('span');
+        alt.className = 'money-alt';
+        alt.textContent = ' (৳ ' + formatBdt(bdt) + ')';
+        el.appendChild(alt);
+    }
+
+    // Writes an amount into el: "৳ 4,00,000", or "$3,255 (৳ 4,00,000)" when a local currency is known
+    function setMoney(el, bdt) {
+        el.textContent = '';
+        if(!localCurrency) {
+            el.textContent = '৳ ' + formatBdt(bdt);
+            return;
+        }
+        el.append(formatLocal(bdt));
+        addBdtBracket(el, bdt);
+    }
+
     function renderLocal() {
         if(!localCurrency) return;
-        document.querySelectorAll('.local-price').forEach(el => {
-            el.textContent = '(≈ ' + formatLocal(parseFloat(el.dataset.bdt)) + ')';
-            el.classList.remove('hidden');
-        });
-        if(currentTotal > 0) {
-            totalLocalEl.textContent = '≈ ' + formatLocal(currentTotal);
-            totalLocalEl.classList.remove('hidden');
-        } else {
-            totalLocalEl.classList.add('hidden');
-        }
+        document.querySelectorAll('.money').forEach(el => setMoney(el, parseFloat(el.dataset.bdt)));
         localNoteEl.classList.remove('hidden');
     }
     const isSelected = key => Object.prototype.hasOwnProperty.call(selection, key);
@@ -733,16 +740,20 @@
 
             if(count !== null) {
                 total += h.price * count;
-                subtotal.textContent = count + ' × ৳ ' + formatBdt(h.price) + ' = ৳ ' + formatBdt(h.price * count);
+                if(localCurrency) {
+                    subtotal.textContent = count + ' × ' + formatLocal(h.price) + ' ≈ ' + formatLocal(h.price * count);
+                    addBdtBracket(subtotal, h.price * count);
+                } else {
+                    subtotal.textContent = count + ' × ৳ ' + formatBdt(h.price) + ' = ৳ ' + formatBdt(h.price * count);
+                }
                 subtotal.classList.remove('hidden');
             } else {
                 subtotal.classList.add('hidden');
             }
         });
         currentTotal = total;
-        totalAmountEl.textContent = '৳ ' + formatBdt(total);
+        setMoney(totalAmountEl, total);
         renderSslOption();
-        renderLocal();
         validateShares();
     }
 
@@ -952,6 +963,7 @@
                 if(data && data.currency && data.rate > 0) {
                     localCurrency = data;
                     renderLocal();
+                    renderShares(); // redraw subtotals and the total in the local currency
                 }
             })
             .catch(() => {});

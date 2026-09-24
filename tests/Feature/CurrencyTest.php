@@ -117,9 +117,10 @@ class CurrencyTest extends TestCase
 
         $this->get('/form')
             ->assertOk()
-            ->assertSee('class="local-price', false)
+            ->assertSee('class="money', false)
             ->assertSee('data-bdt="400000"', false)
-            ->assertSee('id="totalLocal"', false)
+            ->assertSee('id="totalAmount"', false)
+            ->assertSee('id="localNote"', false)
             ->assertSee(route('currency.show'), false);
 
         Http::assertNothingSent(); // the page renders without waiting on any external service
