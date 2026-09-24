@@ -110,18 +110,19 @@ class CurrencyTest extends TestCase
         Http::assertNothingSent();
     }
 
-    public function test_form_page_has_the_price_hooks_and_does_not_call_any_api_itself(): void
+    public function test_home_page_has_the_price_hooks_and_does_not_call_any_api_itself(): void
     {
         Http::fake();
         config(['shares.hotels' => ['jana' => ['name' => 'Hotel Jana', 'name_bn' => 'x', 'price' => 400000, 'max' => 10]]]);
+        config(['paypal.rate_source' => 'fixed']); // the PayPal rate has its own tests; here only the price display is checked
 
-        $this->get('/form')
+        $this->get('/')
             ->assertOk()
             ->assertSee('class="money', false)
             ->assertSee('data-bdt="400000"', false)
-            ->assertSee('id="totalAmount"', false)
-            ->assertSee('id="localNote"', false)
-            ->assertSee(route('currency.show'), false);
+            ->assertSee('data-total', false)
+            ->assertSee('data-rate-note', false)
+            ->assertSee(json_encode(route('currency.show')), false);
 
         Http::assertNothingSent(); // the page renders without waiting on any external service
     }

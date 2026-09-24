@@ -97,6 +97,12 @@ export function createPicker(root, { items, value, onChange, kind }) {
     const list = root.querySelector('.picker__list');
     const hidden = root.querySelector('input[type="hidden"]');
     if (root.dataset.label) btn.setAttribute('aria-label', root.dataset.label);
+    // The popover floats above the page: in the browser's top layer where supported, otherwise
+    // moved to <body> with fixed positioning. Either way it takes no space in the layout, can't be
+    // clipped by a parent, and is placed against the viewport so it never widens the page.
+    const topLayer = typeof pop.showPopover === 'function';
+    if (topLayer) pop.setAttribute('popover', 'manual');
+    pop.classList.add(`picker__pop--${kind}`);
 
     const t = (k) => TEXT[k][lang()];
     const flagImg = (it) => `<img src="${flagUrl(it.flag)}" srcset="${flagUrl(it.flag, 80)} 2x" alt="" width="22" height="16" loading="lazy" onerror="this.style.visibility='hidden'">`;
@@ -164,47 +170,57 @@ export function createPicker(root, { items, value, onChange, kind }) {
         open = true;
         search.placeholder = t('search');
         search.value = '';
+        if (!topLayer && pop.parentNode !== document.body) document.body.appendChild(pop);
         pop.hidden = false;
+        if (topLayer) { try { pop.showPopover(); } catch (e) { /* already open */ } }
         root.classList.add('is-open');
         btn.setAttribute('aria-expanded', 'true');
-        // Flip upwards when there isn't room below.
-        const r = btn.getBoundingClientRect();
-        root.classList.toggle('is-up', window.innerHeight - r.bottom < 340 && r.top > 340);
         renderList();
         place();
         window.addEventListener('resize', place);
+        window.addEventListener('scroll', place, { passive: true, capture: true });
         requestAnimationFrame(() => search.focus({ preventScroll: true }));
         document.addEventListener('pointerdown', outside, true);
     }
 
-    // Keep the popover inside the page: shift it sideways so it never pokes past the viewport edge.
+    // Anchor to the button, flip above it when there's more room there, and keep a 12px margin
+    // from every edge of the viewport.
     function place() {
         if (!open) return;
-        const gutter = 12;
+        const g = 12;
         const vw = document.documentElement.clientWidth;
-        pop.style.left = '0px';
-        pop.style.right = 'auto';
-        const r = root.getBoundingClientRect();
-        const w = pop.offsetWidth;
-        let x = 0;
-        if (r.left + w > vw - gutter) x = vw - gutter - w - r.left;
-        if (r.left + x < gutter) x = gutter - r.left;
-        pop.style.left = `${Math.round(x)}px`;
-        pop.style.transformOrigin = x < 0 ? 'top right' : 'top left';
+        const vh = document.documentElement.clientHeight;
+        const r = btn.getBoundingClientRect();
+        if (r.bottom < 0 || r.top > vh) { hide(false); return; }
+        const w = Math.min(340, vw - g * 2);
+        let left = r.left + w > vw - g ? r.right - w : r.left;
+        left = Math.max(g, Math.min(left, vw - g - w));
+        const below = vh - r.bottom - g - 8;
+        const above = r.top - g - 8;
+        const up = below < 300 && above > below;
+        list.style.maxHeight = `${Math.max(140, Math.min(320, (up ? above : below) - 56))}px`;
+        pop.style.width = `${w}px`;
+        pop.style.left = `${Math.round(left)}px`;
+        pop.style.top = up ? 'auto' : `${Math.round(r.bottom + 8)}px`;
+        pop.style.bottom = up ? `${Math.round(vh - r.top + 8)}px` : 'auto';
+        pop.classList.toggle('is-up', up);
+        pop.style.transformOrigin = `${left + w / 2 > r.left + r.width / 2 ? 'left' : 'right'} ${up ? 'bottom' : 'top'}`;
     }
 
     function hide(focusBtn = true) {
         if (!open) return;
         open = false;
         window.removeEventListener('resize', place);
+        window.removeEventListener('scroll', place, { capture: true });
         root.classList.remove('is-open');
         btn.setAttribute('aria-expanded', 'false');
+        if (topLayer) { try { pop.hidePopover(); } catch (e) { /* already closed */ } }
         pop.hidden = true;
         document.removeEventListener('pointerdown', outside, true);
         if (focusBtn) btn.focus({ preventScroll: true });
     }
 
-    function outside(e) { if (!root.contains(e.target)) hide(false); }
+    function outside(e) { if (!root.contains(e.target) && !pop.contains(e.target)) hide(false); }
 
     function choose(v, silent = false) {
         const it = byValue.get(v);

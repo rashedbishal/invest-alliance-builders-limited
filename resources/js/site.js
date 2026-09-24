@@ -67,8 +67,8 @@ function initHero() {
     const label = $('[data-hero-label]', hero);
     const indexEl = $('[data-hero-index]', hero);
     const pauseBtn = $('.hero__pause', hero);
-    const DURATION = 6500;
-    const FADE = 1600;
+    const DURATION = 10000; // matches the tick animation in site.css
+    const FADE = 3400;      // matches --t-cine
 
     let index = 0;
     let timer = null;
@@ -232,7 +232,7 @@ function initFilms() {
         setTimeout(() => {
             caption.innerHTML = thumbs[k].querySelector('.thumb__caption').innerHTML;
             caption.classList.remove('is-swapping');
-        }, 300);
+        }, 980);
         thumbs[k].scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
     };
 
@@ -334,6 +334,28 @@ function loadYouTubeApi() {
     return ytApiPromise;
 }
 
+/* A slow, eased horizontal glide (native smooth scroll is too quick). Snap is paused meanwhile. */
+const SLIDE_MS = 2200;
+function glideTo(el, left, ms) {
+    cancelAnimationFrame(el._glide);
+    if (reducedMotion.matches || !ms) { el.scrollLeft = left; return; }
+    const from = el.scrollLeft;
+    const dist = left - from;
+    if (Math.abs(dist) < 1) return;
+    const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+    const t0 = performance.now();
+    el.style.scrollSnapType = 'none';
+    el.dataset.gliding = '1';
+    const frame = (now) => {
+        const t = Math.min(1, (now - t0) / ms);
+        el.scrollLeft = from + dist * ease(t);
+        if (t < 1) { el._glide = requestAnimationFrame(frame); return; }
+        el.style.scrollSnapType = '';
+        delete el.dataset.gliding;
+    };
+    el._glide = requestAnimationFrame(frame);
+}
+
 function initVoices() {
     const track = $('[data-voice-track]');
     if (!track) return;
@@ -388,7 +410,7 @@ function initVoices() {
         const current = visibleCards();
         if (current.every((c) => c.classList.contains('is-done'))) {
             // Everyone on this page has played: slide to the next set (wrapping around).
-            setTimeout(() => { if (token === pageToken && inView) goTo(start >= maxStart() ? 0 : start + perView(), true); }, 900);
+            setTimeout(() => { if (token === pageToken && inView) goTo(start >= maxStart() ? 0 : start + perView(), true); }, 1400);
         }
     }
 
@@ -443,9 +465,9 @@ function initVoices() {
     function goTo(index, thenPlay) {
         stopAll();
         start = Math.max(0, Math.min(maxStart(), index));
-        track.scrollTo({ left: start * step(), behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+        glideTo(track, start * step(), SLIDE_MS);
         updateUi();
-        if (thenPlay) setTimeout(playPage, reducedMotion.matches ? 0 : 700);
+        if (thenPlay) setTimeout(playPage, reducedMotion.matches ? 0 : SLIDE_MS + 200);
     }
 
     prevBtn.addEventListener('click', () => goTo(start - perView(), true));
@@ -455,6 +477,7 @@ function initVoices() {
     let scrollTimer = null;
     track.addEventListener('scroll', () => {
         clearTimeout(scrollTimer);
+        if (track.dataset.gliding) return; // our own slide, not a swipe
         scrollTimer = setTimeout(() => {
             const i = Math.round(track.scrollLeft / step());
             if (i !== start) { stopAll(); start = Math.min(i, maxStart()); updateUi(); playPage(); }
@@ -505,25 +528,23 @@ function initGallery() {
     const pool = JSON.parse(grid.dataset.pool);
     const tiles = $$('.tile', grid);
     const pauseBtn = $('[data-gallery-pause]');
-    const INTERVAL = 1150; // one tile at a time, so 2–3 changes land every few seconds
+    // Every tile keeps its own clock (a staggered start, then every 4.3–6.1s with jitter), and no
+    // two tiles ever change within MIN_GAP of each other — so roughly one change a second, never in unison.
+    const TILE_MIN = 4300;
+    const TILE_JITTER = 1800;
+    const MIN_GAP = 700;
     const WIPES = ['inset(100% 0 0 0)', 'inset(0 0 100% 0)', 'inset(0 100% 0 0)', 'inset(0 0 0 100%)'];
     const shown = tiles.map((tl) => Number(tl.dataset.idx));
 
     let visible = false;
-    let hovering = false;
     let userPaused = reducedMotion.matches;
-    const recent = []; // the last two tiles that changed sit out a turn
     let timer = null;
 
     const captionHtml = (item) => `<span class="i18n-en">${item.en}</span><span class="i18n-bn" lang="bn">${item.bn}</span>`;
 
-    const swap = () => {
-        let candidates = tiles.map((_, k) => k).filter((k) => !recent.includes(k) && tiles[k].offsetParent !== null);
-        if (!candidates.length) candidates.push(...tiles.map((_, k) => k).filter((k) => k !== recent[0] && tiles[k].offsetParent !== null));
+    const swap = (ti) => {
         const free = pool.map((_, k) => k).filter((k) => !shown.includes(k));
-        if (!candidates.length || !free.length) return;
-
-        const ti = candidates[Math.floor(Math.random() * candidates.length)];
+        if (!free.length) return;
         const pi = free[Math.floor(Math.random() * free.length)];
         const tile = tiles[ti];
         const item = pool[pi];
@@ -543,27 +564,45 @@ function initGallery() {
             setTimeout(() => {
                 old.forEach((o) => o.remove());
                 img.classList.remove('is-entering');
-            }, 1300);
+            }, 3000); // after the wipe (2250ms) and most of the settle (2860ms)
         }));
         (img.decode ? img.decode() : Promise.resolve()).then(reveal, reveal);
 
         const cap = tile.querySelector('.tile__cap');
         cap.classList.add('is-swapping');
-        setTimeout(() => { cap.innerHTML = captionHtml(item); cap.classList.remove('is-swapping'); }, 650);
+        setTimeout(() => { cap.innerHTML = captionHtml(item); cap.classList.remove('is-swapping'); }, 1500);
 
         shown[ti] = pi;
-        recent.unshift(ti);
-        recent.length = Math.min(recent.length, 2);
     };
 
+    const due = tiles.map(() => 0);
+    let lastSwap = 0;
+    const tick = () => {
+        const now = performance.now();
+        if (now - lastSwap >= MIN_GAP) {
+            // The most overdue visible tile goes next.
+            let pick = -1;
+            tiles.forEach((tl, k) => { if (tl.offsetParent !== null && due[k] <= now && (pick < 0 || due[k] < due[pick])) pick = k; });
+            if (pick > -1) {
+                swap(pick);
+                lastSwap = now;
+                due[pick] = now + TILE_MIN + Math.random() * TILE_JITTER;
+            }
+        }
+        timer = setTimeout(tick, 120);
+    };
     const run = () => {
-        clearInterval(timer);
-        if (visible && !hovering && !userPaused && !document.hidden) timer = setInterval(swap, INTERVAL);
+        clearTimeout(timer);
+        timer = null;
+        if (!visible || userPaused || document.hidden) return;
+        // (Re)start with staggered offsets so the first changes arrive one after another.
+        const now = performance.now();
+        const order = tiles.map((_, k) => k).sort(() => Math.random() - 0.5);
+        order.forEach((k, i) => { due[k] = now + 500 + i * 900 + Math.random() * 300; });
+        tick();
     };
 
     new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; run(); }, { threshold: 0.25 }).observe(grid);
-    grid.addEventListener('mouseenter', () => { hovering = true; run(); });
-    grid.addEventListener('mouseleave', () => { hovering = false; run(); });
     document.addEventListener('visibilitychange', run);
     pauseBtn.setAttribute('aria-pressed', String(userPaused));
     pauseBtn.addEventListener('click', () => {
@@ -587,6 +626,8 @@ const state = {
     qty: Object.fromEntries(KEYS.map((k) => [k, 0])),
     local: null,        // { currency, rate } per 1 BDT, from /currency
     formValid: false,
+    fieldsDone: 0,      // required details that pass validation
+    fieldsTotal: 0,
     busy: false,
 };
 
@@ -719,7 +760,8 @@ function render() {
         charge.hidden = !count || !(CONFIG.paypal.rate > 0);
         charge.textContent = t(`Charged as ${CONFIG.paypal.currency} ${fmtCharge(paypalCharge(bdt))} via PayPal`, `PayPal-এ চার্জ হবে ${CONFIG.paypal.currency} ${fmtCharge(paypalCharge(bdt))}`);
     }
-    if (!helpIsError || !blocked) setHelp(blocked);
+    if (!helpIsError || !blocked) setHelp('');
+    renderLock(count);
 
     const done = [count > 0, state.formValid, false];
     const currentIdx = done.findIndex((d) => !d);
@@ -730,6 +772,36 @@ function render() {
 
     $('[data-orderbar-count]').textContent = t(`${fmtBdt(count)} ${count === 1 ? 'share' : 'shares'} selected`, `${fmtBdt(count)}টি শেয়ার নির্বাচিত`);
     updateOrderBar();
+}
+
+/* The lock above the pay buttons says what's still needed; the form's footer points to it. */
+function renderLock(count) {
+    const lock = $('[data-paylock]');
+    if (!lock) return;
+    const stage = !count ? 'shares' : !state.formValid ? 'form' : 'ready';
+    lock.dataset.state = stage;
+    lock.disabled = stage === 'ready';
+    const left = state.fieldsTotal - state.fieldsDone;
+    const copy = {
+        shares: [t('Select a product first', 'প্রথমে একটি প্রোডাক্ট নির্বাচন করুন'), t('Choose at least one share above, then complete your details to pay.', 'উপরে অন্তত একটি শেয়ার বেছে নিন, তারপর তথ্য পূরণ করে পেমেন্ট করুন।')],
+        form: [t('Complete your details to unlock payment', 'পেমেন্ট চালু করতে আপনার তথ্য পূরণ করুন'),
+            t(`${state.fieldsDone} of ${state.fieldsTotal} details complete · ${left} to go`, `${state.fieldsTotal}টির মধ্যে ${state.fieldsDone}টি তথ্য সম্পূর্ণ · বাকি ${left}টি`)],
+        ready: [t('Payment unlocked', 'পেমেন্ট চালু হয়েছে'), t('Choose how you would like to pay.', 'কীভাবে পেমেন্ট করবেন তা বেছে নিন।')],
+    }[stage];
+    setText($('[data-paylock-title]', lock), copy[0]);
+    $('[data-paylock-sub]', lock).textContent = copy[1];
+    const meter = $('[data-paylock-meter]', lock);
+    if (meter.childElementCount !== state.fieldsTotal) meter.innerHTML = '<i></i>'.repeat(state.fieldsTotal);
+    [...meter.children].forEach((seg, i) => seg.classList.toggle('is-on', i < state.fieldsDone));
+    $('[data-paybtns]').classList.toggle('is-locked', stage !== 'ready');
+
+    const next = $('[data-order-next]');
+    if (next) {
+        next.dataset.state = state.formValid ? 'done' : 'form';
+        $('[data-order-next-text]', next).textContent = state.formValid
+            ? (count ? t('Details complete — payment is unlocked', 'তথ্য সম্পূর্ণ — পেমেন্ট চালু হয়েছে') : t('Details complete — now select your shares', 'তথ্য সম্পূর্ণ — এখন শেয়ার নির্বাচন করুন'))
+            : t(`Complete these details to unlock payment · ${left} to go`, `পেমেন্ট চালু করতে এই তথ্যগুলো পূরণ করুন · বাকি ${left}টি`);
+    }
 }
 
 let summaryInView = false;
@@ -824,7 +896,12 @@ function initForm() {
     const cc = $('[data-picker="country"]', f);
     if (cc) countryPicker = createPicker(cc, { items: countryItems(), value: cc.dataset.value || 'BD', kind: 'country', onChange: () => f.elements.phone.focus() });
     const inputs = Object.keys(RULES).map((name) => f.elements[name]);
-    const recompute = () => { state.formValid = inputs.every((i) => RULES[i.name](i.value)); render(); };
+    const recompute = () => {
+        state.fieldsTotal = inputs.length;
+        state.fieldsDone = inputs.filter((i) => RULES[i.name](i.value)).length;
+        state.formValid = state.fieldsDone === inputs.length;
+        render();
+    };
     inputs.forEach((input) => {
         input.addEventListener('blur', () => { if (input.value) checkField(input, true); });
         input.addEventListener('input', () => { checkField(input, false); recompute(); });
@@ -914,6 +991,17 @@ function initCommerce() {
         const key = link.dataset.preselect;
         if (key in state.qty && state.qty[key] === 0) setQty(key, 1);
     }));
+
+    // The lock doubles as a shortcut to whatever is still missing.
+    const lock = $('[data-paylock]');
+    if (lock) lock.addEventListener('click', () => {
+        if (!totals().count) { $('#invest').scrollIntoView({ behavior: reducedMotion.matches ? 'auto' : 'smooth' }); return; }
+        const f = form();
+        const names = Object.keys(RULES);
+        names.forEach((name) => { if (f.elements[name].value) checkField(f.elements[name], true); });
+        const first = names.map((n) => f.elements[n]).find((i) => !RULES[i.name](i.value));
+        if (first) { first.scrollIntoView({ block: 'center', behavior: reducedMotion.matches ? 'auto' : 'smooth' }); first.focus({ preventScroll: true }); }
+    });
 
     $$('[data-pay]').forEach((btn) => btn.addEventListener('click', () => {
         const f = form();

@@ -4,19 +4,14 @@ use App\Http\Controllers\CurrencyController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PayPalPaymentController;
 use App\Http\Controllers\SslCommerzPaymentController;
-use App\Services\Booking\ShareCatalog;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-Route::get('/form', function (ShareCatalog $catalog) {
-    return view('booking-form', [
-        'hotels' => $catalog->hotels(),
-        'sslLimit' => (float) config('shares.sslcommerz_limit'),
-    ]);
-});
+// Booking now happens on the home page; keep old /form links working.
+Route::permanentRedirect('/form', '/#invest');
 
 Route::get('/currency', [CurrencyController::class, 'show'])->middleware('throttle:60,1')->name('currency.show');
 

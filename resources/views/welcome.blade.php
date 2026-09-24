@@ -120,7 +120,7 @@
         <img src="{{ $img('logo/jana-back.png') }}" alt="Hotel Jana" width="1000" height="1000">
     </a>
     <div class="hdr__right">
-        <a class="btn btn--primary btn--sm hdr__cta" href="#invest"><x-t en="Buy now" bn="এখনই কিনুন" /></a>
+        <a class="btn btn--primary btn--sm hdr__cta btn--buy" href="#invest"><x-t en="Buy now" bn="এখনই কিনুন" /></a>
         <div class="lang" role="group" aria-label="Language / ভাষা">
             <button type="button" class="lang__btn" data-set-lang="en" aria-pressed="true">EN</button>
             <span class="lang__sep" aria-hidden="true"></span>
@@ -150,13 +150,17 @@
     </p>
 
     <div class="hero__inner container" data-hero-content>
-        <p class="eyebrow eyebrow--inverse hero__eyebrow"><span class="rule" aria-hidden="true"></span><x-t en="Hotel Jana · Kuakata &amp; Cox's Bazar" bn="হোটেল জানা · কুয়াকাটা ও কক্সবাজার" /></p>
         <h1 class="hero__title">
-            <span class="i18n-en"><span class="line"><span>One step closer</span></span><span class="line"><span>to <em class="scribble">paradise.<svg class="scribble__line" viewBox="0 0 320 26" preserveAspectRatio="none" aria-hidden="true"><path d="M4 17 C 52 7, 104 21, 160 13 S 262 6, 316 15"/></svg></em></span></span></span>
-            <span class="i18n-bn" lang="bn"><span class="line"><span>স্বর্গের আরও</span></span><span class="line"><span><em class="scribble">এক ধাপ কাছে।<svg class="scribble__line" viewBox="0 0 320 26" preserveAspectRatio="none" aria-hidden="true"><path d="M4 17 C 52 7, 104 21, 160 13 S 262 6, 316 15"/></svg></em></span></span></span>
+            <span class="i18n-en"><span class="line"><span>Hotel Jana</span></span><span class="line line--place"><span>Kuakata &amp; Cox's Bazar</span></span></span>
+            <span class="i18n-bn" lang="bn"><span class="line"><span>হোটেল জানা</span></span><span class="line line--place"><span>কুয়াকাটা ও কক্সবাজার</span></span></span>
         </h1>
+        <p class="hero__slogan">
+            <span class="rule" aria-hidden="true"></span>
+            <span class="i18n-en">One step closer to <em class="scribble">paradise.<svg class="scribble__line" viewBox="0 0 320 26" preserveAspectRatio="none" aria-hidden="true"><path d="M4 17 C 52 7, 104 21, 160 13 S 262 6, 316 15"/></svg></em></span>
+            <span class="i18n-bn" lang="bn">স্বর্গের আরও <em class="scribble">এক ধাপ কাছে।<svg class="scribble__line" viewBox="0 0 320 26" preserveAspectRatio="none" aria-hidden="true"><path d="M4 17 C 52 7, 104 21, 160 13 S 262 6, 316 15"/></svg></em></span>
+        </p>
         <div class="hero__cta">
-            <a class="btn btn--inverse btn--lg" href="#invest" data-magnetic><x-t en="Buy now" bn="এখনই কিনুন" />{!! $arrow !!}</a>
+            <a class="btn btn--inverse btn--lg btn--buy" href="#invest" data-magnetic><x-t en="Buy now" bn="এখনই কিনুন" />{!! $arrow !!}</a>
             @if ($sharePrice)
                 <p class="hero__price"><x-t en="From" bn="শুরু" /> <strong>{!! $price($sharePrice, '', true) !!}</strong> <x-t en="per share" bn="প্রতি শেয়ার" /></p>
             @endif
@@ -216,7 +220,7 @@
                         <p class="label-sm"><x-t en="Share price" bn="শেয়ার মূল্য" /></p>
                         <p class="price-inline">{!! $price($hotels['jana']['price']) !!}</p>
                     </div>
-                    <a class="btn btn--primary" href="#invest" data-preselect="jana" data-magnetic><x-t en="Buy now" bn="এখনই কিনুন" />{!! $arrow !!}</a>
+                    <a class="btn btn--primary btn--buy" href="#invest" data-preselect="jana" data-magnetic><x-t en="Buy now" bn="এখনই কিনুন" />{!! $arrow !!}</a>
                 </div>
             @endisset
         </div>
@@ -249,7 +253,7 @@
                         <p class="label-sm"><x-t en="Share price" bn="শেয়ার মূল্য" /></p>
                         <p class="price-inline">{!! $price($hotels['dove']['price']) !!}</p>
                     </div>
-                    <a class="btn btn--primary" href="#invest" data-preselect="dove" data-magnetic><x-t en="Buy now" bn="এখনই কিনুন" />{!! $arrow !!}</a>
+                    <a class="btn btn--primary btn--buy" href="#invest" data-preselect="dove" data-magnetic><x-t en="Buy now" bn="এখনই কিনুন" />{!! $arrow !!}</a>
                 </div>
             @endisset
         </div>
@@ -274,7 +278,7 @@
                 <p class="eyebrow eyebrow--index eyebrow--surf" data-reveal><span class="idx">03</span><span class="rule" aria-hidden="true"></span><x-t en="Films" bn="চলচ্চিত্র" /></p>
                 <h2 class="h2" id="films-title" data-reveal style="--d: 80ms"><x-t en="Hotel Jana, <em>in motion</em>" bn="চলমান ছবিতে <em>হোটেল জানা</em>" /></h2>
             </div>
-            <a class="btn btn--inverse" href="#invest" data-reveal style="--d: 160ms" data-magnetic><x-t en="Buy now" bn="এখনই কিনুন" />{!! $arrow !!}</a>
+            <a class="btn btn--inverse btn--buy" href="#invest" data-reveal style="--d: 160ms" data-magnetic><x-t en="Buy now" bn="এখনই কিনুন" />{!! $arrow !!}</a>
         </div>
     </div>
 
@@ -332,7 +336,7 @@
                     <button type="button" class="icon-btn" data-voice-prev aria-label="Previous testimonials"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M17 10H4M9 5l-5 5 5 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg></button>
                     <button type="button" class="icon-btn" data-voice-next aria-label="Next testimonials"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h13M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg></button>
                 </div>
-                <a class="btn btn--primary" href="#invest" data-magnetic><x-t en="Buy now" bn="এখনই কিনুন" />{!! $arrow !!}</a>
+                <a class="btn btn--primary btn--buy" href="#invest" data-magnetic><x-t en="Buy now" bn="এখনই কিনুন" />{!! $arrow !!}</a>
             </div>
         </div>
     </div>
@@ -376,7 +380,7 @@
                 <span data-when="playing"><x-t en="Pause" bn="থামান" /></span>
                 <span data-when="paused"><x-t en="Play" bn="চালু করুন" /></span>
             </button>
-            <a class="btn btn--inverse" href="#invest" data-magnetic><x-t en="Buy now" bn="এখনই কিনুন" />{!! $arrow !!}</a>
+            <a class="btn btn--inverse btn--buy" href="#invest" data-magnetic><x-t en="Buy now" bn="এখনই কিনুন" />{!! $arrow !!}</a>
         </div>
     </div>
 
@@ -459,7 +463,7 @@
                 <x-t en="Conditions apply. The card does not entitle any privilege in banqueting, conferences, special events &amp; promotions. Blackout dates &amp; house rules apply."
                      bn="শর্ত প্রযোজ্য। ব্যাংকোয়েটিং, কনফারেন্স, বিশেষ ইভেন্ট ও প্রমোশনে প্রযোজ্য নয়। ব্ল্যাকআউট তারিখ ও হাউস রুলস প্রযোজ্য।" />
             </p>
-            <div data-reveal style="--d: 400ms"><a class="btn btn--primary" href="#invest" data-magnetic><x-t en="Buy now" bn="এখনই কিনুন" />{!! $arrow !!}</a></div>
+            <div data-reveal style="--d: 400ms"><a class="btn btn--primary btn--buy" href="#invest" data-magnetic><x-t en="Buy now" bn="এখনই কিনুন" />{!! $arrow !!}</a></div>
         </div>
     </div>
 </section>
@@ -572,6 +576,11 @@
                             <input class="input" id="f-addr2" name="address_2" type="text" autocomplete="address-line2" maxlength="100">
                         </div>
                     </div>
+                    {{-- Points the way to payment; site.js keeps it in step with the form --}}
+                    <p class="order__next" data-order-next data-state="form">
+                        <span class="order__next-text" data-order-next-text><x-t en="Complete these details to unlock payment" bn="পেমেন্ট চালু করতে এই তথ্যগুলো পূরণ করুন" /></span>
+                        <svg class="order__next-arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h13M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>
+                    </p>
                 </form>
 
                 <aside class="summary" id="summary" aria-labelledby="summary-title" data-reveal style="--d: 120ms">
@@ -609,9 +618,21 @@
                         <p class="rate-note" data-rate-note hidden><x-t en="Converted at today's rate for reference only. You pay in BDT (SSLCommerz) or USD (PayPal)." bn="আজকের হারে শুধুমাত্র তথ্যের জন্য দেখানো হয়েছে। পেমেন্ট হবে BDT (SSLCommerz) বা USD (PayPal)-এ।" /></p>
                     </div>
 
-                    <div class="paybtns" role="group" aria-label="Pay with">
+                    {{-- Payment stays locked until shares are chosen and the details form is complete --}}
+                    <button type="button" class="paylock" id="paylock" data-paylock data-state="shares" aria-live="polite">
+                        <span class="paylock__icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><path class="paylock__shackle" d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><rect x="5.5" y="11" width="13" height="9.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="15.5" r="1.3" fill="currentColor"/></svg>
+                        </span>
+                        <span class="paylock__body">
+                            <span class="paylock__title" data-paylock-title></span>
+                            <span class="paylock__meter" data-paylock-meter aria-hidden="true"></span>
+                            <span class="paylock__sub" data-paylock-sub></span>
+                        </span>
+                    </button>
+
+                    <div class="paybtns" role="group" aria-label="Pay with" data-paybtns>
                         <div class="paybtn-wrap" data-method="sslcommerz" data-state="active">
-                            <button type="button" class="paybtn paybtn--ssl" data-pay="sslcommerz" disabled aria-describedby="pay-help">
+                            <button type="button" class="paybtn paybtn--ssl" data-pay="sslcommerz" disabled aria-describedby="paylock pay-help">
                                 <span class="paybtn__label"><x-t en="Pay with" bn="পেমেন্ট করুন" /></span>
                                 <img class="paybtn__logo" src="{{ $img('payment/sslcommerz.png') }}" alt="SSLCommerz" width="120" height="26">
                                 <span class="spinner" aria-hidden="true"></span>
@@ -620,7 +641,7 @@
                             <p class="paybtn__reason"><x-t :en="'SSLCommerz allows up to ' . $price($sslLimit, '', true) . ' per transaction. Since this order exceeds the per-transaction limit, SSLCommerz cannot be used. Please pay with PayPal.'" :bn="'SSLCommerz-এ প্রতি লেনদেনে সর্বোচ্চ ' . $price($sslLimit, '', true) . ' পর্যন্ত পেমেন্ট করা যায়। এই অর্ডারটি প্রতি লেনদেনের সীমা ছাড়িয়ে যাওয়ায় SSLCommerz ব্যবহার করা যাবে না। অনুগ্রহ করে PayPal ব্যবহার করুন।'" /></p>
                         </div>
                         <div class="paybtn-wrap" data-method="paypal" data-state="{{ $paypalRate > 0 ? 'active' : 'unavailable' }}">
-                            <button type="button" class="paybtn paybtn--paypal" data-pay="paypal" disabled aria-describedby="pay-help">
+                            <button type="button" class="paybtn paybtn--paypal" data-pay="paypal" disabled aria-describedby="paylock pay-help">
                                 <span class="paybtn__label"><x-t en="Pay with" bn="পেমেন্ট করুন" /></span>
                                 <img class="paybtn__logo" src="{{ $img('payment/paypal.svg') }}" alt="PayPal" width="88" height="25">
                                 <span class="spinner" aria-hidden="true"></span>

@@ -22,18 +22,23 @@ class BookingFormTest extends TestCase
         ]]);
     }
 
-    public function test_form_shows_a_card_per_hotel_with_env_prices(): void
+    public function test_home_shows_a_card_per_hotel_with_env_prices(): void
     {
-        $this->get('/form')
+        $this->get('/')
             ->assertOk()
-            ->assertSee('data-hotel="jana"', false)
-            ->assertSee('data-hotel="dove"', false)
+            ->assertSee('data-product="jana"', false)
+            ->assertSee('data-product="dove"', false)
             ->assertSee('Hotel Jana The Dove')
-            ->assertSee('৳ 4,00,000')
-            ->assertSee('৳ 40,000')
-            ->assertSee('(max 11,240)')
-            ->assertSee('(max 4,100)')
-            ->assertDontSee('3,00,000');
+            ->assertSee('data-bdt="400000"', false)
+            ->assertSee('data-bdt="40000"', false)
+            ->assertSee('Up to 11,240')
+            ->assertSee('Up to 4,100')
+            ->assertDontSee('300,000');
+    }
+
+    public function test_old_form_url_redirects_to_the_booking_section(): void
+    {
+        $this->get('/form')->assertStatus(301)->assertRedirect('/#invest');
     }
 
     public function test_ssl_pay_rejects_invalid_shares_before_creating_a_transaction(): void
@@ -73,14 +78,14 @@ class BookingFormTest extends TestCase
         $this->assertSame(0, Transaction::count());
     }
 
-    public function test_form_exposes_the_sslcommerz_limit_to_the_page(): void
+    public function test_home_exposes_the_sslcommerz_limit_to_the_page(): void
     {
         config(['shares.sslcommerz_limit' => 500000]);
 
-        $this->get('/form')
+        $this->get('/')
             ->assertOk()
-            ->assertSee('const SSL_LIMIT = 500000;', false)
-            ->assertSee('id="sslOption"', false);
+            ->assertSee('sslLimit: 500000,', false)
+            ->assertSee('data-pay="sslcommerz"', false);
     }
 
     public function test_invoice_lists_each_hotel_line_and_falls_back_for_older_payments(): void
