@@ -21,3 +21,6 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Environment files hold credentials and must never be committed (use .env.example)
+/.env
