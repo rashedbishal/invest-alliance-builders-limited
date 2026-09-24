@@ -52,12 +52,12 @@ class PaymentReceiveConfirmationMail extends Mailable
     {
         if (str_starts_with($this->invoice_number, 'TRX-')) {
             return new Envelope(
-                from: new Address('noreply@opticoresolutionsltd.com', $this->concern),
+                from: new Address(config('mail.from.address'), $this->concern),
                 subject: 'Payment Received for Transaction Id #'.$this->invoice_number,
             );
         } else {
             return new Envelope(
-                from: new Address('noreply@opticoresolutionsltd.com', $this->concern),
+                from: new Address(config('mail.from.address'), $this->concern),
                 subject: 'Payment Received for Invoice #'.$this->invoice_number,
             );
         }

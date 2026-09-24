@@ -7,6 +7,7 @@ use App\Mail\PaymentReceiveConfirmationMail;
 use App\Models\Invoice;
 use App\Models\Submission;
 use App\Models\Transaction;
+use App\Models\TransactionShare;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
@@ -24,8 +25,11 @@ class PayPalPaymentTest extends TestCase
             'paypal.client_id' => 'client',
             'paypal.client_secret' => 'secret',
             'paypal.currency' => 'USD',
-            'paypal.amount' => '122.88',
-            'paypal.bdt_amount' => 300000,
+            'paypal.bdt_per_usd' => 122.88,
+            'shares.hotels' => [
+                'jana' => ['name' => 'Hotel Jana', 'name_bn' => 'হোটেল জানা', 'price' => 300000, 'max' => 10],
+                'dove' => ['name' => 'Hotel Jana The Dove', 'name_bn' => 'হোটেল জানা দ্য ডোভ', 'price' => 40000, 'max' => 5],
+            ],
         ]);
     }
 
@@ -72,12 +76,13 @@ class PayPalPaymentTest extends TestCase
         ]);
     }
 
-    public function test_create_makes_order_and_pending_transaction(): void
+    public function test_create_prices_order_from_selected_shares(): void
     {
         $this->fakePayPal();
 
         $this->postJson('/paypal/create', [
             'name' => 'Test Customer', 'phone' => '01700000000', 'address' => 'Dhaka', 'email' => '',
+            'shares' => ['jana' => 1],
         ])->assertOk()->assertJson(['approve_url' => 'https://paypal.test/approve?token=ORDER123']);
 
         $tx = Transaction::firstOrFail();
@@ -86,12 +91,52 @@ class PayPalPaymentTest extends TestCase
         $this->assertEquals(300000, $tx->amount);
         $this->assertSame('BDT', $tx->currency);
         $this->assertSame('USD', $tx->currency_type);
-        $this->assertEquals(122.88, $tx->currency_amount);
+        $this->assertEquals(2441.41, $tx->currency_amount); // 300000 / 122.88
         $this->assertNull($tx->email);
 
-        // Amount sent to PayPal comes from config, never from the browser.
+        // Amount sent to PayPal is derived from the server-side prices, never from the browser.
         Http::assertSent(fn ($r) => str_ends_with($r->url(), '/v2/checkout/orders')
-            && $r['purchase_units'][0]['amount'] === ['currency_code' => 'USD', 'value' => '122.88']);
+            && $r['purchase_units'][0]['amount'] === ['currency_code' => 'USD', 'value' => '2441.41']);
+    }
+
+    public function test_create_supports_both_hotels_and_ignores_client_amount(): void
+    {
+        $this->fakePayPal();
+
+        $this->postJson('/paypal/create', [
+            'name' => 'Test Customer', 'phone' => '01700000000', 'address' => 'Dhaka',
+            'shares' => ['jana' => 1, 'dove' => 2],
+            'amount' => 1, 'cus_amount' => 1,
+        ])->assertOk();
+
+        $tx = Transaction::firstOrFail();
+        $this->assertEquals(380000, $tx->amount); // 300000 + 2 x 40000
+        $this->assertEquals(3092.45, $tx->currency_amount); // 380000 / 122.88
+
+        $this->assertSame(
+            ['jana' => 1, 'dove' => 2],
+            $tx->shares()->orderBy('id')->pluck('quantity', 'hotel')->all()
+        );
+
+        Http::assertSent(fn ($r) => str_ends_with($r->url(), '/v2/checkout/orders')
+            && $r['purchase_units'][0]['amount']['value'] === '3092.45');
+    }
+
+    public function test_create_rejects_invalid_share_selection(): void
+    {
+        $this->fakePayPal();
+        $base = ['name' => 'Test Customer', 'phone' => '01700000000', 'address' => 'Dhaka'];
+
+        $this->postJson('/paypal/create', $base)->assertStatus(422);
+        $this->postJson('/paypal/create', $base + ['shares' => []])->assertStatus(422);
+        $this->postJson('/paypal/create', $base + ['shares' => ['jana' => 11]])->assertStatus(422);
+        $this->postJson('/paypal/create', $base + ['shares' => ['dove' => 0]])->assertStatus(422);
+        $this->postJson('/paypal/create', $base + ['shares' => ['jana' => -1]])->assertStatus(422);
+        $this->postJson('/paypal/create', $base + ['shares' => ['jana' => '1.5']])->assertStatus(422);
+        $this->postJson('/paypal/create', $base + ['shares' => ['nope' => 1]])->assertStatus(422);
+
+        $this->assertSame(0, Transaction::count());
+        Http::assertNothingSent();
     }
 
     public function test_create_validates_input(): void
@@ -134,6 +179,29 @@ class PayPalPaymentTest extends TestCase
         $this->get('/paypal/success?token=ORDER123')->assertSessionHas('info');
         $this->assertSame(1, Invoice::count());
         Http::assertSentCount(2); // token + capture, once
+    }
+
+    public function test_success_records_share_totals_on_submission(): void
+    {
+        Mail::fake();
+        $this->fakePayPal(captureValue: '3092.45');
+        $this->pendingTransaction([
+            'amount' => 380000,
+            'currency_amount' => 3092.45,
+        ]);
+        foreach ([['jana', 'Hotel Jana', 300000, 1], ['dove', 'Hotel Jana The Dove', 40000, 2]] as [$hotel, $name, $price, $qty]) {
+            TransactionShare::create([
+                'transaction_id' => 'TRX-ABC123', 'hotel' => $hotel, 'hotel_name' => $name,
+                'unit_price' => $price, 'quantity' => $qty, 'subtotal' => $price * $qty,
+            ]);
+        }
+
+        $this->get('/paypal/success?token=ORDER123')->assertSessionHas('success');
+
+        $submission = Submission::firstOrFail();
+        $this->assertSame(3, $submission->unit);
+        $this->assertEquals(126666.67, $submission->unit_price);
+        $this->assertEquals(380000, $submission->total_price);
     }
 
     public function test_amount_mismatch_is_rejected(): void

@@ -10,10 +10,8 @@ return [
     'client_secret' => env('PAYPAL_CLIENT_SECRET'),
     'base_url' => $mode === 'live' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com',
 
-    // Amount actually charged on PayPal (PayPal does not support BDT).
+    // PayPal does not support BDT, so the BDT booking total is converted to
+    // this currency using the rate below (BDT per 1 unit of `currency`).
     'currency' => env('PAYPAL_CURRENCY', 'USD'),
-    'amount' => env('PAYPAL_AMOUNT'),
-
-    // Price of the booking in BDT. This is what the invoice and receipt show.
-    'bdt_amount' => 300000,
+    'bdt_per_usd' => (float) env('PAYPAL_BDT_PER_USD', 0),
 ];

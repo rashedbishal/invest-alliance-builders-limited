@@ -39,7 +39,7 @@ class PaymentConfirmationMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            from: new Address('noreply@opticoresolutionsltd.com', $this->concern),
+            from: new Address(config('mail.from.address'), $this->concern),
             subject: 'Confirmation of Payment for Invoice #'.$this->invoice_number,
         );
     }

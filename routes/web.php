@@ -3,14 +3,18 @@
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PayPalPaymentController;
 use App\Http\Controllers\SslCommerzPaymentController;
+use App\Services\Booking\ShareCatalog;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-Route::get('/form', function () {
-    return view('booking-form');
+Route::get('/form', function (ShareCatalog $catalog) {
+    return view('booking-form', [
+        'hotels' => $catalog->hotels(),
+        'sslLimit' => (float) config('shares.sslcommerz_limit'),
+    ]);
 })->name('form');
 
 Route::post('/pay', [SslCommerzPaymentController::class, 'index']);

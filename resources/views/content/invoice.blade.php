@@ -663,14 +663,26 @@
             </thead>
             <tbody>
 
-                <tr>
-                    <td class="td">1.</td>
-                    <td class="td font-medium">Hotel Jana Kuakata - Share</td>
-                    <td class="td text-right">{{number_format($unitprice)}}</td>
-                    <td class="td text-right">{{$unit}}</td>
-                    <td class="td text-right">{{number_format($invoice->payment_amount)}}</td>
-                    <td class="td">{{$invoice->remarks}}</td>
-                </tr>
+                @php $shareLines = $transaction?->shares ?? collect(); @endphp
+                @forelse($shareLines as $line)
+                    <tr>
+                        <td class="td">{{$loop->iteration}}.</td>
+                        <td class="td font-medium">{{$line->hotel_name}} - Share</td>
+                        <td class="td text-right">{{number_format($line->unit_price)}}</td>
+                        <td class="td text-right">{{$line->quantity}}</td>
+                        <td class="td text-right">{{number_format($line->subtotal)}}</td>
+                        <td class="td">{{$invoice->remarks}}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td class="td">1.</td>
+                        <td class="td font-medium">Hotel Jana Kuakata - Share</td>
+                        <td class="td text-right">{{number_format($unitprice)}}</td>
+                        <td class="td text-right">{{$unit}}</td>
+                        <td class="td text-right">{{number_format($invoice->payment_amount)}}</td>
+                        <td class="td">{{$invoice->remarks}}</td>
+                    </tr>
+                @endforelse
 
             <tr class="subtotal-row">
                 <td colspan="5" class="td text-right">Subtotal</td>

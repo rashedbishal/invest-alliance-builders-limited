@@ -9,6 +9,8 @@ use App\Mail\PaymentReceiveConfirmationMail;
 use App\Models\Invoice;
 use App\Models\Submission;
 use App\Models\Transaction;
+use App\Models\TransactionShare;
+use App\Services\Booking\ShareCatalog;
 use App\Services\Payment\MoneyReceiptGenerator;
 use App\Services\Payment\PayPalService;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -19,11 +21,12 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use InvalidArgumentException;
 use Throwable;
 
 class PayPalPaymentController extends Controller
 {
-    public function __construct(private PayPalService $paypal)
+    public function __construct(private PayPalService $paypal, private ShareCatalog $catalog)
     {
     }
 
@@ -38,15 +41,29 @@ class PayPalPaymentController extends Controller
             'phone' => ['required', 'string', 'max:20'],
             'address' => ['required', 'string', 'min:3', 'max:255'],
             'email' => ['nullable', 'email', 'max:50'],
+            'shares' => ['required', 'array'],
         ]);
 
+        // Priced from the server-side hotel prices; the browser never sends an amount.
+        try {
+            $quote = $this->catalog->quote($data['shares']);
+        } catch (InvalidArgumentException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
         $currency = (string) config('paypal.currency');
-        $chargeAmount = (float) config('paypal.amount');
-        $bdtAmount = (float) config('paypal.bdt_amount');
+        $rate = (float) config('paypal.bdt_per_usd');
+        $bdtAmount = $quote['total'];
 
-        if ($chargeAmount <= 0 || ! config('paypal.client_id') || ! config('paypal.client_secret')) {
-            Log::error('PayPal is not configured (PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET / PAYPAL_AMOUNT).');
+        if ($rate <= 0 || ! config('paypal.client_id') || ! config('paypal.client_secret')) {
+            Log::error('PayPal is not configured (PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET / PAYPAL_BDT_PER_USD).');
 
+            return response()->json(['message' => 'PayPal is not available right now.'], 500);
+        }
+
+        $chargeAmount = round($bdtAmount / $rate, 2);
+
+        if ($chargeAmount <= 0) {
             return response()->json(['message' => 'PayPal is not available right now.'], 500);
         }
 
@@ -88,6 +105,10 @@ class PayPalPaymentController extends Controller
             'currency_amount' => $chargeAmount,
             'currency_rate' => round($bdtAmount / $chargeAmount, 4),
         ]);
+
+        foreach ($quote['lines'] as $line) {
+            TransactionShare::create(['transaction_id' => $tranId] + $line);
+        }
 
         return response()->json(['approve_url' => $approvalUrl]);
     }
@@ -166,13 +187,15 @@ class PayPalPaymentController extends Controller
 
             $transaction->update(['invoice_number' => $invoice->invoice_number]);
 
+            $summary = $transaction->shareSummary();
+
             Submission::create([
                 'name' => $transaction->name,
                 'email' => $transaction->email,
                 'phone' => $transaction->phone,
                 'address' => $transaction->address,
-                'unit_price' => $transaction->amount,
-                'unit' => 1,
+                'unit_price' => $summary['unit_price'],
+                'unit' => $summary['units'],
                 'total_price' => $transaction->amount,
                 'invoice_number' => $invoice->invoice_number,
             ]);
@@ -226,14 +249,15 @@ class PayPalPaymentController extends Controller
     {
         try {
             $qrDataUri = QRProcessor::generate(route('invoice-access', ['token' => $invoice->public_token]));
+            $summary = $transaction->shareSummary();
 
             $pdf = Pdf::loadView('content.invoice', [
                 'invoice' => $invoice,
                 'concern' => $transaction->cn_identifier,
                 'qrDataUri' => $qrDataUri,
                 'transaction' => $transaction,
-                'unitprice' => $transaction->amount,
-                'unit' => 1,
+                'unitprice' => $summary['unit_price'],
+                'unit' => $summary['units'],
             ])->output();
 
             if ($transaction->email) {

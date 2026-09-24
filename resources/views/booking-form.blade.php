@@ -195,9 +195,70 @@
         .offer-box > div {
             word-break: break-word;
         }
+        /* Hotel share cards */
+        .share-card {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(40,172,226,0.35);
+            border-radius: 1rem;
+            padding: 0.9rem 1rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            user-select: none;
+        }
+        .share-card:hover { border-color: rgba(40,172,226,0.7); }
+        .share-card:focus-visible { outline: 2px solid #28ace2; outline-offset: 2px; }
+        .share-card.selected {
+            background: rgba(40,172,226,0.16);
+            border-color: #28ace2;
+            box-shadow: 0 0 0 3px rgba(40,172,226,0.18);
+        }
+        .share-check {
+            flex: none;
+            width: 1.5rem; height: 1.5rem;
+            border-radius: 9999px;
+            border: 1px solid rgba(40,172,226,0.6);
+            display: flex; align-items: center; justify-content: center;
+            color: transparent;
+            transition: all 0.25s ease;
+        }
+        .share-card.selected .share-check { background: #28ace2; color: #0A1428; }
+        .share-controls { opacity: 0.55; transition: opacity 0.25s ease; }
+        .share-card.selected .share-controls { opacity: 1; }
+        /* while a card is unselected, clicks on its controls just select the card */
+        .share-card:not(.selected) .share-controls * { pointer-events: none; }
+        .share-step {
+            width: 2.25rem; height: 2.25rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(40,172,226,0.6);
+            background: rgba(255,255,255,0.08);
+            color: #28ace2;
+            line-height: 1;
+        }
+        .share-step:hover:not(:disabled) { background: rgba(40,172,226,0.25); }
+        .share-card .share-count {
+            width: 6rem;
+            text-align: center;
+            padding: 0.4rem 0.5rem;
+            border-radius: 0.75rem;
+            -moz-appearance: textfield;
+        }
+        .share-count::-webkit-outer-spin-button,
+        .share-count::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .share-card.invalid .share-count { border-color: #ef4444; background: rgba(239,68,68,0.15); }
     </style>
 </head>
 <body class="min-h-screen">
+@php
+    // Indian digit grouping (e.g. 3,00,000)
+    $inr = function ($n) {
+        $n = round((float) $n, 2);
+        $whole = (string) floor($n);
+        $head = strlen($whole) > 3 ? preg_replace('/\B(?=(\d{2})+(?!\d))/', ',', substr($whole, 0, -3)).',' : '';
+        $fraction = fmod($n, 1) ? substr(number_format($n - floor($n), 2), 1) : '';
+
+        return $head.substr($whole, -3).$fraction;
+    };
+@endphp
 
 <div class="custom-cursor" id="cursor"></div>
 <div class="cursor-ring" id="cursorRing"></div>
@@ -244,11 +305,13 @@
                 <div class="uppercase text-[#0A2F5E] text-xs  mb-4 md:mb-5 hidden" data-bn>বর্তমান অফার</div>
 
                 <div class="space-y-3 sm:space-y-4">
-                    <div class="flex justify-between flex-wrap gap-2">
-                        <span class="text-black/85" data-en>Price per Share</span>
-                        <span class="text-black/85 hidden" data-bn>প্রতি শেয়ারের মূল্য</span>
-                        <span class="text-[#0A2F5E] font-semibold">৳ 3,00,000</span>
-                    </div>
+                    @foreach($hotels as $hotel)
+                        <div class="flex justify-between flex-wrap gap-2">
+                            <span class="text-black/85" data-en>{{ $hotel['name'] }} · Price per Share</span>
+                            <span class="text-black/85 hidden" data-bn>{{ $hotel['name_bn'] }} · প্রতি শেয়ারের মূল্য</span>
+                            <span class="text-[#0A2F5E] font-semibold">৳ {{ $inr($hotel['price']) }}</span>
+                        </div>
+                    @endforeach
                     <div class="flex justify-between flex-wrap gap-2">
                         <span class="text-black/85" data-en>Annual Dividend</span>
                         <span class="text-black/85 hidden" data-bn>বার্ষিক আয়</span>
@@ -297,25 +360,67 @@
                         <input type="email" id="email" class="form-input w-full px-4 sm:px-6 py-2.5 rounded-xl sm:rounded-2xl text-base" autocomplete="email">
                     </div>
 
-                    <!-- Fixed Total -->
+                    <!-- Hotel share cards -->
+                    <div class="field-group mt-2" id="sharesGroup">
+                        <label class="block text-[#28ace2] text-[10px] sm:text-xs  mb-1.5" data-en>SELECT HOTEL &amp; SHARES *</label>
+                        <label class="block text-[#28ace2] text-[10px] sm:text-xs  mb-1.5 hidden" data-bn>হোটেল ও শেয়ার নির্বাচন করুন *</label>
+
+                        <div class="space-y-3">
+                            @foreach($hotels as $hotel)
+                                <div class="share-card" data-hotel="{{ $hotel['key'] }}" role="checkbox" aria-checked="false" tabindex="0">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div class="min-w-0">
+                                            <div class="text-[#F7F1E8] text-lg leading-tight" data-en>{{ $hotel['name'] }}</div>
+                                            <div class="text-[#F7F1E8] text-lg leading-tight hidden" data-bn>{{ $hotel['name_bn'] }}</div>
+                                            <div class="text-[#28ace2] text-sm mt-1">
+                                                ৳ {{ $inr($hotel['price']) }}
+                                                <span data-en>per share</span><span data-bn style="display:none">প্রতি শেয়ার</span>
+                                            </div>
+                                        </div>
+                                        <span class="share-check" aria-hidden="true">✓</span>
+                                    </div>
+
+                                    <div class="share-controls mt-3 flex items-center justify-between gap-3">
+                                        <div class="text-white/70 text-xs">
+                                            <span data-en>Shares</span><span data-bn style="display:none">শেয়ার</span>
+                                            <span class="text-white/50">(max {{ $inr($hotel['max']) }})</span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <button type="button" class="share-step" data-step="-1" aria-label="Decrease shares" tabindex="-1">&minus;</button>
+                                            <input type="number" class="form-input share-count" inputmode="numeric" min="1" max="{{ $hotel['max'] }}" step="1" disabled aria-label="{{ $hotel['name'] }} share count">
+                                            <button type="button" class="share-step" data-step="1" aria-label="Increase shares" tabindex="-1">+</button>
+                                        </div>
+                                    </div>
+
+                                    <div class="share-subtotal hidden text-right text-sm text-white/80 mt-2"></div>
+                                </div>
+                            @endforeach
+                        </div>
+                        <p id="sharesError" class="text-red-400 text-xs sm:text-sm mt-2 hidden"></p>
+                    </div>
+
+                    <!-- Total (calculated from the selected shares) -->
                     <div class="mt-2">
                         <label class="block text-[#28ace2] text-[10px] sm:text-xs  mb-1.5" data-en>TOTAL INVESTMENT</label>
-                        <label class="block text-[#28ace2] text-[10px] sm:text-xs  mb-1.5 hidden" data-bn>মোট বিনিয়োগ</label>
-                        <div class="bg-white/10 border border-[#28ace2]/40 px-4 sm:px-6 py-2 rounded-xl sm:rounded-2xl text-xl sm:text-2xl text-[#28ace2] font-light">
-                            ৳ 3,00,000
+                        <label class="block text-[#28ace2] text-[10px] sm:text-xs  mb-1.5 hidden" data-bn>মোট বিনিয়োগ</label>
+                        <div id="totalAmount" class="bg-white/10 border border-[#28ace2]/40 px-4 sm:px-6 py-2 rounded-xl sm:rounded-2xl text-xl sm:text-2xl text-[#28ace2] font-light">
+                            ৳ 0
                         </div>
                     </div>
 
-                    <!-- Your visible styled button -->
-                    <button type="button" onclick="document.getElementById('sslczPayBtn').click()"
-                            class="w-full bg-gradient-to-r from-[#0773bb] via-[#28ace2] to-[#4fc3f0] py-2 rounded-xl sm:rounded-2xl text-[#0A1428] font-semibold  text-base sm:text-lg uppercase hover:brightness-110 transition-all mt-2"
-                    >
-                        <span data-en>✦ &nbsp; Pay Now &nbsp; ✦</span>
-                        <span data-bn style="display:none">✦ &nbsp; পে করুন &nbsp; ✦</span>
-                    </button>
+                    <!-- SSLCommerz option (hidden when the total reaches the gateway limit) -->
+                    <div id="sslOption" class="space-y-2 mt-2">
+                        <button type="button" onclick="payWithSsl()"
+                                class="w-full bg-gradient-to-r from-[#0773bb] via-[#28ace2] to-[#4fc3f0] py-2 rounded-xl sm:rounded-2xl text-[#0A1428] font-semibold  text-base sm:text-lg uppercase hover:brightness-110 transition-all"
+                        >
+                            <span data-en>✦ &nbsp; Pay Now &nbsp; ✦</span>
+                            <span data-bn style="display:none">✦ &nbsp; পে করুন &nbsp; ✦</span>
+                        </button>
 
-                    <p class="text-center text-white/75 text-xs sm:text-sm uppercase" data-en>Or</p>
-                    <p class="text-center text-white/75 text-xs sm:text-sm hidden" style="font-family:'Tiro Bangla',serif;" data-bn>অথবা</p>
+                        <p class="text-center text-white/75 text-xs sm:text-sm uppercase" data-en>Or</p>
+                        <p class="text-center text-white/75 text-xs sm:text-sm hidden" style="font-family:'Tiro Bangla',serif;" data-bn>অথবা</p>
+                    </div>
+                    <p id="sslLimitNote" class="text-center text-[#28ace2] text-xs sm:text-sm hidden"></p>
 
                     <!-- Pay with PayPal -->
                     <button type="button" id="paypalPayBtn"
@@ -497,16 +602,174 @@
         return true;
     }
 
+    // ---- Hotel share cards ----
+    const HOTELS = @json($hotels);
+    const shareCards = document.querySelectorAll('.share-card');
+    const sharesError = document.getElementById('sharesError');
+    const totalAmountEl = document.getElementById('totalAmount');
+    const selection = {};      // hotel key -> raw value of its count input (string)
+    const SSL_LIMIT = {{ $sslLimit }};   // SSLCommerz takes totals strictly below this
+    const sslOption = document.getElementById('sslOption');
+    const sslLimitNote = document.getElementById('sslLimitNote');
+    let currentTotal = 0;
+    let sharesTouched = false; // only show share errors after the visitor has interacted
+
+    const formatBdt = n => Number(n).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+    const isSelected = key => Object.prototype.hasOwnProperty.call(selection, key);
+
+    function parseCount(raw, max) {
+        if(!/^\d+$/.test(String(raw).trim())) return null;
+        const n = parseInt(raw, 10);
+        return (n >= 1 && n <= max) ? n : null;
+    }
+
+    // Selected hotels with a valid count -> { key: count }
+    function getSharesPayload() {
+        const payload = {};
+        Object.keys(selection).forEach(key => {
+            const n = parseCount(selection[key], HOTELS[key].max);
+            if(n !== null) payload[key] = n;
+        });
+        return payload;
+    }
+
+    function sharesProblem() {
+        const keys = Object.keys(selection);
+        if(keys.length === 0) {
+            return { en: 'Select at least one hotel to book shares', bn: 'কমপক্ষে একটি হোটেল নির্বাচন করুন' };
+        }
+        for(const key of keys) {
+            const h = HOTELS[key];
+            if(parseCount(selection[key], h.max) === null) {
+                return {
+                    en: 'Enter 1 to ' + formatBdt(h.max) + ' shares for ' + h.name,
+                    bn: h.name_bn + '-এর জন্য ১ থেকে ' + formatBdt(h.max) + ' শেয়ার দিন'
+                };
+            }
+        }
+        return null;
+    }
+
+    function validateShares() {
+        const problem = sharesProblem();
+        if(problem && sharesTouched) {
+            sharesError.textContent = currentLang === 'bn' ? problem.bn : problem.en;
+            sharesError.classList.remove('hidden');
+        } else {
+            sharesError.classList.add('hidden');
+        }
+        return problem === null;
+    }
+
+    const sslOverLimit = () => currentTotal >= SSL_LIMIT;
+
+    function renderSslOption() {
+        const over = sslOverLimit();
+        sslOption.style.display = over ? 'none' : '';
+        if(over) {
+            const limit = formatBdt(SSL_LIMIT);
+            sslLimitNote.textContent = currentLang === 'bn'
+                ? '৳ ' + limit + ' বা তার বেশি মোট পরিমাণ শুধুমাত্র পেপালের মাধ্যমে পরিশোধ করা যাবে।'
+                : 'Totals of ৳ ' + limit + ' or more can be paid through PayPal only.';
+        }
+        sslLimitNote.classList.toggle('hidden', !over);
+    }
+
+    function renderShares() {
+        let total = 0;
+        shareCards.forEach(card => {
+            const key = card.dataset.hotel;
+            const h = HOTELS[key];
+            const selected = isSelected(key);
+            const input = card.querySelector('.share-count');
+            const subtotal = card.querySelector('.share-subtotal');
+            const count = selected ? parseCount(selection[key], h.max) : null;
+
+            card.classList.toggle('selected', selected);
+            card.setAttribute('aria-checked', selected ? 'true' : 'false');
+            card.classList.toggle('invalid', selected && count === null);
+            input.disabled = !selected;
+            if(!selected) input.value = '';
+
+            if(count !== null) {
+                total += h.price * count;
+                subtotal.textContent = count + ' × ৳ ' + formatBdt(h.price) + ' = ৳ ' + formatBdt(h.price * count);
+                subtotal.classList.remove('hidden');
+            } else {
+                subtotal.classList.add('hidden');
+            }
+        });
+        currentTotal = total;
+        totalAmountEl.textContent = '৳ ' + formatBdt(total);
+        renderSslOption();
+        validateShares();
+    }
+
+    function toggleHotel(key) {
+        sharesTouched = true;
+        if(isSelected(key)) {
+            delete selection[key];
+        } else {
+            selection[key] = '1';
+            document.querySelector('.share-card[data-hotel="' + key + '"] .share-count').value = '1';
+        }
+        renderShares();
+        updatePayButtonState();
+    }
+
+    shareCards.forEach(card => {
+        const key = card.dataset.hotel;
+        const input = card.querySelector('.share-count');
+
+        card.addEventListener('click', e => {
+            if(isSelected(key) && e.target.closest('.share-controls')) return;
+            toggleHotel(key);
+        });
+
+        card.addEventListener('keydown', e => {
+            if(e.target === card && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault();
+                toggleHotel(key);
+            }
+        });
+
+        card.querySelectorAll('.share-step').forEach(btn => {
+            btn.addEventListener('click', () => {
+                sharesTouched = true;
+                const current = parseInt(input.value, 10) || 0;
+                const next = Math.min(HOTELS[key].max, Math.max(1, current + parseInt(btn.dataset.step, 10)));
+                input.value = String(next);
+                selection[key] = input.value;
+                renderShares();
+                updatePayButtonState();
+            });
+        });
+
+        input.addEventListener('input', () => {
+            sharesTouched = true;
+            selection[key] = input.value;
+            renderShares();
+            updatePayButtonState();
+        });
+
+        input.addEventListener('blur', () => {
+            // an empty field snaps back to one share; out-of-range values stay flagged
+            if(isSelected(key) && input.value.trim() === '') {
+                input.value = '1';
+                selection[key] = '1';
+                renderShares();
+                updatePayButtonState();
+            }
+        });
+    });
+
     function isFormValid() {
-        return validateName() && validatePhone() && validateAddress() && validateEmail();
+        return validateName() && validatePhone() && validateAddress() && validateEmail() && validateShares();
     }
 
     function updatePayButtonState() {
-        if(isFormValid()) {
-            payButton.disabled = false;
-        } else {
-            payButton.disabled = true;
-        }
+        // SSLCommerz is also blocked when the total is over its per-transaction limit
+        payButton.disabled = !(isFormValid() && !sslOverLimit());
     }
 
     // Real-time validation
@@ -519,9 +782,15 @@
     addressInput.addEventListener('blur', () => { validateAddress(); updatePayButtonState(); });
     emailInput.addEventListener('blur', () => { validateEmail(); updatePayButtonState(); });
 
-    // ORIGINAL SSLCommerz Logic - COMPLETELY UNTOUCHED
-    const UNIT_PRICE = 300000;
+    // Visible "Pay Now" button: hands over to the hidden SSLCommerz button once the form is valid
+    function payWithSsl() {
+        if(sslOverLimit()) return;
+        sharesTouched = true;
+        updatePayButtonState();
+        if(!payButton.disabled) payButton.click();
+    }
 
+    // SSLCommerz logic - the amount is priced on the server from the selected shares
     const sslBtn = document.getElementById('sslczPayBtn');
 
     sslBtn.addEventListener('click', function() {
@@ -530,9 +799,7 @@
             cus_phone: document.getElementById('phone').value,
             cus_email: document.getElementById('email').value,
             cus_addr1: document.getElementById('address').value,
-            cus_unit: "1",
-            cus_unitprice: UNIT_PRICE,
-            cus_amount: UNIT_PRICE
+            cus_shares: getSharesPayload()
         };
         $('#sslczPayBtn').prop('postdata', obj);
     });
@@ -548,6 +815,7 @@
 
     paypalBtn.addEventListener('click', async function() {
         paypalError.classList.add('hidden');
+        sharesTouched = true;
         if(!isFormValid()) return;
 
         paypalBtn.disabled = true;
@@ -563,7 +831,8 @@
                     name: nameInput.value.trim(),
                     phone: phoneInput.value.trim(),
                     address: addressInput.value.trim(),
-                    email: emailInput.value.trim()
+                    email: emailInput.value.trim(),
+                    shares: getSharesPayload()
                 })
             });
             const data = await res.json();
@@ -624,9 +893,12 @@
         if(phoneInput.classList.contains('error-field')) validatePhone();
         if(addressInput.classList.contains('error-field')) validateAddress();
         if(emailInput.classList.contains('error-field')) validateEmail();
+        validateShares();
+        renderSslOption();
         updatePayButtonState();
     }
 
+    renderShares();
     updatePayButtonState();
 
     document.querySelectorAll('input').forEach(el => {
@@ -635,6 +907,7 @@
     });
 
     window.toggleLang = toggleLang;
+    window.payWithSsl = payWithSsl;
 </script>
 </body>
 </html>

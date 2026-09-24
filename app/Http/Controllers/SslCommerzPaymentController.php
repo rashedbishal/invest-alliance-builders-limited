@@ -9,6 +9,8 @@ use App\Mail\PaymentReceiveConfirmationMail;
 use App\Models\Invoice;
 use App\Models\Submission;
 use App\Models\Transaction;
+use App\Models\TransactionShare;
+use App\Services\Booking\ShareCatalog;
 use App\Services\Payment\MoneyReceiptGenerator;
 use Barryvdh\DomPDF\Facade\Pdf;
 use DB;
@@ -17,6 +19,7 @@ use App\Library\SslCommerz\SslCommerzNotification;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use InvalidArgumentException;
 
 class SslCommerzPaymentController extends Controller
 {
@@ -100,7 +103,7 @@ class SslCommerzPaymentController extends Controller
 
     }
 
-    public function payViaAjax(Request $request)
+    public function payViaAjax(Request $request, ShareCatalog $catalog)
     {
         $invoice = null;
         $order = null;
@@ -111,11 +114,20 @@ class SslCommerzPaymentController extends Controller
         // In orders table order uniq identity is "transaction_id","status" field contain status of the transaction, "amount" is the order amount to be paid and "currency" is for storing Site Currency which will be checked with paid currency.
         $cartData = json_decode($request->cart_json) ?? null;
 
+        // The amount is priced here from the selected hotel shares. Any price or
+        // total sent by the browser is ignored.
+        try {
+            $quote = $catalog->quote((array) ($cartData->cus_shares ?? []));
+        } catch (InvalidArgumentException $e) {
+            return response()->json(['status' => 'FAILED', 'message' => $e->getMessage()], 422);
+        }
 
-
+        if ($quote['total'] >= (float) config('shares.sslcommerz_limit')) {
+            return response()->json(['status' => 'FAILED', 'message' => 'This amount is too high for SSLCommerz. Please pay with PayPal.'], 422);
+        }
 
         $post_data = [];
-        $post_data['total_amount'] = $cartData->cus_amount; // You cant not pay less than 10
+        $post_data['total_amount'] = $quote['total']; // You cant not pay less than 10
         // $post_data['total_amount'] = '10';
         $post_data['currency'] = 'BDT';
         $post_data['tran_id'] = TransactionIdHelper::generate(); // tran_id must be unique
@@ -148,8 +160,8 @@ class SslCommerzPaymentController extends Controller
         $post_data['product_profile'] = 'Service';
 
         // OPTIONAL PARAMETERS
-        $post_data['value_a'] = $cartData->cus_unitprice;
-        $post_data['value_b'] = $cartData->cus_unit;
+        $post_data['value_a'] = round($quote['total'] / $quote['units'], 2); // average unit price
+        $post_data['value_b'] = (string) $quote['units']; // total share count
         $post_data['value_c'] = '';
         $post_data['value_d'] = 'ref004';
 
@@ -167,6 +179,10 @@ class SslCommerzPaymentController extends Controller
                 'invoice_number' => null,
                 'currency' => $post_data['currency'],
             ]);
+
+        foreach ($quote['lines'] as $line) {
+            TransactionShare::create(['transaction_id' => $post_data['tran_id']] + $line);
+        }
 
         $sslc = new SslCommerzNotification;
         // initiate(Transaction Data , false: Redirect to SSLCOMMERZ gateway/ true: Show all the Payement gateway here )
@@ -456,9 +472,6 @@ class SslCommerzPaymentController extends Controller
                         Mail::to($update_transaction->email)
                             ->queue(new PaymentConfirmationMail(base64_encode($pdf), $update_transaction->invoice_number, $update_transaction->cn_identifier, $invoice->money_receipt_number));
                     }
-
-                    Mail::to($update_transaction->email)
-                        ->queue(new PaymentConfirmationMail(base64_encode($pdf), $update_transaction->invoice_number, $update_transaction->cn_identifier, $invoice->money_receipt_number));
 
                     Mail::to(config('portal.email_address.managing_director'))
                         ->cc(config('portal.email_address.accounts'))

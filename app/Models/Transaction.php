@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Transaction extends Model
 {
@@ -46,5 +47,25 @@ class Transaction extends Model
         'cn_identifier',
     ];
 
+    public function shares(): HasMany
+    {
+        return $this->hasMany(TransactionShare::class, 'transaction_id', 'transaction_id');
+    }
 
+    /**
+     * Total share count and average unit price for the Submission row. Payments
+     * started before per-hotel lines existed have none, so they count as one share.
+     *
+     * @return array{units: int, unit_price: float}
+     */
+    public function shareSummary(): array
+    {
+        $units = (int) $this->shares()->sum('quantity');
+
+        if ($units < 1) {
+            return ['units' => 1, 'unit_price' => (float) $this->amount];
+        }
+
+        return ['units' => $units, 'unit_price' => round((float) $this->amount / $units, 2)];
+    }
 }
