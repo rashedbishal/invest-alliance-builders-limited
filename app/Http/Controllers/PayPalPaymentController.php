@@ -13,6 +13,7 @@ use App\Models\TransactionShare;
 use App\Services\Booking\ShareCatalog;
 use App\Services\Payment\MoneyReceiptGenerator;
 use App\Services\Payment\PayPalApiException;
+use App\Services\Payment\PayPalRate;
 use App\Services\Payment\PayPalService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
@@ -47,7 +48,7 @@ class PayPalPaymentController extends Controller
 
     private const PENDING_MESSAGE = 'PayPal is reviewing your payment. We will confirm it as soon as PayPal completes the review - please contact us if you do not hear from us.';
 
-    public function __construct(private PayPalService $paypal, private ShareCatalog $catalog)
+    public function __construct(private PayPalService $paypal, private ShareCatalog $catalog, private PayPalRate $rate)
     {
     }
 
@@ -73,16 +74,16 @@ class PayPalPaymentController extends Controller
         }
 
         $currency = (string) config('paypal.currency');
-        $rate = (float) config('paypal.bdt_per_usd');
         $bdtAmount = $quote['total'];
 
-        if ($rate <= 0 || ! config('paypal.client_id') || ! config('paypal.client_secret')) {
+        if ($this->rate->bdtPerUnit() <= 0 || ! config('paypal.client_id') || ! config('paypal.client_secret')) {
             Log::error('PayPal is not configured (PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET / PAYPAL_BDT_PER_USD).');
 
             return response()->json(['message' => 'PayPal is not available right now.'], 500);
         }
 
-        $chargeAmount = round($bdtAmount / $rate, 2);
+        // BDT total -> PayPal currency (automatic rate plus the optional safety margin)
+        $chargeAmount = $this->rate->charge($bdtAmount);
 
         if ($chargeAmount <= 0) {
             return response()->json(['message' => 'PayPal is not available right now.'], 500);

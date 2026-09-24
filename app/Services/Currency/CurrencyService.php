@@ -42,6 +42,17 @@ class CurrencyService
     }
 
     /**
+     * How many BDT one unit of $currency is worth, from the cached exchange rates
+     * (independent of the display feature switch), or null when unknown.
+     */
+    public function bdtPerUnit(string $currency): ?float
+    {
+        $rate = $this->rates()[strtoupper($currency)] ?? null;
+
+        return $rate && $rate > 0 ? 1 / (float) $rate : null;
+    }
+
+    /**
      * The visitor's public IP. Header values can be forged, which only lets someone
      * preview another currency for themselves.
      */

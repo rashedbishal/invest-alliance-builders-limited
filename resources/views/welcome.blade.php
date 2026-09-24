@@ -7,7 +7,7 @@
      */
     $hotels = app(\App\Services\Booking\ShareCatalog::class)->hotels();
     $sslLimit = (float) config('shares.sslcommerz_limit');
-    $paypalRate = (float) config('paypal.bdt_per_usd');
+    $paypalRate = app(\App\Services\Payment\PayPalRate::class)->chargeRate(); // same rate the PayPal order is created with
     $paypalCurrency = (string) config('paypal.currency', 'USD');
 
     $img = fn ($path) => Vite::asset('resources/images/' . $path);

@@ -9,6 +9,7 @@ use App\Models\Submission;
 use App\Models\Transaction;
 use App\Models\TransactionShare;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
@@ -26,6 +27,8 @@ class PayPalPaymentTest extends TestCase
             'paypal.client_secret' => 'secret',
             'paypal.currency' => 'USD',
             'paypal.bdt_per_usd' => 122.88,
+            'paypal.rate_source' => 'fixed',
+            'paypal.rate_margin_percent' => 0,
             'shares.hotels' => [
                 'jana' => ['name' => 'Hotel Jana', 'name_bn' => 'হোটেল জানা', 'price' => 300000, 'max' => 10],
                 'dove' => ['name' => 'Hotel Jana The Dove', 'name_bn' => 'হোটেল জানা দ্য ডোভ', 'price' => 40000, 'max' => 5],
@@ -97,6 +100,100 @@ class PayPalPaymentTest extends TestCase
         // Amount sent to PayPal is derived from the server-side prices, never from the browser.
         Http::assertSent(fn ($r) => str_ends_with($r->url(), '/v2/checkout/orders')
             && $r['purchase_units'][0]['amount'] === ['currency_code' => 'USD', 'value' => '2441.41']);
+    }
+
+    private function createOrderWithRates(?array $rates, int $rateStatus = 200): void
+    {
+        Cache::flush();
+        $this->fakePayPal();
+        Http::fake(['open.er-api.com/*' => $rates === null
+            ? Http::response('down', 500)
+            : Http::response(['result' => 'success', 'rates' => $rates], $rateStatus)]);
+
+        $this->postJson('/paypal/create', [
+            'name' => 'Test Customer', 'phone' => '01700000000', 'address' => 'Dhaka',
+            'shares' => ['jana' => 1], // 300000 BDT
+        ]);
+    }
+
+    private function assertChargedUsd(string $value): void
+    {
+        Http::assertSent(fn ($r) => str_ends_with($r->url(), '/v2/checkout/orders')
+            && $r['purchase_units'][0]['amount']['value'] === $value);
+    }
+
+    public function test_automatic_rate_sets_the_paypal_amount(): void
+    {
+        config(['paypal.rate_source' => 'auto']);
+
+        $this->createOrderWithRates(['BDT' => 1, 'USD' => 0.008]); // 1 USD = 125 BDT
+
+        $this->assertChargedUsd('2400.00'); // 300000 / 125
+        $tx = Transaction::firstOrFail();
+        $this->assertEquals(300000, $tx->amount);
+        $this->assertEquals(2400, $tx->currency_amount);
+        $this->assertEquals(125, $tx->currency_rate);
+    }
+
+    public function test_margin_is_added_to_the_amount_charged(): void
+    {
+        config(['paypal.rate_source' => 'auto', 'paypal.rate_margin_percent' => 2]);
+
+        $this->createOrderWithRates(['BDT' => 1, 'USD' => 0.008]);
+
+        $this->assertChargedUsd('2448.00'); // 2400 + 2%
+        $this->assertEquals(300000, Transaction::firstOrFail()->amount); // the BDT price is untouched
+    }
+
+    public function test_env_rate_is_used_when_the_rate_feed_is_down(): void
+    {
+        config(['paypal.rate_source' => 'auto']);
+
+        $this->createOrderWithRates(null);
+
+        $this->assertChargedUsd('2441.41'); // 300000 / 122.88
+    }
+
+    public function test_implausible_automatic_rate_is_ignored(): void
+    {
+        config(['paypal.rate_source' => 'auto']);
+
+        $this->createOrderWithRates(['BDT' => 1, 'USD' => 0.0001]); // "1 USD = 10000 BDT"
+
+        $this->assertChargedUsd('2441.41');
+    }
+
+    public function test_fixed_mode_never_asks_the_rate_feed(): void
+    {
+        config(['paypal.rate_source' => 'fixed']);
+
+        $this->createOrderWithRates(['BDT' => 1, 'USD' => 0.008]);
+
+        $this->assertChargedUsd('2441.41');
+        Http::assertNotSent(fn ($r) => str_contains($r->url(), 'open.er-api.com'));
+    }
+
+    public function test_paypal_is_unavailable_when_there_is_no_rate_at_all(): void
+    {
+        config(['paypal.rate_source' => 'auto', 'paypal.bdt_per_usd' => 0]);
+
+        $this->createOrderWithRates(null);
+
+        $this->assertSame(0, Transaction::count());
+        Http::assertNotSent(fn ($r) => str_ends_with($r->url(), '/v2/checkout/orders'));
+    }
+
+    public function test_landing_page_previews_the_same_rate_the_order_is_charged_with(): void
+    {
+        config(['paypal.rate_source' => 'auto', 'paypal.rate_margin_percent' => 0]);
+        Cache::flush();
+        Http::fake(['open.er-api.com/*' => Http::response(['result' => 'success', 'rates' => ['BDT' => 1, 'USD' => 0.008]])]);
+
+        $this->get('/')->assertOk()->assertSee('paypal: { rate: 125,', false); // 1 USD = 125 BDT, not the .env 122.88
+
+        // with a margin the page previews bdt / (rate / 1.02), which is exactly what create() charges
+        config(['paypal.rate_margin_percent' => 2]);
+        $this->get('/')->assertSee('paypal: { rate: 122.5490196', false);
     }
 
     public function test_create_supports_both_hotels_and_ignores_client_amount(): void
@@ -371,20 +468,20 @@ class PayPalPaymentTest extends TestCase
     public function test_home_page_shows_the_decline_reason_and_custom_info_title(): void
     {
         $this->withSession(['fail' => 'Transaction is failed', 'fail_reason' => 'Boom reason text'])
-            ->get('/')->assertSee('Payment Failed')->assertSee('Boom reason text');
+            ->get('/')->assertSee('Payment failed')->assertSee('Boom reason text');
 
         $this->withSession(['info' => 'Under review text', 'info_title' => 'Payment Under Review'])
-            ->get('/')->assertSee('Payment Under Review')->assertSee('Under review text')->assertDontSee('Already Processed');
+            ->get('/')->assertSee('Payment Under Review')->assertDontSee('Already processed');
     }
 
-    public function test_home_page_modals_look_the_same_as_before_when_no_extras_are_set(): void
+    public function test_home_page_modals_use_their_defaults_when_no_extras_are_set(): void
     {
         // SSLCommerz (and older PayPal) flashes only set `fail` / `info`.
         $this->withSession(['fail' => 'Transaction is failed'])
-            ->get('/')->assertSee('Payment Failed')->assertDontSee('Transaction is failed');
+            ->get('/')->assertSee('Payment failed')->assertSee('You have not been charged')->assertDontSee('Transaction is failed');
 
         $this->withSession(['info' => 'Transaction is already successful'])
-            ->get('/')->assertSee('Already Processed')->assertSee('Transaction is already successful');
+            ->get('/')->assertSee('Already processed')->assertSee('Transaction is already successful');
     }
 
     public function test_cancel_marks_pending_transaction_cancelled(): void
