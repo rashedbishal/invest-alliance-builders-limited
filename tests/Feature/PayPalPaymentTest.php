@@ -31,7 +31,7 @@ class PayPalPaymentTest extends TestCase
             'paypal.rate_margin_percent' => 0,
             'shares.hotels' => [
                 'jana' => ['name' => 'Hotel Jana', 'name_bn' => 'হোটেল জানা', 'price' => 300000, 'max' => 10],
-                'dove' => ['name' => 'Hotel Jana The Dove', 'name_bn' => 'হোটেল জানা দ্য ডোভ', 'price' => 40000, 'max' => 5],
+                'dove' => ['name' => 'Hotel Jana The Dove', 'name_bn' => 'হোটেল জানা দ্য ডাভ', 'price' => 40000, 'max' => 5],
             ],
         ]);
     }

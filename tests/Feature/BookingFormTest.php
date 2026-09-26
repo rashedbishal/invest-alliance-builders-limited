@@ -18,7 +18,7 @@ class BookingFormTest extends TestCase
 
         config(['shares.hotels' => [
             'jana' => ['name' => 'Hotel Jana', 'name_bn' => 'হোটেল জানা', 'price' => 400000, 'max' => 11240],
-            'dove' => ['name' => 'Hotel Jana The Dove', 'name_bn' => 'হোটেল জানা দ্য ডোভ', 'price' => 40000, 'max' => 4100],
+            'dove' => ['name' => 'Hotel Jana The Dove', 'name_bn' => 'হোটেল জানা দ্য ডাভ', 'price' => 40000, 'max' => 4100],
         ]]);
     }
 

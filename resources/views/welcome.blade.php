@@ -28,7 +28,7 @@
         ],
         'dove' => [
             'eyebrowEn' => "Four-Star · Cox's Bazar", 'eyebrowBn' => 'চার তারকা · কক্সবাজার',
-            'titleEn' => 'Hotel Jana The Dove', 'titleBn' => 'হোটেল জানা দ্য ডোভ',
+            'titleEn' => 'Hotel Jana The Dove', 'titleBn' => 'হোটেল জানা দ্য ডাভ',
             'img' => $img('dove/dusk.webp'), 'pos' => '50% 38%', 'stars' => 4,
         ],
     ];
@@ -36,11 +36,11 @@
 
     $heroSlides = [
         ['src' => $img('kuakata/facade-west.webp'), 'pos' => '50% 52%', 'en' => 'Hotel Jana Kuakata', 'bn' => 'হোটেল জানা কুয়াকাটা'],
-        ['src' => $img('dove/seafront.webp'), 'pos' => '50% 42%', 'en' => "Hotel Jana The Dove · Cox's Bazar", 'bn' => 'হোটেল জানা দ্য ডোভ · কক্সবাজার'],
+        ['src' => $img('dove/seafront.webp'), 'pos' => '50% 42%', 'en' => "Hotel Jana The Dove · Cox's Bazar", 'bn' => 'হোটেল জানা দ্য ডাভ · কক্সবাজার'],
         ['src' => $img('kuakata/aerial-pool.webp'), 'pos' => '50% 50%', 'en' => 'Hotel Jana Kuakata · Rooftop', 'bn' => 'হোটেল জানা কুয়াকাটা · ছাদ'],
-        ['src' => $img('dove/rooftop-pool.webp'), 'pos' => '50% 45%', 'en' => 'Hotel Jana The Dove · Infinity Pool', 'bn' => 'হোটেল জানা দ্য ডোভ · ইনফিনিটি পুল'],
+        ['src' => $img('dove/rooftop-pool.webp'), 'pos' => '50% 45%', 'en' => 'Hotel Jana The Dove · Infinity Pool', 'bn' => 'হোটেল জানা দ্য ডাভ · ইনফিনিটি পুল'],
         ['src' => $img('kuakata/entrance.webp'), 'pos' => '50% 50%', 'en' => 'Hotel Jana Kuakata · Entrance', 'bn' => 'হোটেল জানা কুয়াকাটা · প্রবেশপথ'],
-        ['src' => $img('dove/dusk.webp'), 'pos' => '50% 40%', 'en' => 'Hotel Jana The Dove · Dusk', 'bn' => 'হোটেল জানা দ্য ডোভ · গোধূলি'],
+        ['src' => $img('dove/dusk.webp'), 'pos' => '50% 40%', 'en' => 'Hotel Jana The Dove · Dusk', 'bn' => 'হোটেল জানা দ্য ডাভ · গোধূলি'],
     ];
 
     // YouTube links → id + optional start time (t=…s is honoured when present in the link).
@@ -53,9 +53,9 @@
     // Brand films (Hotel Jana YouTube channel).
     $films = array_map(fn ($f) => $f + $yt($f['url']), [
         ['url' => 'https://www.youtube.com/watch?v=OQ6oYAF_X4o', 'en' => 'Hotel Jana Kuakata', 'bn' => 'হোটেল জানা কুয়াকাটা', 'placeEn' => 'Kuakata', 'placeBn' => 'কুয়াকাটা'],
-        ['url' => 'https://www.youtube.com/watch?v=dAWP64KJwM4', 'en' => 'Hotel Jana The Dove', 'bn' => 'হোটেল জানা দ্য ডোভ', 'placeEn' => "Cox's Bazar", 'placeBn' => 'কক্সবাজার'],
+        ['url' => 'https://www.youtube.com/watch?v=dAWP64KJwM4', 'en' => 'Hotel Jana The Dove', 'bn' => 'হোটেল জানা দ্য ডাভ', 'placeEn' => "Cox's Bazar", 'placeBn' => 'কক্সবাজার'],
         ['url' => 'https://www.youtube.com/watch?v=PPliWfowRYk', 'en' => 'The Beauty of Kuakata', 'bn' => 'কুয়াকাটার সৌন্দর্য', 'placeEn' => 'Kuakata', 'placeBn' => 'কুয়াকাটা'],
-        ['url' => 'https://www.youtube.com/watch?v=Wa3NH0oLBuM&t=317s', 'en' => "The Dove, Cox's Bazar", 'bn' => 'দ্য ডোভ, কক্সবাজার', 'placeEn' => "Cox's Bazar", 'placeBn' => 'কক্সবাজার'],
+        ['url' => 'https://www.youtube.com/watch?v=Wa3NH0oLBuM&t=317s', 'en' => "The Dove, Cox's Bazar", 'bn' => 'দ্য ডাভ, কক্সবাজার', 'placeEn' => "Cox's Bazar", 'placeBn' => 'কক্সবাজার'],
         ['url' => 'https://www.youtube.com/watch?v=G5QY3n0Nmhg', 'en' => 'Hotel Ownership', 'bn' => 'হোটেল মালিকানা', 'placeEn' => 'Hotel Jana', 'placeBn' => 'হোটেল জানা'],
         ['url' => 'https://www.youtube.com/watch?v=iW8IZNf5TfY', 'en' => 'Your Own Hotel', 'bn' => 'নিজের হোটেল, নিজের রাজত্ব', 'placeEn' => 'Hotel Jana', 'placeBn' => 'হোটেল জানা'],
         ['url' => 'https://www.youtube.com/watch?v=R-q5xIdN3dg', 'en' => 'The Brochure', 'bn' => 'ব্রোশিওর', 'placeEn' => 'Hotel Jana', 'placeBn' => 'হোটেল জানা'],
@@ -72,21 +72,21 @@
 
     $galleryPool = [
         ['src' => $img('kuakata/facade-east.webp'), 'pos' => '50% 50%', 'en' => 'Kuakata · The Façade', 'bn' => 'কুয়াকাটা · সম্মুখভাগ'],
-        ['src' => $img('dove/tower-sunset.webp'), 'pos' => '50% 40%', 'en' => "The Dove · Sunset", 'bn' => 'দ্য ডোভ · সূর্যাস্ত'],
+        ['src' => $img('dove/tower-sunset.webp'), 'pos' => '50% 40%', 'en' => "The Dove · Sunset", 'bn' => 'দ্য ডাভ · সূর্যাস্ত'],
         ['src' => $img('kuakata/aerial-pool.webp'), 'pos' => '55% 50%', 'en' => 'Kuakata · Rooftop Pool', 'bn' => 'কুয়াকাটা · ছাদের পুল'],
-        ['src' => $img('dove/pool-deck.webp'), 'pos' => '50% 50%', 'en' => 'The Dove · Pool Deck', 'bn' => 'দ্য ডোভ · পুল ডেক'],
+        ['src' => $img('dove/pool-deck.webp'), 'pos' => '50% 50%', 'en' => 'The Dove · Pool Deck', 'bn' => 'দ্য ডাভ · পুল ডেক'],
         ['src' => $img('Reception-2.jpeg'), 'pos' => '50% 50%', 'en' => 'Hotel Jana · Lobby', 'bn' => 'হোটেল জানা · লবি'],
-        ['src' => $img('dove/night.webp'), 'pos' => '50% 40%', 'en' => 'The Dove · By Night', 'bn' => 'দ্য ডোভ · রাতে'],
+        ['src' => $img('dove/night.webp'), 'pos' => '50% 40%', 'en' => 'The Dove · By Night', 'bn' => 'দ্য ডাভ · রাতে'],
         ['src' => $img('kuakata/entrance.webp'), 'pos' => '50% 50%', 'en' => 'Kuakata · Entrance', 'bn' => 'কুয়াকাটা · প্রবেশপথ'],
-        ['src' => $img('dove/marine-drive.webp'), 'pos' => '60% 45%', 'en' => 'The Dove · Marine Drive', 'bn' => 'দ্য ডোভ · মেরিন ড্রাইভ'],
+        ['src' => $img('dove/marine-drive.webp'), 'pos' => '60% 45%', 'en' => 'The Dove · Marine Drive', 'bn' => 'দ্য ডাভ · মেরিন ড্রাইভ'],
         ['src' => $img('Suite.jpeg'), 'pos' => '55% 50%', 'en' => 'Hotel Jana · Suite', 'bn' => 'হোটেল জানা · স্যুইট'],
         ['src' => $img('kuakata/facade-west.webp'), 'pos' => '50% 50%', 'en' => 'Kuakata · West Façade', 'bn' => 'কুয়াকাটা · পশ্চিম সম্মুখভাগ'],
-        ['src' => $img('dove/day.webp'), 'pos' => '50% 40%', 'en' => 'The Dove · By Day', 'bn' => 'দ্য ডোভ · দিনের আলোয়'],
-        ['src' => $img('dove/rooftop-pool.webp'), 'pos' => '50% 50%', 'en' => 'The Dove · Infinity Pool', 'bn' => 'দ্য ডোভ · ইনফিনিটি পুল'],
+        ['src' => $img('dove/day.webp'), 'pos' => '50% 40%', 'en' => 'The Dove · By Day', 'bn' => 'দ্য ডাভ · দিনের আলোয়'],
+        ['src' => $img('dove/rooftop-pool.webp'), 'pos' => '50% 50%', 'en' => 'The Dove · Infinity Pool', 'bn' => 'দ্য ডাভ · ইনফিনিটি পুল'],
         ['src' => $img('cafeteria-5.jpg'), 'pos' => '50% 50%', 'en' => 'Hotel Jana · Dining', 'bn' => 'হোটেল জানা · ডাইনিং'],
-        ['src' => $img('dove/seafront.webp'), 'pos' => '50% 45%', 'en' => 'The Dove · Seafront', 'bn' => 'দ্য ডোভ · সমুদ্রতীর'],
+        ['src' => $img('dove/seafront.webp'), 'pos' => '50% 45%', 'en' => 'The Dove · Seafront', 'bn' => 'দ্য ডাভ · সমুদ্রতীর'],
         ['src' => $img('Reception.jpeg'), 'pos' => '40% 50%', 'en' => 'Hotel Jana · Reception', 'bn' => 'হোটেল জানা · রিসেপশন'],
-        ['src' => $img('dove/dusk.webp'), 'pos' => '50% 40%', 'en' => 'The Dove · Dusk', 'bn' => 'দ্য ডোভ · গোধূলি'],
+        ['src' => $img('dove/dusk.webp'), 'pos' => '50% 40%', 'en' => 'The Dove · Dusk', 'bn' => 'দ্য ডাভ · গোধূলি'],
     ];
 
     $arrow = '<svg class="icon-arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h13M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>';
@@ -232,7 +232,7 @@
     <div class="property__grid">
         <div class="property__content">
             <p class="eyebrow eyebrow--index" data-reveal><span class="idx">02</span><span class="rule" aria-hidden="true"></span><x-t en="Cox's Bazar" bn="কক্সবাজার" /></p>
-            <h2 class="h-property" id="dove-title" data-reveal style="--d: 80ms"><x-t en="Hotel Jana <br><em>The Dove</em>" bn="হোটেল জানা <br><em>দ্য ডোভ</em>" /></h2>
+            <h2 class="h-property" id="dove-title" data-reveal style="--d: 80ms"><x-t en="Hotel Jana <br><em>The Dove</em>" bn="হোটেল জানা <br><em>দ্য ডাভ</em>" /></h2>
             <p class="rating" data-reveal style="--d: 160ms">
                 <span class="rating__stars" aria-hidden="true">{!! str_repeat($star, 4) !!}</span>
                 <x-t en="Four-Star Hotel" bn="চার তারকা হোটেল" />
@@ -240,7 +240,7 @@
             <p class="coords" data-reveal style="--d: 200ms">21°26′ N<span></span>92°00′ E</p>
             <p class="lead lead--drop" data-reveal style="--d: 240ms">
                 <x-t en="On the shores of Cox's Bazar — the world's longest natural sea beach — Hotel Jana The Dove brings the same Hotel Jana hospitality to the Bay of Bengal."
-                     bn="বিশ্বের দীর্ঘতম প্রাকৃতিক সমুদ্রসৈকত কক্সবাজারের তীরে হোটেল জানা দ্য ডোভ বঙ্গোপসাগরের পাড়ে নিয়ে আসছে হোটেল জানার একই আতিথেয়তা।" />
+                     bn="বিশ্বের দীর্ঘতম প্রাকৃতিক সমুদ্রসৈকত কক্সবাজারের তীরে হোটেল জানা দ্য ডাভ বঙ্গোপসাগরের পাড়ে নিয়ে আসছে হোটেল জানার একই আতিথেয়তা।" />
             </p>
             <dl class="stats" data-reveal style="--d: 320ms">
                 <div class="stat"><dt><x-t en="Star rating" bn="তারকা মান" /></dt><dd><span data-count="4">4</span><span class="stat__unit">★</span></dd></div>
@@ -549,12 +549,12 @@
                     <p class="order__sub"><x-t en="Your receipt and invoice will be sent to this contact." bn="আপনার রসিদ ও ইনভয়েস এই ঠিকানায় পাঠানো হবে।" /></p>
                     <div class="fields">
                         <div class="field field--full">
-                            <label class="field__label" for="f-name"><x-t en="Full name" bn="পূর্ণ নাম" /></label>
+                            <label class="field__label" for="f-name"><x-t en="Full name" bn="পূর্ণ নাম" /> <span class="field__required" data-required-for="name"><x-t en="Required" bn="আবশ্যক" /></span></label>
                             <input class="input" id="f-name" name="name" type="text" autocomplete="name" maxlength="120" required aria-describedby="e-name">
                             <p class="field__error" id="e-name"><x-t en="Enter your full name (at least 2 characters)." bn="আপনার পূর্ণ নাম লিখুন (কমপক্ষে ২ অক্ষর)।" /></p>
                         </div>
                         <div class="field field--full">
-                            <label class="field__label" for="f-phone" id="l-phone"><x-t en="Contact number" bn="যোগাযোগ নম্বর" /></label>
+                            <label class="field__label" for="f-phone" id="l-phone"><x-t en="Contact number" bn="যোগাযোগ নম্বর" /> <span class="field__required" data-required-for="phone"><x-t en="Required" bn="আবশ্যক" /></span></label>
                             <div class="phone">
                                 <div class="picker picker--light picker--phone" data-picker="country" data-name="country_code" data-value="BD" data-label="Country calling code"></div>
                                 <input class="input phone__num" id="f-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel-national" maxlength="15" required aria-describedby="e-phone" placeholder="1XXX XXXXXX">
@@ -562,12 +562,12 @@
                             <p class="field__error" id="e-phone"><x-t en="Enter a valid contact number." bn="সঠিক যোগাযোগ নম্বর লিখুন।" /></p>
                         </div>
                         <div class="field field--full">
-                            <label class="field__label" for="f-email"><x-t en="Email" bn="ইমেইল" /></label>
+                            <label class="field__label" for="f-email"><x-t en="Email" bn="ইমেইল" /> <span class="field__required" data-required-for="email"><x-t en="Required" bn="আবশ্যক" /></span></label>
                             <input class="input" id="f-email" name="email" type="email" autocomplete="email" maxlength="50" required aria-describedby="e-email">
                             <p class="field__error" id="e-email"><x-t en="Enter a valid email address." bn="সঠিক ইমেইল ঠিকানা লিখুন।" /></p>
                         </div>
                         <div class="field">
-                            <label class="field__label" for="f-addr1"><x-t en="Address line 1" bn="ঠিকানা (লাইন ১)" /></label>
+                            <label class="field__label" for="f-addr1"><x-t en="Address line 1" bn="ঠিকানা (লাইন ১)" /> <span class="field__required" data-required-for="address_1"><x-t en="Required" bn="আবশ্যক" /></span></label>
                             <input class="input" id="f-addr1" name="address_1" type="text" autocomplete="address-line1" maxlength="150" required aria-describedby="e-addr1">
                             <p class="field__error" id="e-addr1"><x-t en="Enter your address." bn="আপনার ঠিকানা লিখুন।" /></p>
                         </div>
@@ -578,7 +578,7 @@
                     </div>
                     {{-- Points the way to payment; site.js keeps it in step with the form --}}
                     <p class="order__next" data-order-next data-state="form">
-                        <span class="order__next-text" data-order-next-text><x-t en="Complete these details to unlock payment" bn="পেমেন্ট চালু করতে এই তথ্যগুলো পূরণ করুন" /></span>
+                        <span class="order__next-text" data-order-next-text><x-t en="Complete these details" bn="এই তথ্যগুলো পূরণ করুন" /></span>
                         <svg class="order__next-arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h13M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>
                     </p>
                 </form>
@@ -618,11 +618,8 @@
                         <p class="rate-note" data-rate-note hidden><x-t en="Converted at today's rate for reference only. You pay in BDT (SSLCommerz) or USD (PayPal)." bn="আজকের হারে শুধুমাত্র তথ্যের জন্য দেখানো হয়েছে। পেমেন্ট হবে BDT (SSLCommerz) বা USD (PayPal)-এ।" /></p>
                     </div>
 
-                    {{-- Payment stays locked until shares are chosen and the details form is complete --}}
+                    {{-- Payment options are available after shares are chosen and details are complete --}}
                     <button type="button" class="paylock" id="paylock" data-paylock data-state="shares" aria-live="polite">
-                        <span class="paylock__icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24"><path class="paylock__shackle" d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><rect x="5.5" y="11" width="13" height="9.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="15.5" r="1.3" fill="currentColor"/></svg>
-                        </span>
                         <span class="paylock__body">
                             <span class="paylock__title" data-paylock-title></span>
                             <span class="paylock__meter" data-paylock-meter aria-hidden="true"></span>

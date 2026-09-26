@@ -18,7 +18,7 @@ return [
         ],
         'dove' => [
             'name' => 'Hotel Jana The Dove',
-            'name_bn' => 'হোটেল জানা দ্য ডোভ',
+            'name_bn' => 'হোটেল জানা দ্য ডাভ',
             'price' => (float) env('HOTEL_JANA_THE_DOVE_PRICE', 0),
             'max' => (int) env('HOTEL_JANA_THE_DOVE_MAX_COUNT', 0),
         ],

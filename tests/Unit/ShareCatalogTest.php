@@ -14,7 +14,7 @@ class ShareCatalogTest extends TestCase
 
         config(['shares.hotels' => [
             'jana' => ['name' => 'Hotel Jana', 'name_bn' => 'জানা', 'price' => 400000, 'max' => 100],
-            'dove' => ['name' => 'Hotel Jana The Dove', 'name_bn' => 'ডোভ', 'price' => 40000, 'max' => 50],
+            'dove' => ['name' => 'Hotel Jana The Dove', 'name_bn' => 'ডাভ', 'price' => 40000, 'max' => 50],
             'off' => ['name' => 'Not configured', 'name_bn' => 'x', 'price' => 0, 'max' => 0],
         ]]);
     }

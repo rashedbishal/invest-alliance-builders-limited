@@ -774,7 +774,7 @@ function render() {
     updateOrderBar();
 }
 
-/* The lock above the pay buttons says what's still needed; the form's footer points to it. */
+/* The payment note says what's still needed; the form footer points to it. */
 function renderLock(count) {
     const lock = $('[data-paylock]');
     if (!lock) return;
@@ -783,10 +783,10 @@ function renderLock(count) {
     lock.disabled = stage === 'ready';
     const left = state.fieldsTotal - state.fieldsDone;
     const copy = {
-        shares: [t('Select a product first', 'প্রথমে একটি প্রোডাক্ট নির্বাচন করুন'), t('Choose at least one share above, then complete your details to pay.', 'উপরে অন্তত একটি শেয়ার বেছে নিন, তারপর তথ্য পূরণ করে পেমেন্ট করুন।')],
-        form: [t('Complete your details to unlock payment', 'পেমেন্ট চালু করতে আপনার তথ্য পূরণ করুন'),
+        shares: [t('Select shares to continue', 'এগিয়ে যেতে শেয়ার নির্বাচন করুন'), t('Choose at least one share, then complete your details.', 'অন্তত একটি শেয়ার বেছে নিয়ে আপনার তথ্য পূরণ করুন।')],
+        form: [t('Complete your details to continue', 'এগিয়ে যেতে আপনার তথ্য পূরণ করুন'),
             t(`${state.fieldsDone} of ${state.fieldsTotal} details complete · ${left} to go`, `${state.fieldsTotal}টির মধ্যে ${state.fieldsDone}টি তথ্য সম্পূর্ণ · বাকি ${left}টি`)],
-        ready: [t('Payment unlocked', 'পেমেন্ট চালু হয়েছে'), t('Choose how you would like to pay.', 'কীভাবে পেমেন্ট করবেন তা বেছে নিন।')],
+        ready: [t('Ready to pay', 'পেমেন্টের জন্য প্রস্তুত'), t('Choose a payment method.', 'একটি পেমেন্ট পদ্ধতি বেছে নিন।')],
     }[stage];
     setText($('[data-paylock-title]', lock), copy[0]);
     $('[data-paylock-sub]', lock).textContent = copy[1];
@@ -799,8 +799,8 @@ function renderLock(count) {
     if (next) {
         next.dataset.state = state.formValid ? 'done' : 'form';
         $('[data-order-next-text]', next).textContent = state.formValid
-            ? (count ? t('Details complete — payment is unlocked', 'তথ্য সম্পূর্ণ — পেমেন্ট চালু হয়েছে') : t('Details complete — now select your shares', 'তথ্য সম্পূর্ণ — এখন শেয়ার নির্বাচন করুন'))
-            : t(`Complete these details to unlock payment · ${left} to go`, `পেমেন্ট চালু করতে এই তথ্যগুলো পূরণ করুন · বাকি ${left}টি`);
+            ? (count ? t('Details complete — choose a payment method', 'তথ্য পূরণ হয়েছে — একটি পেমেন্ট পদ্ধতি বেছে নিন') : t('Details complete — now select your shares', 'তথ্য সম্পূর্ণ — এখন শেয়ার নির্বাচন করুন'))
+            : t(`Complete these details · ${left} to go`, `এই তথ্যগুলো পূরণ করুন · বাকি ${left}টি`);
     }
 }
 
@@ -897,6 +897,12 @@ function initForm() {
     if (cc) countryPicker = createPicker(cc, { items: countryItems(), value: cc.dataset.value || 'BD', kind: 'country', onChange: () => f.elements.phone.focus() });
     const inputs = Object.keys(RULES).map((name) => f.elements[name]);
     const recompute = () => {
+        inputs.forEach((input) => {
+            const complete = RULES[input.name](input.value);
+            input.closest('.field').classList.toggle('is-complete', complete);
+            const requiredNote = $(`[data-required-for="${input.name}"]`);
+            if (requiredNote) requiredNote.hidden = complete;
+        });
         state.fieldsTotal = inputs.length;
         state.fieldsDone = inputs.filter((i) => RULES[i.name](i.value)).length;
         state.formValid = state.fieldsDone === inputs.length;
