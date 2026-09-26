@@ -551,7 +551,7 @@
                         <div class="field field--full">
                             <label class="field__label" for="f-name"><x-t en="Full name" bn="পূর্ণ নাম" /> <span class="field__required" data-required-for="name"><x-t en="Required" bn="আবশ্যক" /></span></label>
                             <input class="input" id="f-name" name="name" type="text" autocomplete="name" maxlength="120" required aria-describedby="e-name">
-                            <p class="field__error" id="e-name"><x-t en="Enter your full name (at least 2 characters)." bn="আপনার পূর্ণ নাম লিখুন (কমপক্ষে ২ অক্ষর)।" /></p>
+                            <p class="field__error" id="e-name"><x-t en="Enter your full name using letters (at least 2)." bn="আপনার পূর্ণ নাম অক্ষরে লিখুন (কমপক্ষে ২টি অক্ষর)।" /></p>
                         </div>
                         <div class="field field--full">
                             <label class="field__label" for="f-phone" id="l-phone"><x-t en="Contact number" bn="যোগাযোগ নম্বর" /> <span class="field__required" data-required-for="phone"><x-t en="Required" bn="আবশ্যক" /></span></label>
@@ -595,6 +595,11 @@
                                     <div class="srow__info">
                                         <p class="srow__name"><x-t :en="$p['titleEn']" :bn="$p['titleBn']" /></p>
                                         <p class="srow__calc"><span data-srow-qty>0</span> × {!! $price($hotel['price'], '', true) !!}</p>
+                                        <div class="srow__controls" aria-label="Adjust selected shares">
+                                            <button type="button" class="srow__step" data-dec="{{ $key }}" aria-label="Decrease {{ $hotel['name'] }} shares">−</button>
+                                            <button type="button" class="srow__step" data-inc="{{ $key }}" aria-label="Increase {{ $hotel['name'] }} shares">+</button>
+                                            <button type="button" class="srow__remove" data-remove="{{ $key }}" aria-label="Remove {{ $hotel['name'] }} shares" title="Remove {{ $hotel['name'] }} shares"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 6h12M8 6V4h4v2m3 0-.7 10H5.7L5 6m3 3v4m4-4v4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                                        </div>
                                     </div>
                                     <p class="srow__amt">{!! $price(0, 'data-srow-amt') !!}</p>
                                 </div>
@@ -629,7 +634,7 @@
 
                     <div class="paybtns" role="group" aria-label="Pay with" data-paybtns>
                         <div class="paybtn-wrap" data-method="sslcommerz" data-state="active">
-                            <button type="button" class="paybtn paybtn--ssl" data-pay="sslcommerz" disabled aria-describedby="paylock pay-help">
+                            <button type="button" class="paybtn paybtn--ssl" data-pay="sslcommerz" aria-describedby="paylock pay-help">
                                 <span class="paybtn__label"><x-t en="Pay with" bn="পেমেন্ট করুন" /></span>
                                 <img class="paybtn__logo" src="{{ $img('payment/sslcommerz.png') }}" alt="SSLCommerz" width="120" height="26">
                                 <span class="spinner" aria-hidden="true"></span>
@@ -638,7 +643,7 @@
                             <p class="paybtn__reason"><x-t :en="'SSLCommerz allows up to ' . $price($sslLimit, '', true) . ' per transaction. Since this order exceeds the per-transaction limit, SSLCommerz cannot be used. Please pay with PayPal.'" :bn="'SSLCommerz-এ প্রতি লেনদেনে সর্বোচ্চ ' . $price($sslLimit, '', true) . ' পর্যন্ত পেমেন্ট করা যায়। এই অর্ডারটি প্রতি লেনদেনের সীমা ছাড়িয়ে যাওয়ায় SSLCommerz ব্যবহার করা যাবে না। অনুগ্রহ করে PayPal ব্যবহার করুন।'" /></p>
                         </div>
                         <div class="paybtn-wrap" data-method="paypal" data-state="{{ $paypalRate > 0 ? 'active' : 'unavailable' }}">
-                            <button type="button" class="paybtn paybtn--paypal" data-pay="paypal" disabled aria-describedby="paylock pay-help">
+                            <button type="button" class="paybtn paybtn--paypal" data-pay="paypal" aria-describedby="paylock pay-help">
                                 <span class="paybtn__label"><x-t en="Pay with" bn="পেমেন্ট করুন" /></span>
                                 <img class="paybtn__logo" src="{{ $img('payment/paypal.svg') }}" alt="PayPal" width="88" height="25">
                                 <span class="spinner" aria-hidden="true"></span>

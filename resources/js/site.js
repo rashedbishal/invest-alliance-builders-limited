@@ -733,6 +733,8 @@ function render() {
         row.classList.toggle('is-on', q > 0);
         setText($('[data-srow-qty]', row), fmtBdt(q));
         paintMoney($('[data-srow-amt]', row), q * HOTELS[key].price);
+        $('[data-dec]', row).disabled = q <= 0;
+        $('[data-inc]', row).disabled = q >= HOTELS[key].max;
     });
     const empty = $('[data-summary-empty]');
     if (empty) empty.hidden = count > 0;
@@ -752,7 +754,7 @@ function render() {
         const s = methodState(m);
         wrap.dataset.state = s;
         const btn = $('[data-pay]', wrap);
-        btn.disabled = s !== 'active' || Boolean(blocked) || state.busy;
+        btn.disabled = s !== 'active' || state.busy;
         btn.classList.toggle('is-loading', state.busy === m);
     });
     const charge = $('[data-paypal-charge]');
@@ -793,7 +795,6 @@ function renderLock(count) {
     const meter = $('[data-paylock-meter]', lock);
     if (meter.childElementCount !== state.fieldsTotal) meter.innerHTML = '<i></i>'.repeat(state.fieldsTotal);
     [...meter.children].forEach((seg, i) => seg.classList.toggle('is-on', i < state.fieldsDone));
-    $('[data-paybtns]').classList.toggle('is-locked', stage !== 'ready');
 
     const next = $('[data-order-next]');
     if (next) {
@@ -852,7 +853,7 @@ function initCurrency() {
 /* Customer details */
 const form = () => $('[data-checkout-form]');
 const RULES = {
-    name: (v) => v.trim().length >= 2,
+    name: (v) => { const name = v.trim(); return (name.match(/\p{L}/gu) || []).length >= 2 && /^[\p{L}\p{M}\s.'’-]+$/u.test(name); },
     phone: (v) => { const d = v.replace(/[^\d]/g, ''); return d.length >= 6 && d.length <= 14; },
     email: (v) => /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/.test(v.trim()),
     address_1: (v) => v.trim().length >= 3,
@@ -972,11 +973,14 @@ function initCommerce() {
     }
 
     document.addEventListener('click', (e) => {
-        const btn = e.target.closest('[data-inc],[data-dec],[data-select]');
+        const btn = e.target.closest('[data-inc],[data-dec],[data-select],[data-remove]');
         if (!btn) return;
-        const key = btn.dataset.inc || btn.dataset.dec || btn.closest('[data-product]')?.dataset.product;
+        const key = btn.dataset.inc || btn.dataset.dec || btn.dataset.remove || btn.closest('[data-product]')?.dataset.product;
         if (!key || !(key in state.qty)) return;
-        if (btn.hasAttribute('data-select')) {
+        if (btn.hasAttribute('data-remove')) {
+            setQty(key, 0);
+            requestAnimationFrame(() => $(`[data-product="${key}"] [data-select]`)?.focus());
+        } else if (btn.hasAttribute('data-select')) {
             setQty(key, 1);
             requestAnimationFrame(() => $(`[data-product="${key}"] [data-inc]`)?.focus());
         } else {
@@ -1010,9 +1014,21 @@ function initCommerce() {
     });
 
     $$('[data-pay]').forEach((btn) => btn.addEventListener('click', () => {
+        if (!totals().count) {
+            $('#invest').scrollIntoView({ block: 'start', behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+            return;
+        }
         const f = form();
-        Object.keys(RULES).forEach((name) => checkField(f.elements[name], true));
-        if (missingStep() || methodState(btn.dataset.pay) !== 'active') { render(); return; }
+        const names = Object.keys(RULES);
+        names.forEach((name) => checkField(f.elements[name], true));
+        const first = names.map((name) => f.elements[name]).find((input) => !RULES[input.name](input.value));
+        if (first) {
+            render();
+            first.scrollIntoView({ block: 'center', behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+            first.focus({ preventScroll: true });
+            return;
+        }
+        if (state.busy || methodState(btn.dataset.pay) !== 'active') { render(); return; }
         if (btn.dataset.pay === 'paypal') payWithPayPal();
         else payWithSslCommerz();
     }));

@@ -805,6 +805,12 @@ html[data-lang="bn"] .field__required { font-size: 12px; letter-spacing: 0; }
 .srow__img { width: 48px; height: 48px; object-fit: cover; border-radius: 2px; }
 .srow__name { font-size: 14px; font-weight: 600; line-height: 1.35; }
 .srow__calc { font-size: 12px; color: var(--d-muted); font-variant-numeric: tabular-nums; margin-top: 2px; }
+.srow__controls { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+.srow__step, .srow__remove { min-width: 28px; height: 28px; padding: 0 7px; border: 1px solid rgba(247, 244, 238, .24); border-radius: 3px; color: var(--inverse); background: rgba(247, 244, 238, .06); cursor: pointer; }
+.srow__step:hover:not(:disabled), .srow__remove:hover { background: rgba(247, 244, 238, .15); }
+.srow__step:disabled { opacity: .45; cursor: default; }
+.srow__remove { display: grid; place-items: center; width: 30px; min-width: 30px; margin-left: 3px; color: var(--d-text-2); }
+.srow__remove svg { width: 15px; height: 15px; }
 .srow__amt { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .summary__empty { padding: 18px 0; border-bottom: 1px solid var(--divider-dark); color: var(--d-muted); font-size: 14px; }
 .summary__empty a { color: var(--surf-300); margin-left: 6px; }
@@ -821,7 +827,6 @@ html[data-lang="bn"] .summary__total-label { letter-spacing: 0; text-transform: 
 
 /* Two direct payment buttons in their own brand styles */
 .paybtns { display: grid; gap: 18px; margin-top: 16px; transition: opacity 1220ms var(--e-io), filter 1220ms var(--e-io); }
-.paybtns.is-locked { opacity: .55; filter: saturate(.6); }
 
 /* Payment note: what's needed before choosing a payment method */
 .paylock {
