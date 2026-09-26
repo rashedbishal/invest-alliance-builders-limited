@@ -223,7 +223,7 @@ class PayPalPaymentController extends Controller
                 'invoice_status' => 'Processing',
                 'remarks' => 'Online Payment (PayPal)',
                 'public_token' => bin2hex(random_bytes(32)),
-                'public_token_expires_at' => now()->addYears(1),
+                'public_token_expires_at' => null,
                 'public_token_revoked_at' => null,
             ]);
 

@@ -30,8 +30,8 @@ class InvoiceController extends Controller
         $submission = Submission::where('invoice_number', $invoice->invoice_number)->first();
         $transaction = Transaction::where('invoice_number', $invoice->invoice_number)->first();
 
-        $pdf = PDF::loadView('content.invoice', ['invoice' => $invoice, 'concern' => RouteCrypto::decryptParams((string) $concern), 'qrDataUri' => $qrDataUri, 'transaction'=> $transaction, 'unitprice' => $submission->unit_price, 'unit'=> $submission->unit])->output();
-        $pdf->setPaper('A4', 'portrait');
+        $pdf = PDF::loadView('content.invoice', ['invoice' => $invoice, 'concern' => RouteCrypto::decryptParams((string) $concern), 'qrDataUri' => $qrDataUri, 'transaction'=> $transaction, 'unitprice' => $submission->unit_price, 'unit'=> $submission->unit])
+            ->setPaper('A4', 'portrait');
 
         return $pdf->stream($fileName);
 
@@ -57,7 +57,7 @@ class InvoiceController extends Controller
             session(['url.intended' => $downloadUrl]);
             session(['oauth.intended' => $downloadUrl]);
 
-            return redirect()->route('/')
+            return redirect()->route('home')
                 ->withErrors(['This public link expired. Please contact with us.']);
         }
 
