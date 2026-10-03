@@ -684,6 +684,7 @@ const fmtCharge = (n) => new Intl.NumberFormat('en-US', { minimumFractionDigits:
 const methodState = (m) => {
     if (m === 'paypal') return CONFIG.paypal.rate > 0 ? 'active' : 'unavailable';
     if (m === 'sslcommerz') return sslBlocked() ? 'disabled' : 'active';
+    if (m === 'bank') return 'active';
     return 'unavailable';
 };
 
@@ -878,12 +879,15 @@ function customer() {
     const code = countryPicker ? countryPicker.item.dial : '+880';
     // Local numbers are often typed with a trunk "0" (e.g. 01712…); drop it after the country code.
     const digits = f.elements.phone.value.replace(/[^\d]/g, '').replace(/^0+/, '');
-    const address = [f.elements.address_1.value.trim(), f.elements.address_2.value.trim()].filter(Boolean).join(', ');
+    const address1 = f.elements.address_1.value.trim();
+    const address2 = f.elements.address_2.value.trim();
     return {
         name: f.elements.name.value.trim(),
         phone: `${code}${digits}`.slice(0, 20),
         email: f.elements.email.value.trim(),
-        address: address.slice(0, 255),
+        address: [address1, address2].filter(Boolean).join(', ').slice(0, 255),
+        address_1: address1,
+        address_2: address2,
     };
 }
 
@@ -958,6 +962,93 @@ function payWithSslCommerz() {
     trigger.click(); // the embed script takes over from here
 }
 
+/*
+ * Bank transfer (Dutch-Bangla Bank): there's nothing to charge here — the customer pays
+ * manually and calls in for their money receipt. Opening the modal is instant; a
+ * best-effort, fire-and-forget request lets the internal team know to expect the call.
+ */
+function notifyBankTransfer() {
+    if (!CONFIG.routes.bankTransfer) return;
+    fetch(CONFIG.routes.bankTransfer, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').content,
+        },
+        body: JSON.stringify({ ...customer(), shares: sharesPayload() }),
+    }).catch(() => {}); // informational only — the bank details modal is already shown
+}
+
+function payWithBank() {
+    notifyBankTransfer();
+    const dialog = $('[data-bank-modal]');
+    if (dialog && typeof dialog.showModal === 'function') dialog.showModal();
+}
+
+/* Closing the bank modal (Done, the × button, or Esc) starts the order over. */
+function resetOrder() {
+    const f = form();
+    if (f) {
+        f.reset();
+        Object.keys(RULES).forEach((name) => {
+            const input = f.elements[name];
+            const field = input && input.closest('.field');
+            if (!field) return;
+            field.classList.remove('is-invalid', 'is-complete');
+            input.setAttribute('aria-invalid', 'false');
+        });
+    }
+    if (countryPicker) countryPicker.set('BD');
+    KEYS.forEach((k) => { state.qty[k] = 0; });
+    state.fieldsDone = 0;
+    state.formValid = false;
+    setHelp('');
+    render();
+}
+
+function initBankModal() {
+    const dialog = $('[data-bank-modal]');
+    if (!dialog) return;
+    const closeBtn = $('[data-bank-modal-close]', dialog);
+    if (closeBtn) closeBtn.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('close', resetOrder);
+}
+
+/* Copy-to-clipboard for the bank details (account / routing numbers) */
+function fallbackCopy(value) {
+    const ta = document.createElement('textarea');
+    ta.value = value;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+}
+
+function initCopyButtons() {
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-copy]');
+        if (!btn) return;
+        const value = btn.dataset.copy;
+        const succeed = () => {
+            btn.classList.add('is-copied');
+            clearTimeout(btn._copyTimer);
+            btn._copyTimer = setTimeout(() => btn.classList.remove('is-copied'), 1500);
+            const status = $('[data-copy-status]');
+            if (status) status.textContent = t('Copied to clipboard.', 'ক্লিপবোর্ডে কপি হয়েছে।');
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(value).then(succeed).catch(() => { if (fallbackCopy(value)) succeed(); });
+        } else if (fallbackCopy(value)) {
+            succeed();
+        }
+    });
+}
+
 function initCommerce() {
     if (!KEYS.length || !$('[data-product]')) return;
 
@@ -1030,6 +1121,7 @@ function initCommerce() {
         }
         if (state.busy || methodState(btn.dataset.pay) !== 'active') { render(); return; }
         if (btn.dataset.pay === 'paypal') payWithPayPal();
+        else if (btn.dataset.pay === 'bank') payWithBank();
         else payWithSslCommerz();
     }));
 
@@ -1037,6 +1129,7 @@ function initCommerce() {
 
     initForm();
     initCurrency();
+    initBankModal();
     document.addEventListener('langchange', render);
     // Returning from the PayPal page via the back button restores usable buttons.
     window.addEventListener('pageshow', (e) => { if (e.persisted) setBusy(false); });
@@ -1108,5 +1201,6 @@ initVoices();
 initGallery();
 initPrivilegeCard();
 initCommerce();
+initCopyButtons();
 initInteractions();
 initFlash();

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BankTransferController;
 use App\Http\Controllers\CurrencyController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PayPalPaymentController;
@@ -27,6 +28,12 @@ Route::post('/ipn', [SslCommerzPaymentController::class, 'ipn']);
 Route::post('/paypal/create', [PayPalPaymentController::class, 'create'])->name('paypal.create');
 Route::get('/paypal/success', [PayPalPaymentController::class, 'success'])->name('paypal.success');
 Route::get('/paypal/cancel', [PayPalPaymentController::class, 'cancel'])->name('paypal.cancel');
+
+// Dutch-Bangla Bank transfer: no online payment here — this just emails the internal
+// team the customer's details so they can follow up when the customer calls in.
+Route::post('/bank-transfer/notify', [BankTransferController::class, 'notify'])
+    ->middleware('throttle:20,1')
+    ->name('bank-transfer.notify');
 
 Route::get('invoice/access/{token}/sentinel', [InvoiceController::class, 'accessViaQr'])
     ->name('invoice-access');

@@ -652,6 +652,15 @@
                             <p class="paybtn__charge" data-paypal-charge hidden></p>
                             <p class="paybtn__reason"><x-t en="PayPal is not available right now." bn="PayPal এখন উপলব্ধ নয়।" /></p>
                         </div>
+                        <div class="paybtn-wrap" data-method="bank" data-state="active">
+                            <button type="button" class="paybtn paybtn--bank" data-pay="bank" aria-describedby="paylock pay-help">
+                                <span class="paybtn__label"><x-t en="Pay with" bn="পেমেন্ট করুন" /></span>
+                                <img class="paybtn__logo paybtn__logo--bank" src="{{ $img('payment/dbbl.png') }}" alt="" width="28" height="28">
+                                <span class="paybtn__label"><x-t en="Dutch-Bangla Bank Limited" bn="ডাচ-বাংলা ব্যাংক লিমিটেড" /></span>
+                                <span class="spinner" aria-hidden="true"></span>
+                            </button>
+                            <p class="paybtn__note"><x-t en="Bank transfer · pay manually, call for your receipt" bn="ব্যাংক ট্রান্সফার · নিজে পেমেন্ট করুন, রিসিটের জন্য কল করুন" /></p>
+                        </div>
                     </div>
                     <p class="pay-help" id="pay-help" data-pay-help aria-live="polite"></p>
                     <p class="trust">
@@ -662,6 +671,40 @@
                     {{-- SSLCommerz embed trigger (unchanged contract): the embed script hijacks this button and posts `postdata` to /pay-via-ajax --}}
                     <button id="sslczPayBtn" type="button" token="" postdata="" order=" " endpoint="{{ url('/pay-via-ajax') }}" style="display:none"></button>
                 </aside>
+
+                {{-- Dutch-Bangla Bank transfer: informational only — no payment is taken on this page. --}}
+                <dialog class="modal modal--bank" data-bank-modal aria-labelledby="bank-modal-title">
+                    <button type="button" class="modal__close" data-bank-modal-close aria-label="Close">
+                        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                    </button>
+                    <div class="modal__icon modal__icon--bank" aria-hidden="true">
+                        <img src="{{ $img('payment/dbbl.png') }}" alt="" width="44" height="44">
+                    </div>
+                    <h2 class="h3" id="bank-modal-title"><x-t en="Pay by bank transfer" bn="ব্যাংক ট্রান্সফারে পেমেন্ট করুন" /></h2>
+                    <p class="modal__body modal__body--left">
+                        <x-t en="Transfer your order amount to the account below, then call us to collect your money receipt."
+                             bn="নিচের অ্যাকাউন্টে আপনার অর্ডারের পরিমাণ পাঠান, তারপর মানি রিসিট সংগ্রহ করতে আমাদের কল করুন।" />
+                    </p>
+                    @php
+                        $copyIcon = fn (string $value, string $label) =>
+                            '<button type="button" class="copy-btn" data-copy="' . e($value) . '" aria-label="' . e($label) . '">'
+                            . '<svg class="copy-btn__icon copy-btn__icon--copy" viewBox="0 0 16 16" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M3.5 10.5h-1a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v1" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>'
+                            . '<svg class="copy-btn__icon copy-btn__icon--check" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+                            . '</button>';
+                    @endphp
+                    <dl class="bank-details">
+                        <div><dt><x-t en="Bank name" bn="ব্যাংকের নাম" /></dt><dd>Dutch-Bangla Bank Limited</dd></div>
+                        <div><dt><x-t en="Account number" bn="অ্যাকাউন্ট নম্বর" /></dt><dd class="bank-details__value">{!! $copyIcon('164-1100071744', 'Copy account number') !!}<span>164-1100071744</span></dd></div>
+                        <div><dt><x-t en="Branch" bn="শাখা" /></dt><dd>Mirpur Circle-10</dd></div>
+                        <div><dt><x-t en="Routing number" bn="রাউটিং নম্বর" /></dt><dd class="bank-details__value">{!! $copyIcon('090263136', 'Copy routing number') !!}<span>090263136</span></dd></div>
+                    </dl>
+                    <p class="visually-hidden" role="status" aria-live="polite" data-copy-status></p>
+                    <p class="modal__note">
+                        <x-t en="After making the payment, to collect the money receipt, please call:" bn="পেমেন্ট করার পর, মানি রিসিট সংগ্রহ করতে কল করুন:" />
+                        <span class="modal__note-numbers"><a href="tel:+8801896204431">+8801896-204431</a>, <a href="tel:+8801896204422">+8801896-204422</a></span>
+                    </p>
+                    <form method="dialog"><button class="btn btn--primary btn--block"><x-t en="Done" bn="সম্পন্ন" /></button></form>
+                </dialog>
             </div>
         </div>
     </div>
@@ -734,7 +777,7 @@
         hotels: @json($hotels),
         sslLimit: {{ $sslLimit }},
         paypal: { rate: {{ $paypalRate }}, currency: @json($paypalCurrency) },
-        routes: { currency: @json(route('currency.show')), paypal: @json(route('paypal.create')) },
+        routes: { currency: @json(route('currency.show')), paypal: @json(route('paypal.create')), bankTransfer: @json(route('bank-transfer.notify')) },
     };
 </script>
 
