@@ -4,24 +4,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A Laravel 12 app for Invest Alliance Builders Limited: a public landing/booking page that sells "shares" (ownership units) in hotel properties (currently Hotel Jana and Hotel Jana The Dove), takes payment via SSLCommerz (BDT, local cards/mobile banking) or PayPal (USD, converted from BDT), and emails/generates PDF invoices and money receipts. There is no authenticated admin area or user login in this codebase — it's a single-purpose booking + payment flow plus invoice/receipt delivery.
+A Laravel 12 app for Invest Alliance Builders Limited: a public landing/booking page that sells "shares" (ownership units) in hotel properties (currently Hotel Jana and Hotel Jana The Dove), takes payment via SSLCommerz (BDT, local cards/mobile banking) or PayPal (USD, converted from BDT) — or lets the customer opt for a manual Dutch-Bangla Bank transfer — and emails/generates PDF invoices and money receipts. There is no authenticated admin area or user login in this codebase — it's a single-purpose booking + payment flow plus invoice/receipt delivery.
 
 This app's database is shared with another, separate application (see "Shared database" below) — this is the most important thing to understand before touching migrations or the `transactions`/`invoices` tables.
 
 ## Commands
 
 ```bash
-# Install
-composer install
-npm install
+# Install (first time: composer install, copy .env.example → .env, key:generate, migrate, npm install + build)
+composer setup
 
 # Local dev (serves app + queue worker + logs + vite, all at once)
 composer dev
 
 # Run all tests
-composer test
-# equivalent to:
-php artisan test
+composer test        # runs config:clear first, then php artisan test
 
 # Run a single test file / filter
 php artisan test tests/Feature/PayPalPaymentTest.php
@@ -41,12 +38,14 @@ Tests run against in-memory SQLite (`phpunit.xml`), not the real DB — safe to 
 
 ### Payment flow (the core of the app)
 
-Two independent payment gateways feed the same `transactions` / `invoices` / `submissions` / `transaction_shares` tables:
+There are three payment options on the booking form. Two are real gateways feeding the same `transactions` / `invoices` / `submissions` / `transaction_shares` tables:
 
 - **SSLCommerz** — `SslCommerzPaymentController` (`payViaAjax`, `success`, `ipn`, `fail`, `cancel`), backed by `App\Library\SslCommerz\SslCommerzNotification`. Used for amounts under `shares.sslcommerz_limit` (BDT). Both `success` (browser redirect) and `ipn` (server-to-server webhook) can independently mark a transaction Processing — both are guarded by checking `status == 'Pending'` first so only one wins.
 - **PayPal** — `PayPalPaymentController` (`create`, `success`, `cancel`), backed by `PayPalService` (REST Orders v2) and `PayPalRate` (BDT→USD conversion, see below). Used when the booking total is at/above the SSLCommerz limit, or whenever the customer picks PayPal. `success` wraps the whole capture+invoice flow in `DB::transaction()` with `lockForUpdate()` to avoid double-processing; PayPal API failures are classified into `DECLINED_ISSUES` (payment genuinely refused → mark Failed) vs. everything else (left Pending — money may have moved, needs manual review).
 
-Both flows converge on the same pattern after a successful capture: create an `Invoice` (auto-numbered via `InvoiceNumberGenerator`), create a `Submission` (denormalized unit price/qty snapshot for the invoice), generate a money receipt number (`MoneyReceiptGenerator`), render the `content.invoice` Blade view to PDF (`barryvdh/laravel-dompdf`) with a QR code (`QRProcessor`) linking to the public invoice-access route, then queue `PaymentConfirmationMail` to the customer and `PaymentReceiveConfirmationMail` to the internal addresses in `config('portal.email_address.*')`.
+- **Dutch-Bangla Bank transfer** — `BankTransferController::notify` (`bank-transfer.notify` route). Not a gateway: the customer pays manually and collects their receipt by phone, so this creates **no** Transaction/Invoice/Submission. It only validates the customer details, quotes via `ShareCatalog`, and queues `BankTransferNotificationMail` to `config('mail.from.address')`; the frontend (`resources/js/site.js`) shows a modal with the bank account details.
+
+The two gateway flows (SSLCommerz and PayPal) converge on the same pattern after a successful capture: create an `Invoice` (auto-numbered via `InvoiceNumberGenerator`), create a `Submission` (denormalized unit price/qty snapshot for the invoice), generate a money receipt number (`MoneyReceiptGenerator`), render the `content.invoice` Blade view to PDF (`barryvdh/laravel-dompdf`) with a QR code (`QRProcessor`) linking to the public invoice-access route, then queue `PaymentConfirmationMail` to the customer and `PaymentReceiveConfirmationMail` to the internal addresses in `config('portal.email_address.*')`.
 
 **Pricing is always server-side.** `App\Services\Booking\ShareCatalog::quote()` is the single source of truth for hotel prices/max share counts (from `config/shares.php`, itself from `.env`) — the browser only sends a hotel key and quantity, never a price or total. Any change to pricing logic should go through `ShareCatalog`, not the controllers.
 
