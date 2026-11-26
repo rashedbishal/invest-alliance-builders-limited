@@ -726,7 +726,10 @@
 
             {{-- SSLCommerz-supplied payment channel banner: one layout per device size, only the matching image is downloaded --}}
             <div class="sslbanner" data-reveal>
-                <h3 class="sslbanner__title"><x-t en="SSLCommerz Secure Payment" bn="এসএসএলকমার্জ নিরাপদ পেমেন্ট" /></h3>
+                <h3 class="sslbanner__title">
+                    <svg class="sslbanner__check" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5 3.5 4.8v6.1c0 5.3 3.6 10.2 8.5 11.6 4.9-1.4 8.5-6.3 8.5-11.6V4.8L12 1.5z" fill="currentColor"/><path d="m8 12.2 2.8 2.8L16.2 9.5" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <x-t en="SSLCommerz Secure Payment" bn="এসএসএলকমার্জ নিরাপদ পেমেন্ট" />
+                </h3>
                 <picture class="sslbanner__panel panel">
                     <source media="(min-width: 1440px)" srcset="{{ $img('payment/sslcommerz-1row.jpeg') }}" width="1600" height="52">
                     <source media="(min-width: 1024px)" srcset="{{ $img('payment/sslcommerz-2row.jpeg') }}" width="1600" height="179">
