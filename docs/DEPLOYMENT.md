@@ -25,7 +25,7 @@ Deploy behaviour worth knowing:
    Paste `hostinger_deploy.pub` into hPanel's SSH Access > "Add SSH key". Keep the private key for step 2.
 4. Find the site folder over SSH (usually `/home/<user>/domains/<domain>/public_html`) and the PHP 8.3 CLI (usually `/opt/alt/php83/usr/bin/php`; check with `ls /opt/alt`).
 5. Create the production `.env` **once** on the server, inside that folder (start from `.env.example`). It is never overwritten by deploys. Make sure it has at least:
-   `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://your-domain`, a real `APP_KEY` (`php artisan key:generate --show`), the MySQL `DB_*` values, `MAIL_*`, `SSLCZ_*` (with `SSLCZ_TESTMODE=false` for live), `PAYPAL_*` (`PAYPAL_MODE=live` for real payments, plus `PAYPAL_BDT_PER_USD`), `HOTEL_JANA_*` prices/max counts, `QUEUE_CONNECTION=database`.
+   `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://your-domain`, a real `APP_KEY` (`php artisan key:generate --show`), the MySQL `DB_*` values, `MAIL_*`, `SSLCZ_*` (with `SSLCZ_TESTMODE=false` for live), `PAYPAL_*` (`PAYPAL_MODE=live` for real payments, plus `PAYPAL_BDT_PER_USD`), `QUEUE_CONNECTION=database`.
 6. **Queue worker (needed for emails).** Receipts are queued; without a worker no email is ever sent. Add a cron job (Advanced > Cron Jobs, every minute):
    ```
    cd /home/<user>/domains/<domain>/public_html && /opt/alt/php83/usr/bin/php artisan queue:work --stop-when-empty --max-time=55 >/dev/null 2>&1
@@ -61,6 +61,10 @@ cd /home/<user>/domains/<domain>/public_html && /opt/alt/php83/usr/bin/php artis
 ```
 
 There is only ever one admin. Running the command again deletes the current admin (signing them out) and creates the new one, which is also how you change the password. The CMS uses its own `admins` table — never the `users` table shared with the portal app. Filament's CSS/JS live in `public/css/filament`, `public/js/filament` and `public/fonts/filament` and are committed to git (the deploy runs `composer install --no-scripts`, so nothing on the server would publish them); after upgrading Filament run `php artisan filament:assets` and commit the result. Livewire's script is likewise published to `public/vendor/livewire` and committed: Hostinger serves any `*.js` URL as a static file without passing it to Laravel, so the default route-served script would 404 and the login page would just reload. `composer update` re-publishes it automatically; commit the changes.
+
+### 4. Hotel prices
+
+Share prices and the max shares per booking are set in the CMS under **Hotel prices** (not in `.env`). A hotel cannot be booked until it has a price and a max and is on sale, so set them right after the first deploy that includes this. Every change is logged (History).
 
 ## Database migrations
 Every deploy runs `php artisan migrate --force` after the files are uploaded, so a push to `main` needs no manual step. All migrations that touch tables shared with the other app are guarded ("skip if the table already exists"), so this is safe on the production database. **When you write a new migration, keep it additive** (new tables/nullable columns): the new code is live for a few seconds before the migration finishes, and a migration that fails stops the deploy after the upload.

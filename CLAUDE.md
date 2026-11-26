@@ -47,7 +47,7 @@ There are three payment options on the booking form. Two are real gateways feedi
 
 The two gateway flows (SSLCommerz and PayPal) converge on the same pattern after a successful capture: create an `Invoice` (auto-numbered via `InvoiceNumberGenerator`), create a `Submission` (denormalized unit price/qty snapshot for the invoice), generate a money receipt number (`MoneyReceiptGenerator`), render the `content.invoice` Blade view to PDF (`barryvdh/laravel-dompdf`) with a QR code (`QRProcessor`) linking to the public invoice-access route, then queue `PaymentConfirmationMail` to the customer and `PaymentReceiveConfirmationMail` to the internal addresses in `config('portal.email_address.*')`.
 
-**Pricing is always server-side.** `App\Services\Booking\ShareCatalog::quote()` is the single source of truth for hotel prices/max share counts (from `config/shares.php`, itself from `.env`) — the browser only sends a hotel key and quantity, never a price or total. Any change to pricing logic should go through `ShareCatalog`, not the controllers.
+**Pricing is always server-side.** `App\Services\Booking\ShareCatalog::quote()` is the single source of truth for hotel prices/max shares per booking. Which hotels exist (and their names) is fixed in `config/shares.php`; price, max per booking and on/off are edited in the CMS (`hotel_shares`, every change logged in `hotel_share_changes`). A hotel without a price and max, or switched off, is not bookable. The old `HOTEL_JANA_*` `.env` keys are no longer read. Tests set prices with `TestCase::setHotelShares()` — the browser only sends a hotel key and quantity, never a price or total. Any change to pricing logic should go through `ShareCatalog`, not the controllers.
 
 ### Admin CMS (`/admin`)
 

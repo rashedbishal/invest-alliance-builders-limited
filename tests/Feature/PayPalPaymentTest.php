@@ -29,11 +29,9 @@ class PayPalPaymentTest extends TestCase
             'paypal.bdt_per_usd' => 122.88,
             'paypal.rate_source' => 'fixed',
             'paypal.rate_margin_percent' => 0,
-            'shares.hotels' => [
-                'jana' => ['name' => 'Hotel Jana', 'name_bn' => 'হোটেল জানা', 'price' => 300000, 'max' => 10],
-                'dove' => ['name' => 'Hotel Jana The Dove', 'name_bn' => 'হোটেল জানা দ্য ডাভ', 'price' => 40000, 'max' => 5],
-            ],
         ]);
+
+        $this->setHotelShares(['jana' => [300000, 10], 'dove' => [40000, 5]]);
     }
 
     private function pendingTransaction(array $overrides = []): Transaction

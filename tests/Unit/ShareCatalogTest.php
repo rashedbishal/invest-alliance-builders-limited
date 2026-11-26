@@ -3,20 +3,33 @@
 namespace Tests\Unit;
 
 use App\Services\Booking\ShareCatalog;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use InvalidArgumentException;
 use Tests\TestCase;
 
 class ShareCatalogTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         config(['shares.hotels' => [
-            'jana' => ['name' => 'Hotel Jana', 'name_bn' => 'জানা', 'price' => 400000, 'max' => 100],
-            'dove' => ['name' => 'Hotel Jana The Dove', 'name_bn' => 'ডাভ', 'price' => 40000, 'max' => 50],
-            'off' => ['name' => 'Not configured', 'name_bn' => 'x', 'price' => 0, 'max' => 0],
+            'jana' => ['name' => 'Hotel Jana', 'name_bn' => 'জানা'],
+            'dove' => ['name' => 'Hotel Jana The Dove', 'name_bn' => 'ডাভ'],
+            'off' => ['name' => 'Switched off', 'name_bn' => 'x'],
+            'unpriced' => ['name' => 'No price yet', 'name_bn' => 'x'],
+            'norow' => ['name' => 'No CMS row', 'name_bn' => 'x'],
         ]]);
+
+        $this->setHotelShares([
+            'jana' => [400000, 100],
+            'dove' => [40000, 50],
+            'off' => [1000, 10, false],
+            'unpriced' => [null, null],
+            'orphan' => [1000, 10], // a CMS row for a hotel not in config is ignored
+        ]);
     }
 
     public function test_hotels_lists_only_configured_hotels(): void
@@ -61,7 +74,10 @@ class ShareCatalogTest extends TestCase
             'empty' => [[]],
             'all zero' => [['jana' => 0]],
             'unknown hotel' => [['nope' => 1]],
-            'unconfigured hotel' => [['off' => 1]],
+            'switched off hotel' => [['off' => 1]],
+            'hotel without a price' => [['unpriced' => 1]],
+            'hotel without a CMS row' => [['norow' => 1]],
+            'CMS row for a hotel not in config' => [['orphan' => 1]],
             'over max' => [['dove' => 51]],
             'negative' => [['jana' => -1]],
             'fractional' => [['jana' => '1.5']],

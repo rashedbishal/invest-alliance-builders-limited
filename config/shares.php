@@ -1,7 +1,9 @@
 <?php
 
-// Bookable hotel shares. Prices are in BDT; `max` is the most shares one
-// booking may contain for that hotel. Values come from .env.
+// The hotels that exist on the site (the landing page has a section for each).
+// Price per share (BDT) and the max shares per booking are NOT here: they are
+// edited in the admin CMS (hotel_shares table). The old HOTEL_JANA_* .env keys
+// are no longer read.
 
 return [
 
@@ -13,14 +15,10 @@ return [
         'jana' => [
             'name' => 'Hotel Jana',
             'name_bn' => 'হোটেল জানা',
-            'price' => (float) env('HOTEL_JANA_PRICE', 0),
-            'max' => (int) env('HOTEL_JANA_MAX_COUNT', 0),
         ],
         'dove' => [
             'name' => 'Hotel Jana The Dove',
             'name_bn' => 'হোটেল জানা দ্য ডাভ',
-            'price' => (float) env('HOTEL_JANA_THE_DOVE_PRICE', 0),
-            'max' => (int) env('HOTEL_JANA_THE_DOVE_MAX_COUNT', 0),
         ],
     ],
 

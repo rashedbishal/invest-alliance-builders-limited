@@ -113,7 +113,7 @@ class CurrencyTest extends TestCase
     public function test_home_page_has_the_price_hooks_and_does_not_call_any_api_itself(): void
     {
         Http::fake();
-        config(['shares.hotels' => ['jana' => ['name' => 'Hotel Jana', 'name_bn' => 'x', 'price' => 400000, 'max' => 10]]]);
+        $this->setHotelShares(['jana' => [400000, 10]]);
         config(['paypal.rate_source' => 'fixed']); // the PayPal rate has its own tests; here only the price display is checked
 
         $this->get('/')

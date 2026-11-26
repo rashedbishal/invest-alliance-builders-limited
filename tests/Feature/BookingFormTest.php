@@ -16,13 +16,10 @@ class BookingFormTest extends TestCase
     {
         parent::setUp();
 
-        config(['shares.hotels' => [
-            'jana' => ['name' => 'Hotel Jana', 'name_bn' => 'হোটেল জানা', 'price' => 400000, 'max' => 11240],
-            'dove' => ['name' => 'Hotel Jana The Dove', 'name_bn' => 'হোটেল জানা দ্য ডাভ', 'price' => 40000, 'max' => 4100],
-        ]]);
+        $this->setHotelShares(['jana' => [400000, 11240], 'dove' => [40000, 4100]]);
     }
 
-    public function test_home_shows_a_card_per_hotel_with_env_prices(): void
+    public function test_home_shows_a_card_per_hotel_with_cms_prices(): void
     {
         $this->get('/')
             ->assertOk()
@@ -97,7 +94,7 @@ class BookingFormTest extends TestCase
 
         // Jana 400000, Dove 125000. Every total below is 500000 or more (the last is exactly
         // 500000), so none may reach the gateway.
-        config(['shares.hotels.dove.price' => 125000]);
+        $this->setHotelShares(['dove' => [125000, 4100]]);
         foreach ([['jana' => 2], ['jana' => 1, 'dove' => 3], ['jana' => 1, 'dove' => 1], ['dove' => 4]] as $shares) {
             $this->post('/pay-via-ajax', ['cart_json' => json_encode($customer + ['cus_shares' => $shares])])
                 ->assertStatus(422)
@@ -143,5 +140,27 @@ class BookingFormTest extends TestCase
         $this->assertStringContainsString('Hotel Jana The Dove - Share', $html);
         $this->assertStringContainsString('80,000', $html);
         $this->assertStringNotContainsString('Kuakata - Share', $html);
+    }
+
+    public function test_a_hotel_without_a_price_or_switched_off_cannot_be_booked(): void
+    {
+        $this->setHotelShares(['jana' => [null, null], 'dove' => [40000, 4100, false]]);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertDontSee('data-product="jana"', false)
+            ->assertDontSee('data-product="dove"', false)
+            ->assertSee('Share booking is currently closed.');
+
+        $this->postJson('/paypal/create', [
+            'name' => 'Test Customer', 'phone' => '01700000000', 'address' => 'Dhaka', 'shares' => ['dove' => 1], 'terms_accepted' => true,
+        ])->assertStatus(422)->assertJson(['message' => 'Selected hotel is not available.']);
+    }
+
+    public function test_price_changes_in_the_cms_apply_to_the_next_booking(): void
+    {
+        $this->setHotelShares(['jana' => [450000, 11240]]);
+
+        $this->get('/')->assertOk()->assertSee('data-bdt="450000"', false)->assertDontSee('data-bdt="400000"', false);
     }
 }

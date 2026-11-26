@@ -2,24 +2,44 @@
 
 namespace App\Services\Booking;
 
+use App\Models\HotelShare;
+use Illuminate\Database\QueryException;
 use InvalidArgumentException;
 
 class ShareCatalog
 {
+    /** @var array<string, array>|null */
+    private ?array $hotels = null;
+
     /**
-     * Hotels that can currently be booked, keyed by hotel key.
+     * Hotels that can currently be booked, keyed by hotel key. Which hotels exist
+     * (and their names) comes from config/shares.php; price, max per booking and
+     * on/off come from the CMS (hotel_shares). A hotel without a price and max,
+     * or switched off, is not bookable.
      *
      * @return array<string, array{key: string, name: string, name_bn: string, price: float, max: int}>
      */
     public function hotels(): array
     {
+        if ($this->hotels !== null) {
+            return $this->hotels;
+        }
+
+        try {
+            $settings = HotelShare::query()->get()->keyBy('key');
+        } catch (QueryException $e) {
+            // During a deploy the new code is live a few seconds before the migration
+            // creates hotel_shares: show "not available" rather than an error page.
+            report($e);
+
+            return [];
+        }
         $hotels = [];
 
         foreach ((array) config('shares.hotels') as $key => $hotel) {
-            $price = (float) ($hotel['price'] ?? 0);
-            $max = (int) ($hotel['max'] ?? 0);
+            $setting = $settings->get($key);
 
-            if ($price <= 0 || $max <= 0) {
+            if (! $setting?->isBookable()) {
                 continue;
             }
 
@@ -27,12 +47,12 @@ class ShareCatalog
                 'key' => (string) $key,
                 'name' => (string) $hotel['name'],
                 'name_bn' => (string) ($hotel['name_bn'] ?? $hotel['name']),
-                'price' => $price,
-                'max' => $max,
+                'price' => (float) $setting->price,
+                'max' => (int) $setting->max_per_booking,
             ];
         }
 
-        return $hotels;
+        return $this->hotels = $hotels;
     }
 
     /**
