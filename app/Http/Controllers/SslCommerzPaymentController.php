@@ -296,7 +296,7 @@ class SslCommerzPaymentController extends Controller
 
                 $pdf = PDF::loadView('content.invoice', ['invoice' => $invoice, 'concern' => $update_transaction->cn_identifier, 'qrDataUri' => $qrDataUri, 'transaction' => $update_transaction, 'unitprice'=> $request->input('value_a'), 'unit'=> $request->input('value_b')])->output();
 
-                if($request->input('email'))
+                if($request->input('value_c'))
                 {
                     Mail::to($update_transaction->email)
                         ->queue(new PaymentConfirmationMail(base64_encode($pdf), $update_transaction->invoice_number, $update_transaction->cn_identifier, $invoice->money_receipt_number));
