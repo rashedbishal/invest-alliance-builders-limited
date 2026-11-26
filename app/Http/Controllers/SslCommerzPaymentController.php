@@ -375,6 +375,13 @@ class SslCommerzPaymentController extends Controller
 
     public function ipn(Request $request)
     {
+        // Proof that SSLCommerz reached us (no card data logged).
+        Log::info('IPN HIT!', [
+            'tran_id' => $request->input('tran_id'),
+            'status' => $request->input('status'),
+            'ip' => $request->ip(),
+        ]);
+
         $amount = $request->input('amount');
         // Received all the payement information from the gateway
         if ($request->input('tran_id')) { // Check transation id is posted or not.
