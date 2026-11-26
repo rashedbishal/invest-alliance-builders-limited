@@ -167,7 +167,7 @@ class SslCommerzPaymentController extends Controller
         // OPTIONAL PARAMETERS
         $post_data['value_a'] = round($quote['total'] / $quote['units'], 2); // average unit price
         $post_data['value_b'] = (string) $quote['units']; // total share count
-        $post_data['value_c'] = '';
+        $post_data['value_c'] = $cartData->cus_email;
         $post_data['value_d'] = 'ref004';
 
         // Before  going to initiate the payment order status need to update as Pending.
@@ -380,6 +380,7 @@ class SslCommerzPaymentController extends Controller
             'tran_id' => $request->input('tran_id'),
             'status' => $request->input('status'),
             'ip' => $request->ip(),
+            'email' => $request->input('email'),
         ]);
 
         $amount = $request->input('amount');
@@ -479,7 +480,7 @@ class SslCommerzPaymentController extends Controller
 
                     $pdf = PDF::loadView('content.invoice', ['invoice' => $invoice, 'concern' => $update_transaction->cn_identifier, 'qrDataUri' => $qrDataUri, 'transaction' => $update_transaction, 'unitprice'=> $request->input('value_a'), 'unit'=> $request->input('value_b')])->output();
 
-                    if($request->input('email'))
+                    if($request->input('value_c'))
                     {
                         Mail::to($update_transaction->email)
                             ->queue(new PaymentConfirmationMail(base64_encode($pdf), $update_transaction->invoice_number, $update_transaction->cn_identifier, $invoice->money_receipt_number));
