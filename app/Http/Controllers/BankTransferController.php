@@ -27,6 +27,9 @@ class BankTransferController extends Controller
             'address_1' => ['required', 'string', 'min:3', 'max:150'],
             'address_2' => ['nullable', 'string', 'max:100'],
             'shares' => ['required', 'array'],
+            'terms_accepted' => ['accepted'],
+        ], [
+            'terms_accepted.accepted' => 'Please read and agree to the Terms & Conditions, Privacy Policy and Return & Refund Policy.',
         ]);
 
         try {

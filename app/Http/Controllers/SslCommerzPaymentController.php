@@ -114,6 +114,11 @@ class SslCommerzPaymentController extends Controller
         // In orders table order uniq identity is "transaction_id","status" field contain status of the transaction, "amount" is the order amount to be paid and "currency" is for storing Site Currency which will be checked with paid currency.
         $cartData = json_decode($request->cart_json) ?? null;
 
+        // The customer must agree to the Terms, Privacy and Refund policies before paying.
+        if (($cartData->terms_accepted ?? false) !== true) {
+            return response()->json(['status' => 'FAILED', 'message' => 'Please read and agree to the Terms & Conditions, Privacy Policy and Return & Refund Policy.'], 422);
+        }
+
         // The amount is priced here from the selected hotel shares. Any price or
         // total sent by the browser is ignored.
         try {

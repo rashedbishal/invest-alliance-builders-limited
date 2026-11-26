@@ -32,6 +32,7 @@ class BankTransferTest extends TestCase
             'address_1' => 'House 1, Road 2',
             'address_2' => 'Dhaka',
             'shares' => ['jana' => 1, 'dove' => 2],
+            'terms_accepted' => true,
         ])->assertOk()->assertJson(['ok' => true]);
 
         Mail::assertQueued(BankTransferNotificationMail::class, function (BankTransferNotificationMail $mail) {
@@ -55,6 +56,7 @@ class BankTransferTest extends TestCase
             'email' => 'customer@example.com',
             'address_1' => 'House 1, Road 2',
             'shares' => ['jana' => 1],
+            'terms_accepted' => true,
         ])->assertOk();
 
         Mail::assertQueued(BankTransferNotificationMail::class, fn (BankTransferNotificationMail $mail) => $mail->addressLine2 === null);
@@ -66,7 +68,23 @@ class BankTransferTest extends TestCase
 
         $this->postJson('/bank-transfer/notify', [])
             ->assertStatus(422)
-            ->assertJsonValidationErrors(['name', 'phone', 'email', 'address_1', 'shares']);
+            ->assertJsonValidationErrors(['name', 'phone', 'email', 'address_1', 'shares', 'terms_accepted']);
+
+        Mail::assertNothingQueued();
+    }
+
+    public function test_notify_requires_agreement_to_the_terms(): void
+    {
+        Mail::fake();
+
+        $this->postJson('/bank-transfer/notify', [
+            'name' => 'Test Customer',
+            'phone' => '+8801700000000',
+            'email' => 'customer@example.com',
+            'address_1' => 'House 1, Road 2',
+            'shares' => ['jana' => 1],
+            'terms_accepted' => false,
+        ])->assertStatus(422)->assertJsonValidationErrors(['terms_accepted']);
 
         Mail::assertNothingQueued();
     }
@@ -81,6 +99,7 @@ class BankTransferTest extends TestCase
             'email' => 'customer@example.com',
             'address_1' => 'House 1, Road 2',
             'shares' => ['unknown' => 1],
+            'terms_accepted' => true,
         ])->assertStatus(422);
 
         Mail::assertNothingQueued();

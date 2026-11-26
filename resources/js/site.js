@@ -628,6 +628,7 @@ const state = {
     formValid: false,
     fieldsDone: 0,      // required details that pass validation
     fieldsTotal: 0,
+    termsAccepted: false, // agreement to the Terms, Privacy and Refund policies
     busy: false,
 };
 
@@ -698,6 +699,7 @@ function setQty(key, value) {
 function missingStep() {
     if (!totals().count) return t('Select at least one share to continue.', 'চালিয়ে যেতে অন্তত একটি শেয়ার নির্বাচন করুন।');
     if (!state.formValid) return t('Complete your details to enable payment.', 'পেমেন্ট চালু করতে আপনার তথ্য সম্পূর্ণ করুন।');
+    if (!state.termsAccepted) return t('Please agree to the terms to continue.', 'এগিয়ে যেতে শর্তাবলিতে সম্মতি দিন।');
     return '';
 }
 
@@ -781,7 +783,7 @@ function render() {
 function renderLock(count) {
     const lock = $('[data-paylock]');
     if (!lock) return;
-    const stage = !count ? 'shares' : !state.formValid ? 'form' : 'ready';
+    const stage = !count ? 'shares' : !state.formValid ? 'form' : !state.termsAccepted ? 'terms' : 'ready';
     lock.dataset.state = stage;
     lock.disabled = stage === 'ready';
     const left = state.fieldsTotal - state.fieldsDone;
@@ -789,6 +791,8 @@ function renderLock(count) {
         shares: [t('Select shares to continue', 'এগিয়ে যেতে শেয়ার নির্বাচন করুন'), t('Choose at least one share, then complete your details.', 'অন্তত একটি শেয়ার বেছে নিয়ে আপনার তথ্য পূরণ করুন।')],
         form: [t('Complete your details to continue', 'এগিয়ে যেতে আপনার তথ্য পূরণ করুন'),
             t(`${state.fieldsDone} of ${state.fieldsTotal} details complete · ${left} to go`, `${state.fieldsTotal}টির মধ্যে ${state.fieldsDone}টি তথ্য সম্পূর্ণ · বাকি ${left}টি`)],
+        terms: [t('Agree to the terms to continue', 'এগিয়ে যেতে শর্তাবলিতে সম্মতি দিন'),
+            t('Read and accept the Terms & Conditions, Privacy Policy and Return & Refund Policy below.', 'নিচের শর্তাবলি, গোপনীয়তা নীতি এবং রিটার্ন ও রিফান্ড নীতি পড়ে সম্মতি দিন।')],
         ready: [t('Ready to pay', 'পেমেন্টের জন্য প্রস্তুত'), t('Choose a payment method.', 'একটি পেমেন্ট পদ্ধতি বেছে নিন।')],
     }[stage];
     setText($('[data-paylock-title]', lock), copy[0]);
@@ -921,6 +925,37 @@ function initForm() {
     recompute();
 }
 
+/* Agreement to the Terms, Privacy and Refund policies — required before any payment method */
+const termsBox = () => $('[data-terms]');
+
+function showTermsError(show) {
+    const wrap = $('[data-consent]');
+    const box = termsBox();
+    if (!wrap || !box) return;
+    wrap.classList.toggle('is-invalid', show);
+    box.setAttribute('aria-invalid', String(show));
+}
+
+function focusTerms() {
+    const box = termsBox();
+    if (!box) return;
+    showTermsError(true);
+    box.scrollIntoView({ block: 'center', behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+    box.focus({ preventScroll: true });
+}
+
+function initTerms() {
+    const box = termsBox();
+    if (!box) return;
+    const sync = () => {
+        state.termsAccepted = box.checked;
+        if (box.checked) showTermsError(false);
+        render();
+    };
+    box.addEventListener('change', sync);
+    sync(); // a browser may restore the tick on back/forward navigation
+}
+
 /* Payment hand-off to the existing backend */
 function setBusy(method) {
     state.busy = method || false;
@@ -938,7 +973,7 @@ async function payWithPayPal() {
                 Accept: 'application/json',
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').content,
             },
-            body: JSON.stringify({ ...customer(), shares: sharesPayload() }),
+            body: JSON.stringify({ ...customer(), shares: sharesPayload(), terms_accepted: state.termsAccepted }),
         });
         const data = await res.json().catch(() => ({}));
         if (res.ok && data.approve_url) {
@@ -976,7 +1011,7 @@ function notifyBankTransfer() {
             Accept: 'application/json',
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').content,
         },
-        body: JSON.stringify({ ...customer(), shares: sharesPayload() }),
+        body: JSON.stringify({ ...customer(), shares: sharesPayload(), terms_accepted: state.termsAccepted }),
     }).catch(() => {}); // informational only — the bank details modal is already shown
 }
 
@@ -1003,6 +1038,10 @@ function resetOrder() {
     KEYS.forEach((k) => { state.qty[k] = 0; });
     state.fieldsDone = 0;
     state.formValid = false;
+    const terms = termsBox();
+    if (terms) terms.checked = false;
+    state.termsAccepted = false;
+    showTermsError(false);
     setHelp('');
     render();
 }
@@ -1057,7 +1096,7 @@ function initCommerce() {
     if (sslBtn) {
         sslBtn.addEventListener('click', () => {
             const c = customer();
-            const obj = { cus_name: c.name, cus_phone: c.phone, cus_email: c.email, cus_addr1: c.address, cus_shares: sharesPayload() };
+            const obj = { cus_name: c.name, cus_phone: c.phone, cus_email: c.email, cus_addr1: c.address, cus_shares: sharesPayload(), terms_accepted: state.termsAccepted };
             if (window.jQuery) window.jQuery('#sslczPayBtn').prop('postdata', obj);
             else sslBtn.postdata = obj;
         });
@@ -1101,7 +1140,8 @@ function initCommerce() {
         const names = Object.keys(RULES);
         names.forEach((name) => { if (f.elements[name].value) checkField(f.elements[name], true); });
         const first = names.map((n) => f.elements[n]).find((i) => !RULES[i.name](i.value));
-        if (first) { first.scrollIntoView({ block: 'center', behavior: reducedMotion.matches ? 'auto' : 'smooth' }); first.focus({ preventScroll: true }); }
+        if (first) { first.scrollIntoView({ block: 'center', behavior: reducedMotion.matches ? 'auto' : 'smooth' }); first.focus({ preventScroll: true }); return; }
+        if (!state.termsAccepted) focusTerms();
     });
 
     $$('[data-pay]').forEach((btn) => btn.addEventListener('click', () => {
@@ -1119,6 +1159,7 @@ function initCommerce() {
             first.focus({ preventScroll: true });
             return;
         }
+        if (!state.termsAccepted) { focusTerms(); return; }
         if (state.busy || methodState(btn.dataset.pay) !== 'active') { render(); return; }
         if (btn.dataset.pay === 'paypal') payWithPayPal();
         else if (btn.dataset.pay === 'bank') payWithBank();
@@ -1128,6 +1169,7 @@ function initCommerce() {
     new IntersectionObserver(([entry]) => { summaryInView = entry.isIntersecting; updateOrderBar(); }, { threshold: 0.05 }).observe($('#invest'));
 
     initForm();
+    initTerms();
     initCurrency();
     initBankModal();
     document.addEventListener('langchange', render);
