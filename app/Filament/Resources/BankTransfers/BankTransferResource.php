@@ -60,6 +60,7 @@ class BankTransferResource extends Resource
                 SelectFilter::make('status')->options([
                     BankTransferRequest::STATUS_NEW => 'New (awaiting payment)',
                     BankTransferRequest::STATUS_PAID => 'Paid',
+                    BankTransferRequest::STATUS_CANCELLED => 'Cancelled',
                 ]),
                 DateRangeFilter::make('created_at', 'Booked'),
             ])
@@ -86,6 +87,8 @@ class BankTransferResource extends Resource
                 TextEntry::make('transaction_id')->label('Transaction ID')->placeholder('—'),
                 TextEntry::make('invoice_number')->label('Invoice')->placeholder('—'),
                 TextEntry::make('invoice.money_receipt_number')->label('Money receipt')->placeholder('—'),
+                TextEntry::make('cancelled_at')->label('Cancelled')->dateTime('d M Y, h:i A')
+                    ->visible(fn (BankTransferRequest $record) => $record->cancelled_at !== null),
             ]),
             Section::make('Shares')->columnSpanFull()->schema([
                 RepeatableEntry::make('lines')->hiddenLabel()->columns(4)->schema([
@@ -100,7 +103,11 @@ class BankTransferResource extends Resource
 
     public static function statusColor(string $status): string
     {
-        return $status === BankTransferRequest::STATUS_PAID ? 'success' : 'warning';
+        return match ($status) {
+            BankTransferRequest::STATUS_PAID => 'success',
+            BankTransferRequest::STATUS_CANCELLED => 'gray',
+            default => 'warning',
+        };
     }
 
     public static function canCreate(): bool

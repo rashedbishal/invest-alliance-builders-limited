@@ -60,6 +60,27 @@ class ViewBankTransfer extends ViewRecord
                         ->title('Marked paid. Invoice '.$record->invoice_number.' issued and the receipt emailed.')
                         ->send();
                 }),
+            Action::make('cancel')
+                ->label('Cancel booking')
+                ->icon(Heroicon::OutlinedXCircle)
+                ->color('danger')
+                ->visible(fn (BankTransferRequest $record) => $record->status === BankTransferRequest::STATUS_NEW)
+                ->requiresConfirmation()
+                ->modalHeading('Cancel this bank transfer booking?')
+                ->modalDescription('Use this when the customer is not going to pay. Nothing is emailed, and a cancelled booking can no longer be marked paid.')
+                ->modalSubmitActionLabel('Cancel booking')
+                ->action(function (BankTransferRequest $record) {
+                    // Only a still-New booking can be cancelled (guards against a parallel "Mark paid").
+                    $updated = BankTransferRequest::whereKey($record->getKey())
+                        ->where('status', BankTransferRequest::STATUS_NEW)
+                        ->update(['status' => BankTransferRequest::STATUS_CANCELLED, 'cancelled_at' => now()]);
+
+                    $record->refresh();
+
+                    $updated
+                        ? Notification::make()->success()->title('Booking cancelled.')->send()
+                        : Notification::make()->danger()->title('This booking is no longer New, so it was not cancelled.')->send();
+                }),
             Action::make('transaction')
                 ->label('View transaction')
                 ->icon(Heroicon::OutlinedBanknotes)

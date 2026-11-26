@@ -26,7 +26,9 @@ class BankTransferService
             $request = BankTransferRequest::whereKey($request->getKey())->lockForUpdate()->firstOrFail();
 
             if ($request->status !== BankTransferRequest::STATUS_NEW) {
-                throw new RuntimeException('This bank transfer has already been marked as paid.');
+                throw new RuntimeException($request->status === BankTransferRequest::STATUS_CANCELLED
+                    ? 'This bank transfer was cancelled, so it cannot be marked paid.'
+                    : 'This bank transfer has already been marked as paid.');
             }
 
             $transaction = Transaction::create([

@@ -11,9 +11,11 @@ class BankTransferRequest extends Model
 
     public const STATUS_PAID = 'Paid';
 
+    public const STATUS_CANCELLED = 'Cancelled';
+
     protected $fillable = [
         'name', 'phone', 'email', 'address_1', 'address_2', 'lines', 'total',
-        'status', 'bank_reference', 'paid_on', 'transaction_id', 'invoice_number', 'paid_at',
+        'status', 'bank_reference', 'paid_on', 'transaction_id', 'invoice_number', 'paid_at', 'cancelled_at',
     ];
 
     protected $attributes = [
@@ -27,6 +29,7 @@ class BankTransferRequest extends Model
             'total' => 'float',
             'paid_on' => 'date',
             'paid_at' => 'datetime',
+            'cancelled_at' => 'datetime',
         ];
     }
 

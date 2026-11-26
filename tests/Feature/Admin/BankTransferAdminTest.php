@@ -97,4 +97,47 @@ class BankTransferAdminTest extends AdminTestCase
 
         $this->assertSame(BankTransferRequest::STATUS_NEW, $booking->fresh()->status);
     }
+
+    public function test_a_new_booking_can_be_cancelled(): void
+    {
+        $booking = $this->booking();
+        $this->signIn();
+
+        Livewire::test(ViewBankTransfer::class, ['record' => $booking->id])
+            ->callAction('cancel')
+            ->assertNotified('Booking cancelled.')
+            ->assertActionHidden('cancel')
+            ->assertActionHidden('markPaid');
+
+        $booking->refresh();
+        $this->assertSame(BankTransferRequest::STATUS_CANCELLED, $booking->status);
+        $this->assertNotNull($booking->cancelled_at);
+        $this->assertSame(0, Transaction::count());
+        Mail::assertNotQueued(PaymentConfirmationMail::class);
+
+        Livewire::test(ListBankTransfers::class)
+            ->filterTable('status', BankTransferRequest::STATUS_CANCELLED)
+            ->assertCanSeeTableRecords([$booking]);
+    }
+
+    public function test_a_cancelled_booking_cannot_be_marked_paid(): void
+    {
+        $booking = $this->booking();
+        $booking->update(['status' => BankTransferRequest::STATUS_CANCELLED]);
+
+        $this->expectExceptionMessage('This bank transfer was cancelled, so it cannot be marked paid.');
+        app(BankTransferService::class)->markPaid($booking, now(), null);
+    }
+
+    public function test_a_paid_booking_cannot_be_cancelled(): void
+    {
+        $booking = $this->booking();
+        app(BankTransferService::class)->markPaid($booking, now(), null);
+        $this->signIn();
+
+        Livewire::test(ViewBankTransfer::class, ['record' => $booking->id])
+            ->assertActionHidden('cancel');
+
+        $this->assertSame(BankTransferRequest::STATUS_PAID, $booking->fresh()->status);
+    }
 }

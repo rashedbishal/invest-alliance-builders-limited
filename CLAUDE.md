@@ -55,7 +55,7 @@ Filament v5 panel (`App\Providers\Filament\AdminPanelProvider`, resources in `ap
 
 - **Which rows are ours:** `transactions`/`invoices` are shared with the portal, and both apps write `cn_identifier = 2` and `TRX-…` ids. A transaction belongs to this app iff it has `transaction_shares` rows (`Transaction::scopeFromThisApp()`, `Invoice::scopeFromThisApp()`); every CMS query must go through these scopes. Gateway is derived, not stored: `gateway_transaction_id` set → PayPal, `card_type = Transaction::BANK_CARD_TYPE` → bank transfer, else SSLCommerz.
 - **Shared post-payment logic:** `ReceiptService` (invoice + submission + money receipt, PDF, emails) and `PayPalCaptureProcessor` (capture/verify rules, `DECLINED_ISSUES`) are used by `PayPalPaymentController`, the CMS "Verify with PayPal" action and `BankTransferService::markPaid`. `SslCommerzPaymentController` keeps its own inline copy of that logic on purpose — the owner has asked that SSLCommerz code/config not be changed.
-- **Bank transfers:** `BankTransferController::notify` saves a `BankTransferRequest` (status New); "Mark paid" in the CMS creates the transaction + share lines + invoice/receipt and emails it like an online payment.
+- **Bank transfers:** `BankTransferController::notify` saves a `BankTransferRequest` (status New); the CMS can "Cancel" it (no email, final) or "Mark paid", which creates the transaction + share lines + invoice/receipt and emails it like an online payment.
 - Filament's published assets (`public/{css,js,fonts}/filament`) are committed because the deploy runs `composer install --no-scripts`; re-run `php artisan filament:assets` after upgrading Filament.
 
 ### Currency conversion (two independent, unrelated systems — don't conflate them)

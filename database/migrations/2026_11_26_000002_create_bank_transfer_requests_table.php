@@ -27,6 +27,7 @@ return new class extends Migration
             $table->string('transaction_id')->nullable()->index();
             $table->string('invoice_number')->nullable();
             $table->timestamp('paid_at')->nullable();
+            $table->timestamp('cancelled_at')->nullable();
             $table->timestamps();
         });
     }

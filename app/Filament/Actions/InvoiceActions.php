@@ -29,8 +29,8 @@ class InvoiceActions
     }
 
     /**
-     * Rendered here (behind the admin login) rather than linking to the public
-     * `admin-download-invoice` route, which does not resolve its {invoice} param.
+     * Rendered here, behind the admin login, so the CMS doesn't depend on the
+     * public `admin-download-invoice` route.
      */
     public static function download(): Action
     {

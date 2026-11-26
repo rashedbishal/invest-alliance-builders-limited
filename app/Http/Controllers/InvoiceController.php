@@ -12,8 +12,8 @@ use Illuminate\Http\Request;
 
 class InvoiceController extends Controller
 {
-
-    public function downloadInvoice($invoice, $concern)
+    // Typed so the route's encrypted {invoice} is resolved via Invoice::resolveRouteBinding().
+    public function downloadInvoice(Invoice $invoice, $concern)
     {
         $downloadUrl = route('invoice-access', [
             'token' => $invoice->public_token,
@@ -30,7 +30,7 @@ class InvoiceController extends Controller
         $submission = Submission::where('invoice_number', $invoice->invoice_number)->first();
         $transaction = Transaction::where('invoice_number', $invoice->invoice_number)->first();
 
-        $pdf = PDF::loadView('content.invoice', ['invoice' => $invoice, 'concern' => RouteCrypto::decryptParams((string) $concern), 'qrDataUri' => $qrDataUri, 'transaction'=> $transaction, 'unitprice' => $submission->unit_price, 'unit'=> $submission->unit])
+        $pdf = Pdf::loadView('content.invoice', ['invoice' => $invoice, 'concern' => RouteCrypto::decryptParams((string) $concern), 'qrDataUri' => $qrDataUri, 'transaction' => $transaction, 'unitprice' => $submission->unit_price, 'unit' => $submission->unit])
             ->setPaper('A4', 'portrait');
 
         return $pdf->stream($fileName);
@@ -46,7 +46,7 @@ class InvoiceController extends Controller
         $expired = ! is_null($invoice->public_token_expires_at)
             && $invoice->public_token_expires_at->lte(now());
 
-        $concern = RouteCrypto::encryptParams("2");
+        $concern = RouteCrypto::encryptParams('2');
 
         $downloadUrl = route('admin-download-invoice', [
             'invoice' => $invoice,
