@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -n 'cus_\\\\|request->input\\\\|$request->' app/Http/Controllers/SslCommerzPaymentController.php)",
+      "Bash(grep -n '@php\\\\|@endphp\\\\|$arrow =' resources/views/welcome.blade.php)",
+      "Bash(curl -s --max-time 20 \"https://seamless-epay.sslcommerz.com/embed.min.js\" -o /tmp/claude-1000/-media-saadman-data3-Projects-invest-alliance-builders-limited/eb05c701-0df8-4bcc-8f04-660e430a9ca7/scratchpad/embed.min.js)",
+      "Bash(python3 -)",
+      "Bash(vendor/bin/pint --test app/Http/Controllers/PayPalPaymentController.php app/Http/Controllers/BankTransferController.php app/Http/Controllers/SslCommerzPaymentController.php tests/Feature/BankTransferTest.php tests/Feature/BookingFormTest.php tests/Feature/PayPalPaymentTest.php)",
+      "Bash(curl -s -o /dev/null -w \"asset %{http_code}\\\\n\" http://192.168.0.113:5173/resources/css/site.css)",
+      "Bash(curl -s -D - -o /dev/null -H \"Origin: http://192.168.0.113:8000\" http://192.168.0.113:5173/resources/css/site.css)",
+      "Bash(curl -s http://192.168.0.113:8000/)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ]
+  }
+}
