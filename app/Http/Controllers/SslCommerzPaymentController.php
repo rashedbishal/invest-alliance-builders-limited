@@ -167,7 +167,7 @@ class SslCommerzPaymentController extends Controller
         // OPTIONAL PARAMETERS
         $post_data['value_a'] = round($quote['total'] / $quote['units'], 2); // average unit price
         $post_data['value_b'] = (string) $quote['units']; // total share count
-        $post_data['value_c'] = $cartData->cus_email;
+        $post_data['value_c'] = $post_data['cus_email'];
         $post_data['value_d'] = 'ref004';
 
         // Before  going to initiate the payment order status need to update as Pending.
@@ -380,7 +380,7 @@ class SslCommerzPaymentController extends Controller
             'tran_id' => $request->input('tran_id'),
             'status' => $request->input('status'),
             'ip' => $request->ip(),
-            'email' => $request->input('email'),
+            'email' => $request->input('value_c'),
         ]);
 
         $amount = $request->input('amount');
