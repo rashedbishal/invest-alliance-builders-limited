@@ -24,3 +24,6 @@ Thumbs.db
 
 # Environment files hold credentials and must never be committed (use .env.example)
 /.env
+
+# Database dumps (contain customer data and the shared users table)
+/*.sql
