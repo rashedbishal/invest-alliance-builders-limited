@@ -10,7 +10,21 @@
       "Bash(curl -s -D - -o /dev/null -H \"Origin: http://192.168.0.113:8000\" http://192.168.0.113:5173/resources/css/site.css)",
       "Bash(curl -s http://192.168.0.113:8000/)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(sort -t: -k2)",
+      "Bash(awk -F: '{print $2}')",
+      "Bash(curl -s http://127.0.0.1:8000/)",
+      "Bash(curl -s -o /dev/null http://127.0.0.1:8010/)",
+      "Bash(break)",
+      "Bash(curl -s http://127.0.0.1:8010/)",
+      "Read(//home/saadman/.cache/ms-playwright/**)",
+      "Bash(python3 -c \"import playwright; print\\('py playwright'\\)\")",
+      "Bash(pkill -f \"artisan serve --host=127.0.0.1 --port=8010\")",
+      "Bash(pkill -f \"server.php.*8010\\\\|-S 127.0.0.1:8010\")",
+      "Bash(git push *)",
+      "Bash(git fetch *)",
+      "Bash(git rebase *)",
+      "Bash(composer install *)"
     ]
   }
 }
