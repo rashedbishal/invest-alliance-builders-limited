@@ -723,6 +723,17 @@
                     <form method="dialog"><button class="btn btn--primary btn--block"><x-t en="Done" bn="সম্পন্ন" /></button></form>
                 </dialog>
             </div>
+
+            {{-- SSLCommerz-supplied payment channel banner: one layout per device size, only the matching image is downloaded --}}
+            <div class="sslbanner" data-reveal>
+                <h3 class="sslbanner__title"><x-t en="SSLCommerz Secure Payment" bn="এসএসএলকমার্জ নিরাপদ পেমেন্ট" /></h3>
+                <picture class="sslbanner__panel panel">
+                    <source media="(min-width: 1440px)" srcset="{{ $img('payment/sslcommerz-1row.jpeg') }}" width="1600" height="52">
+                    <source media="(min-width: 1024px)" srcset="{{ $img('payment/sslcommerz-2row.jpeg') }}" width="1600" height="179">
+                    <source media="(min-width: 768px)" srcset="{{ $img('payment/sslcommerz-3row.jpeg') }}" width="1600" height="339">
+                    <img class="sslbanner__img" src="{{ $img('payment/sslcommerz-vertical.jpeg') }}" width="626" height="1600" loading="lazy" alt="Pay with cards, mobile banking and internet banking. Verified by SSLCommerz">
+                </picture>
+            </div>
         </div>
     </div>
     @endunless

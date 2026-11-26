@@ -745,6 +745,13 @@ html[data-lang="bn"] .product__tag { letter-spacing: 0; text-transform: none; fo
     .order .summary { border-radius: 0 var(--r-md) var(--r-md) 0; }
 }
 
+/* SSLCommerz payment channel banner (below the checkout card) */
+.sslbanner { margin-top: clamp(32px, 4vw, 48px); }
+.sslbanner__title { margin-bottom: 14px; text-align: center; font-size: 12px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+.sslbanner__panel { display: block; overflow: hidden; padding: 8px; }
+.sslbanner__img { display: block; width: 100%; height: auto; max-width: 360px; margin-inline: auto; }
+@media (min-width: 768px) { .sslbanner__img { max-width: none; } }
+
 /* Form footer: points across to the payment panel (down on small screens) */
 .order__next { display: flex; align-items: center; gap: 12px; margin-top: auto; padding-top: 18px; border-top: 1px solid var(--line); line-height: 1.45; font-size: 13px; font-weight: 600; letter-spacing: .02em; color: var(--indigo); }
 .order__form .fields { margin-bottom: 30px; }
