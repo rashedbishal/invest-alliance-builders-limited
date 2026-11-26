@@ -41,6 +41,9 @@ class PayPalPaymentController extends Controller
             'address' => ['required', 'string', 'min:3', 'max:255'],
             'email' => ['nullable', 'email', 'max:50'],
             'shares' => ['required', 'array'],
+            'terms_accepted' => ['accepted'],
+        ], [
+            'terms_accepted.accepted' => 'Please read and agree to the Terms & Conditions, Privacy Policy and Return & Refund Policy.',
         ]);
 
         // Priced from the server-side hotel prices; the browser never sends an amount.

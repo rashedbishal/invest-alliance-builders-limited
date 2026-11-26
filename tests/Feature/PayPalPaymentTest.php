@@ -85,7 +85,7 @@ class PayPalPaymentTest extends TestCase
 
         $this->postJson('/paypal/create', [
             'name' => 'Test Customer', 'phone' => '01700000000', 'address' => 'Dhaka', 'email' => '',
-            'shares' => ['jana' => 1],
+            'shares' => ['jana' => 1], 'terms_accepted' => true,
         ])->assertOk()->assertJson(['approve_url' => 'https://paypal.test/approve?token=ORDER123']);
 
         $tx = Transaction::firstOrFail();
@@ -113,6 +113,7 @@ class PayPalPaymentTest extends TestCase
         $this->postJson('/paypal/create', [
             'name' => 'Test Customer', 'phone' => '01700000000', 'address' => 'Dhaka',
             'shares' => ['jana' => 1], // 300000 BDT
+            'terms_accepted' => true,
         ]);
     }
 
@@ -203,7 +204,7 @@ class PayPalPaymentTest extends TestCase
         $this->postJson('/paypal/create', [
             'name' => 'Test Customer', 'phone' => '01700000000', 'address' => 'Dhaka',
             'shares' => ['jana' => 1, 'dove' => 2],
-            'amount' => 1, 'cus_amount' => 1,
+            'amount' => 1, 'cus_amount' => 1, 'terms_accepted' => true,
         ])->assertOk();
 
         $tx = Transaction::firstOrFail();
@@ -222,7 +223,7 @@ class PayPalPaymentTest extends TestCase
     public function test_create_rejects_invalid_share_selection(): void
     {
         $this->fakePayPal();
-        $base = ['name' => 'Test Customer', 'phone' => '01700000000', 'address' => 'Dhaka'];
+        $base = ['name' => 'Test Customer', 'phone' => '01700000000', 'address' => 'Dhaka', 'terms_accepted' => true];
 
         $this->postJson('/paypal/create', $base)->assertStatus(422);
         $this->postJson('/paypal/create', $base + ['shares' => []])->assertStatus(422);
@@ -244,6 +245,18 @@ class PayPalPaymentTest extends TestCase
             ->assertStatus(422);
 
         $this->assertSame(0, Transaction::count());
+    }
+
+    public function test_create_requires_agreement_to_the_terms(): void
+    {
+        $this->fakePayPal();
+        $base = ['name' => 'Test Customer', 'phone' => '01700000000', 'address' => 'Dhaka', 'shares' => ['jana' => 1]];
+
+        $this->postJson('/paypal/create', $base)->assertStatus(422)->assertJsonValidationErrors(['terms_accepted']);
+        $this->postJson('/paypal/create', $base + ['terms_accepted' => false])->assertStatus(422)->assertJsonValidationErrors(['terms_accepted']);
+
+        $this->assertSame(0, Transaction::count());
+        Http::assertNothingSent();
     }
 
     public function test_success_captures_and_issues_invoice_once(): void

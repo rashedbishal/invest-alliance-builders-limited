@@ -89,6 +89,14 @@
         ['src' => $img('dove/dusk.webp'), 'pos' => '50% 40%', 'en' => 'The Dove · Dusk', 'bn' => 'দ্য ডাভ · গোধূলি'],
     ];
 
+    // Legal pages live on the main domain and are shared with this subdomain (footer + checkout agreement).
+    $legal = [
+        'terms' => ['url' => 'https://alliancebuildersltd.org/terms-of-service', 'en' => 'Terms &amp; Conditions', 'bn' => 'শর্তাবলি'],
+        'privacy' => ['url' => 'https://alliancebuildersltd.org/privacy-policy', 'en' => 'Privacy Policy', 'bn' => 'গোপনীয়তা নীতি'],
+        'refund' => ['url' => 'https://alliancebuildersltd.org/refund-policy', 'en' => 'Return &amp; Refund Policy', 'bn' => 'রিটার্ন ও রিফান্ড নীতি'],
+    ];
+    $legalLink = fn (string $key, string $lang) => '<a href="' . e($legal[$key]['url']) . '" target="_blank" rel="noopener">' . $legal[$key][$lang] . '</a>';
+
     $arrow = '<svg class="icon-arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h13M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>';
     $star = '<svg viewBox="0 0 12 12"><path d="M6 .8l1.5 3.4 3.7.3-2.8 2.4.9 3.6L6 8.6 2.7 10.5l.9-3.6L.8 4.5l3.7-.3z"/></svg>';
 
@@ -632,6 +640,15 @@
                         </span>
                     </button>
 
+                    {{-- Agreement to the shared legal pages; required before any payment method (site.js + server check) --}}
+                    <div class="consent" data-consent>
+                        <input class="consent__box" type="checkbox" id="f-terms" name="terms_accepted" value="1" data-terms aria-describedby="e-terms">
+                        <label class="consent__label" for="f-terms"><x-t
+                            :en="'I have read and agree to the ' . $legalLink('terms', 'en') . ', ' . $legalLink('privacy', 'en') . ' and ' . $legalLink('refund', 'en') . '.'"
+                            :bn="'আমি ' . $legalLink('terms', 'bn') . ', ' . $legalLink('privacy', 'bn') . ' এবং ' . $legalLink('refund', 'bn') . ' পড়েছি এবং এতে সম্মত।'" /></label>
+                        <p class="consent__error" id="e-terms"><x-t en="Please agree to the terms to continue." bn="এগিয়ে যেতে শর্তাবলিতে সম্মতি দিন।" /></p>
+                    </div>
+
                     <div class="paybtns" role="group" aria-label="Pay with" data-paybtns>
                         <div class="paybtn-wrap" data-method="sslcommerz" data-state="active">
                             <button type="button" class="paybtn paybtn--ssl" data-pay="sslcommerz" aria-describedby="paylock pay-help">
@@ -727,6 +744,14 @@
         </ul>
         <p class="footer__copy">© {{ date('Y') }} Hotel Jana Ltd.</p>
     </div>
+    <nav class="container footer__legal" aria-label="Legal">
+        <span class="footer__legal-label"><x-t en="Legal" bn="আইনি তথ্য" /></span>
+        <ul class="footer__links">
+            @foreach ($legal as $key => $doc)
+                <li><a href="{{ $doc['url'] }}" target="_blank" rel="noopener"><x-t :en="$doc['en']" :bn="$doc['bn']" /></a></li>
+            @endforeach
+        </ul>
+    </nav>
 </footer>
 
 {{-- Mobile order bar --}}

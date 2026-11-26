@@ -44,7 +44,7 @@ class BookingFormTest extends TestCase
     public function test_ssl_pay_rejects_invalid_shares_before_creating_a_transaction(): void
     {
         // Every payload below must be rejected before the gateway is contacted.
-        $customer = ['cus_name' => 'A', 'cus_phone' => '01700000000', 'cus_addr1' => 'Dhaka', 'cus_email' => ''];
+        $customer = ['cus_name' => 'A', 'cus_phone' => '01700000000', 'cus_addr1' => 'Dhaka', 'cus_email' => '', 'terms_accepted' => true];
 
         foreach ([
             $customer,                                                    // no shares at all (e.g. stale page)
@@ -61,10 +61,39 @@ class BookingFormTest extends TestCase
         $this->assertSame(0, TransactionShare::count());
     }
 
+    public function test_ssl_pay_requires_agreement_to_the_terms(): void
+    {
+        $customer = ['cus_name' => 'A', 'cus_phone' => '01700000000', 'cus_addr1' => 'Dhaka', 'cus_email' => '', 'cus_shares' => ['dove' => 1]];
+
+        foreach ([
+            $customer,                                   // never sent
+            $customer + ['terms_accepted' => false],
+            $customer + ['terms_accepted' => 'true'],    // must be a real boolean
+        ] as $payload) {
+            $this->post('/pay-via-ajax', ['cart_json' => json_encode($payload)])
+                ->assertStatus(422)
+                ->assertJson(['status' => 'FAILED']);
+        }
+
+        $this->assertSame(0, Transaction::count());
+        $this->assertSame(0, TransactionShare::count());
+    }
+
+    public function test_home_links_the_shared_legal_pages_in_the_footer_and_checkout(): void
+    {
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('href="https://alliancebuildersltd.org/terms-of-service"', false)
+            ->assertSee('href="https://alliancebuildersltd.org/privacy-policy"', false)
+            ->assertSee('href="https://alliancebuildersltd.org/refund-policy"', false)
+            ->assertSee('footer__legal', false)
+            ->assertSee('name="terms_accepted"', false);
+    }
+
     public function test_ssl_pay_rejects_totals_at_or_above_the_gateway_limit(): void
     {
         config(['shares.sslcommerz_limit' => 500000]);
-        $customer = ['cus_name' => 'A', 'cus_phone' => '01700000000', 'cus_addr1' => 'Dhaka', 'cus_email' => ''];
+        $customer = ['cus_name' => 'A', 'cus_phone' => '01700000000', 'cus_addr1' => 'Dhaka', 'cus_email' => '', 'terms_accepted' => true];
 
         // Jana 400000, Dove 125000. Every total below is 500000 or more (the last is exactly
         // 500000), so none may reach the gateway.
