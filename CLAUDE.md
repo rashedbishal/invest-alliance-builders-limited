@@ -57,6 +57,7 @@ Filament v5 panel (`App\Providers\Filament\AdminPanelProvider`, resources in `ap
 - **Shared post-payment logic:** `ReceiptService` (invoice + submission + money receipt, PDF, emails) and `PayPalCaptureProcessor` (capture/verify rules, `DECLINED_ISSUES`) are used by `PayPalPaymentController`, the CMS "Verify with PayPal" action and `BankTransferService::markPaid`. `SslCommerzPaymentController` keeps its own inline copy of that logic on purpose — the owner has asked that SSLCommerz code/config not be changed.
 - **Bank transfers:** `BankTransferController::notify` saves a `BankTransferRequest` (status New); the CMS can "Cancel" it (no email, final) or "Mark paid", which creates the transaction + share lines + invoice/receipt and emails it like an online payment.
 - Filament's published assets (`public/{css,js,fonts}/filament`) are committed because the deploy runs `composer install --no-scripts`; re-run `php artisan filament:assets` after upgrading Filament.
+- Livewire's script is published to `public/vendor/livewire` and committed too. Hostinger's web server answers every `*.js` URL as a static file and never passes it to Laravel, so Livewire's default route-served script 404s in production and the admin login just reloads. `composer update` re-publishes it (`post-update-cmd`), and `LivewireAssetsTest` fails if it's out of date.
 
 ### Currency conversion (two independent, unrelated systems — don't conflate them)
 

@@ -2,10 +2,10 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Filament\Pages\Auth\Login;
 use App\Filament\Widgets\PaymentOverview;
 use App\Models\Admin;
 use App\Models\User;
-use Filament\Auth\Pages\Login;
 use Livewire\Livewire;
 
 class AdminAccessTest extends AdminTestCase
@@ -88,5 +88,19 @@ class AdminAccessTest extends AdminTestCase
             ->assertSee('BDT 600,000.00')
             ->assertSee('2 payments in')
             ->assertDontSee('BDT 605,000.00');
+    }
+
+    public function test_login_form_has_no_remember_me(): void
+    {
+        $this->get('/admin/login')->assertOk()->assertDontSee('Remember me');
+
+        // Even if a crafted request sends `remember`, no remember-me cookie is issued.
+        Livewire::test(Login::class)
+            ->fillForm(['email' => 'admin@example.com', 'password' => 'correct-horse-battery'])
+            ->set('data.remember', true)
+            ->call('authenticate');
+
+        $this->assertAuthenticatedAs($this->admin, 'admin');
+        $this->assertNull($this->admin->fresh()->remember_token);
     }
 }
