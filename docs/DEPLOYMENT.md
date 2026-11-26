@@ -52,6 +52,16 @@ Variables:
 
 Optional: Settings > Environments > `production` > add *required reviewers* to make every deploy wait for an approval click.
 
+### 3. Admin CMS account (`/admin`)
+
+After the first deploy that includes the CMS, create the admin over SSH (the password is typed at a prompt, never passed on the command line):
+
+```bash
+cd /home/<user>/domains/<domain>/public_html && /opt/alt/php83/usr/bin/php artisan cms:admin
+```
+
+There is only ever one admin. Running the command again deletes the current admin (signing them out) and creates the new one, which is also how you change the password. The CMS uses its own `admins` table — never the `users` table shared with the portal app. Filament's CSS/JS live in `public/css/filament`, `public/js/filament` and `public/fonts/filament` and are committed to git (the deploy runs `composer install --no-scripts`, so nothing on the server would publish them); after upgrading Filament run `php artisan filament:assets` and commit the result.
+
 ## Database migrations
 Every deploy runs `php artisan migrate --force` after the files are uploaded, so a push to `main` needs no manual step. All migrations that touch tables shared with the other app are guarded ("skip if the table already exists"), so this is safe on the production database. **When you write a new migration, keep it additive** (new tables/nullable columns): the new code is live for a few seconds before the migration finishes, and a migration that fails stops the deploy after the upload.
 

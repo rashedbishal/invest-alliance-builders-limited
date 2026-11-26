@@ -4,11 +4,14 @@ namespace App\Models;
 
 use App\Services\Invoice\InvoiceNumberGenerator;
 use App\Support\RouteCrypto;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Invoice extends Model
 {
     protected $table = 'invoices';
+
     protected $fillable = [
         'invoice_date',
         'money_receipt_number',
@@ -45,6 +48,29 @@ class Invoice extends Model
         $invoice_number = RouteCrypto::decryptParams((string) $value);
 
         return $this->where($this->getRouteKeyName(), $invoice_number)->firstOrFail();
+    }
+
+    public function transaction(): HasOne
+    {
+        return $this->hasOne(Transaction::class, 'invoice_number', 'invoice_number');
+    }
+
+    public function submission(): HasOne
+    {
+        return $this->hasOne(Submission::class, 'invoice_number', 'invoice_number');
+    }
+
+    /** Invoices issued by this app (see Transaction::scopeFromThisApp). */
+    public function scopeFromThisApp(Builder $query): Builder
+    {
+        return $query->whereHas('transaction', fn (Builder $q) => $q->fromThisApp());
+    }
+
+    public function publicLinkIsActive(): bool
+    {
+        return $this->public_token !== null
+            && $this->public_token_revoked_at === null
+            && ($this->public_token_expires_at === null || $this->public_token_expires_at->isFuture());
     }
 
     protected static function booted(): void

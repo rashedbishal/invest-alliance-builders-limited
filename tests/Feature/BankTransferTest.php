@@ -3,11 +3,15 @@
 namespace Tests\Feature;
 
 use App\Mail\BankTransferNotificationMail;
+use App\Models\BankTransferRequest;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class BankTransferTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -43,6 +47,13 @@ class BankTransferTest extends TestCase
                 && $mail->addressLine2 === 'Dhaka'
                 && $mail->total === 380000.0;
         });
+
+        // Saved for the CMS, where an admin marks it paid once the money arrives.
+        $booking = BankTransferRequest::sole();
+        $this->assertSame('New', $booking->status);
+        $this->assertSame('customer@example.com', $booking->email);
+        $this->assertEquals(380000, $booking->total);
+        $this->assertCount(2, $booking->lines);
     }
 
     public function test_notify_does_not_require_address_line_two(): void

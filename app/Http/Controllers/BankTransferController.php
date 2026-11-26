@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\BankTransferNotificationMail;
+use App\Models\BankTransferRequest;
 use App\Services\Booking\ShareCatalog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,8 +16,8 @@ class BankTransferController extends Controller
 
     /**
      * A customer choosing Dutch-Bangla Bank transfer pays manually and calls in for
-     * their money receipt, so there's no payment to process here — just an internal
-     * heads-up email with their details and the order they intend to pay for.
+     * their money receipt, so there's no payment to process here — the booking is saved
+     * for the CMS (where an admin marks it paid) and an internal heads-up email is sent.
      */
     public function notify(Request $request): JsonResponse
     {
@@ -34,6 +35,17 @@ class BankTransferController extends Controller
         } catch (InvalidArgumentException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }
+
+        // Saved so the CMS can list it and an admin can mark it paid once the money arrives.
+        BankTransferRequest::create([
+            'name' => $data['name'],
+            'phone' => $data['phone'],
+            'email' => $data['email'],
+            'address_1' => $data['address_1'],
+            'address_2' => $data['address_2'] ?? null,
+            'lines' => $quote['lines'],
+            'total' => $quote['total'],
+        ]);
 
         Mail::to(config('mail.from.address'))->queue(new BankTransferNotificationMail(
             $data['name'],

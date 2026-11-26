@@ -49,6 +49,15 @@ The two gateway flows (SSLCommerz and PayPal) converge on the same pattern after
 
 **Pricing is always server-side.** `App\Services\Booking\ShareCatalog::quote()` is the single source of truth for hotel prices/max share counts (from `config/shares.php`, itself from `.env`) — the browser only sends a hotel key and quantity, never a price or total. Any change to pricing logic should go through `ShareCatalog`, not the controllers.
 
+### Admin CMS (`/admin`)
+
+Filament v5 panel (`App\Providers\Filament\AdminPanelProvider`, resources in `app/Filament`). Signs in with its own `admin` guard and `admins` table — **never** the `users` table, which belongs to the portal app. There is exactly one admin, managed only by `php artisan cms:admin` (deletes and replaces it); no registration or password reset.
+
+- **Which rows are ours:** `transactions`/`invoices` are shared with the portal, and both apps write `cn_identifier = 2` and `TRX-…` ids. A transaction belongs to this app iff it has `transaction_shares` rows (`Transaction::scopeFromThisApp()`, `Invoice::scopeFromThisApp()`); every CMS query must go through these scopes. Gateway is derived, not stored: `gateway_transaction_id` set → PayPal, `card_type = Transaction::BANK_CARD_TYPE` → bank transfer, else SSLCommerz.
+- **Shared post-payment logic:** `ReceiptService` (invoice + submission + money receipt, PDF, emails) and `PayPalCaptureProcessor` (capture/verify rules, `DECLINED_ISSUES`) are used by `PayPalPaymentController`, the CMS "Verify with PayPal" action and `BankTransferService::markPaid`. `SslCommerzPaymentController` keeps its own inline copy of that logic on purpose — the owner has asked that SSLCommerz code/config not be changed.
+- **Bank transfers:** `BankTransferController::notify` saves a `BankTransferRequest` (status New); "Mark paid" in the CMS creates the transaction + share lines + invoice/receipt and emails it like an online payment.
+- Filament's published assets (`public/{css,js,fonts}/filament`) are committed because the deploy runs `composer install --no-scripts`; re-run `php artisan filament:assets` after upgrading Filament.
+
 ### Currency conversion (two independent, unrelated systems — don't conflate them)
 
 - **Display conversion** (`CurrencyService`, `config/currency.php`): geolocates the visitor (Cloudflare header, then IP lookup) to show BDT prices converted to their local currency. Purely cosmetic — never affects what's charged. Rates are cached and fetched from exchangerate-api.com / open.er-api.com.

@@ -65,6 +65,22 @@ class PayPalService
     }
 
     /**
+     * Current state of an order (used by the CMS to re-check a Pending payment).
+     */
+    public function getOrder(string $orderId): array
+    {
+        $response = $this->client()->get("/v2/checkout/orders/{$orderId}");
+
+        if ($response->failed()) {
+            $issue = $response->json('details.0.issue') ?? $response->json('name');
+
+            throw new PayPalApiException('PayPal get order failed: '.$response->body(), is_string($issue) ? $issue : null, $response->status());
+        }
+
+        return $response->json();
+    }
+
+    /**
      * URL the customer is sent to in order to approve the payment.
      */
     public function approvalUrl(array $order): ?string
