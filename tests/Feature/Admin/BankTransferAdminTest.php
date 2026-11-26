@@ -28,6 +28,7 @@ class BankTransferAdminTest extends AdminTestCase
             'address_1' => 'House 1, Road 2',
             'address_2' => 'Dhaka',
             'shares' => ['jana' => 1, 'dove' => 2],
+            'terms_accepted' => '1',
         ])->assertOk();
 
         return BankTransferRequest::sole();
