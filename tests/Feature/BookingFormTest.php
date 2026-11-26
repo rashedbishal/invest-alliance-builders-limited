@@ -163,4 +163,22 @@ class BookingFormTest extends TestCase
 
         $this->get('/')->assertOk()->assertSee('data-bdt="450000"', false)->assertDontSee('data-bdt="400000"', false);
     }
+
+    public function test_ssl_pay_saves_the_pending_transaction_with_its_dates(): void
+    {
+        // The row is saved before the gateway call; point SSLCommerz at a closed
+        // local port so the call fails instantly and no real request is made.
+        config(['sslcommerz.apiDomain' => 'http://127.0.0.1:9']);
+        $this->travelTo(now()->setDateTime(2026, 11, 26, 15, 40, 0));
+
+        $this->post('/pay-via-ajax', ['cart_json' => json_encode([
+            'cus_name' => 'Test Customer', 'cus_phone' => '01700000000', 'cus_addr1' => 'Dhaka',
+            'cus_email' => 'test@example.com', 'cus_shares' => ['jana' => 1], 'terms_accepted' => true,
+        ])]);
+
+        $tx = Transaction::sole();
+        $this->assertSame('Pending', $tx->status);
+        $this->assertSame('2026-11-26 15:40:00', $tx->created_at?->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-11-26 15:40:00', $tx->updated_at?->format('Y-m-d H:i:s'));
+    }
 }

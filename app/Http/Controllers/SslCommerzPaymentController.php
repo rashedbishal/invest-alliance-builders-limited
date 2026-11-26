@@ -183,6 +183,9 @@ class SslCommerzPaymentController extends Controller
                 'transaction_id' => $post_data['tran_id'],
                 'invoice_number' => null,
                 'currency' => $post_data['currency'],
+                // updateOrInsert() bypasses Eloquent, so timestamps must be set here.
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
 
         foreach ($quote['lines'] as $line) {
