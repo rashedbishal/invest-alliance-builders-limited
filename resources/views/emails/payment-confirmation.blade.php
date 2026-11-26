@@ -59,12 +59,12 @@
                    style="margin:20px auto; text-align:center;">
                 <tr>
                     <td>
-                        <a href="http://localhost">
+                        <a href="{{ url('/') }}">
                             @if($concern == "Hotel Jana")
-                                <img src="{{asset('jana-back.png')}}" alt="Logo"
+                                <img src="{{asset('images/jana-back.png')}}" alt="Logo"
                                      style="max-width:100%; height:75px; display:block; margin:0 auto;">
                             @else
-                                <img src="{{asset('opticore.png')}}" alt="Logo"
+                                <img src="{{asset('images/opticore.png')}}" alt="Logo"
                                      style="max-width:100%; height:75px; display:block; margin:0 auto;">
                             @endif
                         </a>
